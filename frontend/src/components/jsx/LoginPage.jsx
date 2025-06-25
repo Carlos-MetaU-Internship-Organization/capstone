@@ -1,5 +1,8 @@
 import './../css/LoginPage.css'
 import { useState } from 'react'
+import tire from './../../assets/tire.png'
+import profile from './../../assets/profile.png'
+import lock from './../../assets/lock.png'
 
 function LoginPage() {
   const [username, setUsername] = useState('');
@@ -8,21 +11,20 @@ function LoginPage() {
   return (
     <div className='login-page-overlay'>
       <div className='login-page-content'>
-        <h2>Login</h2>
+        <img src={tire} height='100px' width='100px'/>
+        <h2>CarPortal Login</h2>
         <div className='credentials'>
-          <div className='username'>
-            {/* img here */}
-            <input type="text" name='username' value={username} placeholder='Username or email' />
-          </div>
-          <div className='password'>
-            {/* img here */}
-            <input type="text" name='password' value={password} placeholder='Password' />
-          </div>
+          <img src={profile} height='16px' width='16px'/>
+          <input type="text" name='username' value={username} placeholder='Username or email' onChange={(e) => setUsername(e.target.value)}/>
         </div>
-        <button type='submit'>LOGIN</button>
+        <div className='credentials'>
+          <img src={lock} height='16px' width='16px'/>
+          <input type="text" name='password' value={password} placeholder='Password' onChange={(e) => setPassword(e.target.value)}/>
+        </div>
+        <button type='submit' id='login-button'>Login</button>
         <div className='account-creation'>
           <p>Don't have an account?</p>
-          <button type='button'>SIGN UP</button>
+          <button type='button'>Sign up</button>
         </div>
       </div>
     </div>
