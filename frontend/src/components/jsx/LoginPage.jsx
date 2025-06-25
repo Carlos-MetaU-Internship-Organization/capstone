@@ -8,6 +8,28 @@ function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  const handleLogin = async (event) => {
+    event.preventDefault();
+
+    const credentials = { username, password };
+    
+    try {
+      await axios.post('/api/auth/login/', credentials);
+    } catch (error) {
+      alert(`Error logging in: ${error.response.data}`);
+    }
+  }
+
+  const handleSignup = async (event) => {
+    const credentials = { username, password };
+
+    try {
+      await axios.post('/api/auth/signup', credentials);
+    } catch (error) {
+      alert(`Error signing up: ${error.response.data}`);
+    }
+  }
+
   return (
     <div className='login-page-overlay'>
       <div className='login-page-content'>
@@ -21,10 +43,10 @@ function LoginPage() {
           <img src={lock} height='16px' width='16px'/>
           <input type="text" name='password' value={password} placeholder='Password' onChange={(e) => setPassword(e.target.value)}/>
         </div>
-        <button type='submit' id='login-button'>Login</button>
+        <button type='submit' id='login-button' onSubmit={handleLogin}>Login</button>
         <div className='account-creation'>
           <p>Don't have an account?</p>
-          <button type='button'>Sign up</button>
+          <button type='button' onClick={handleSignup}>Sign up</button>
         </div>
       </div>
     </div>
