@@ -10,11 +10,12 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@prisma/client": "^6.10.1",
+    "argon2": "^0.43.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "morgan": "^1.10.0"
-  },
-  "devDependencies": {
+    "express-session": "^1.18.1",
+    "morgan": "^1.10.0",
     "prisma": "^6.10.1"
   }
 }
