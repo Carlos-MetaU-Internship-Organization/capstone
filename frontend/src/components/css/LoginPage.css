@@ -55,7 +55,7 @@
   font-size: 12px;
 }
 
-button {
+.auth-button {
   color: white;
   background-color: inherit;
 }
