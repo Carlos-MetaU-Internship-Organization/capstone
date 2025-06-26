@@ -29,7 +29,7 @@
   border-radius: 25px;
 }
 
-.credentials {
+.login-info {
   display: flex;
   gap: 10px;
   align-items: center;
@@ -40,7 +40,7 @@
   border-radius: 8px;
 }
 
-.credentials input {
+.login-info input {
   position: relative;
   background-color: inherit;
   border: none;
@@ -50,7 +50,7 @@
   background-color: transparent;
 }
 
-.credentials input::placeholder {
+.login-info input::placeholder {
   color: lightgray;
   font-size: 12px;
 }
@@ -77,4 +77,8 @@ button:focus {
 
 button:hover {
   border: 1px solid white;
+}
+
+.login-page-overlay img {
+  filter: invert(1);
 }
