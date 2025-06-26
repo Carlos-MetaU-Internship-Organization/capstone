@@ -7,32 +7,42 @@ const prisma = new PrismaClient()
 
 // Signup
 auth.post('/signup', async (req, res) => {
-  const { username, password: plainPassword } = req.body;
+  const { name, email, phoneNumber, username, password: plainPassword } = req.body;
   const user = await prisma.user.findFirst({
-    where: {username: username}
+    where: {
+      OR: [
+        {username: username},
+        {email: email}
+      ]
+    }
   })
 
   if (!user) {
     const hash = await hashPassword(plainPassword);
-    const newUser = {username, password: hash};
+    const newUser = {name, username, email, phoneNumber, password: hash};
     await prisma.user.create({data: newUser});
-    res.json({ message: `Welcome, ${username}`});
+    res.json({ status: 200, message: `Welcome, ${name}`});
   } else {
     //TODO: use next
-    res.json({ status: 409, message: 'Username taken' });
+    res.json({ status: 409, message: 'Account already exists' });
   }
 })
 
 // Login 
 auth.post('/login', async (req, res) => {
-  const { username, password: plainPassword } = req.body;
+  const { login, password: plainPassword } = req.body;
   const user = await prisma.user.findFirst({
-    where: {username}
+    where: {
+      OR: [
+        {username: login},
+        {email: login}
+      ]
+    }
   })
 
   if (user && (await verifyPassword(plainPassword, user.password))) {
     req.session.user = user;
-    res.json({ message: `Good to see you again, ${username}` })
+    res.json({ status: 200, message: `Good to see you again, ${user.name}` })
   } else {
     //TODO: use next
     res.json({ status: 401, message: 'Invalid credentials.' })

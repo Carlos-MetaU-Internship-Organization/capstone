@@ -3,12 +3,14 @@
 }
 
 header {
+  box-sizing: border-box;
   height: 8vh;
   display: flex;
   align-items: center;
   gap: 1vw;
   background-image: url('./../../assets/gradient.jpeg');
   padding-left: 1vw;
+  border-bottom: 3px solid black;
 }
 
 header img {
@@ -40,8 +42,8 @@ header img {
   min-height: 200px;
   /* overflow-y: auto; */
   border-radius: 25px;
-  border: 1px solid black;
-  background-color: #0f6677;
+  /* border: 1px solid black; */
+  /* background-color: #0093c4; */
 }
 
 .signup-info {
@@ -61,7 +63,7 @@ header img {
   position: relative;
   background-color: inherit;
   border: none;
-  color: white;
+  color: black;
   width: 100%;
   font-size: 18px;
   background-color: transparent;
