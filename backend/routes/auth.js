@@ -47,11 +47,10 @@ auth.post('/login', async (req, res) => {
     //TODO: use next
     res.json({ status: 401, message: 'Invalid credentials.' })
   }
-
 })
 
 // Logout
-auth.post('/logout', async (req, res) => {
+auth.post('/logout', (req, res) => {
   req.session.destroy(error => {
     if (!error) {
       res.json({ message: 'Goodbye.'})
@@ -59,6 +58,16 @@ auth.post('/logout', async (req, res) => {
       res.json({ message: 'Logout failed' })
     }
   });
+})
+
+// Check if they are authenticated
+auth.get('/check-auth', (req, res) => {
+  console.log(req.session);
+  if (req.session && req.session.user) {
+    res.json({ authenticated: true});
+  } else {
+    res.json({ authenticated: false});
+  }
 })
 
 module.exports = auth;

@@ -18,8 +18,21 @@ let sessionConfig = {
   saveUninitialized: false,
 }
 
+const allowedOrigins = ['http://localhost:5173'];
+
+let corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true
+}
+
+app.use(cors(corsOptions));
 app.use(session(sessionConfig))
-app.use(cors());
 app.use(express.json());
 
 app.use('/api/auth', auth);

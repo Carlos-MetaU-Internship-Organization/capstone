@@ -1,0 +1,18 @@
+.buy-page {
+  width: 100vw;
+}
+
+header {
+  box-sizing: border-box;
+  height: 8vh;
+  display: flex;
+  align-items: center;
+  gap: 1vw;
+  background-image: url('./../../assets/gradient.jpeg');
+  padding-left: 1vw;
+  border-bottom: 3px solid black;
+}
+
+header img {
+  height: 80%;
+}
