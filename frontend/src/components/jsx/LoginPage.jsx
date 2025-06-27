@@ -24,7 +24,7 @@ function LoginPage() {
     const credentials = { login, password };
     
     try {
-      const response = await axios.post(`${baseURL}/api/auth/login/`, credentials);
+      const response = await axios.post(`${baseURL}/api/auth/login/`, credentials, { withCredentials: true });
       if (response.data.status === 200) {
         navigate('/buy');
       }
