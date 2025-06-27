@@ -2,6 +2,10 @@
   color: black;
 }
 
+.signup-page {
+  width: 100vw;
+}
+
 header {
   box-sizing: border-box;
   height: 8vh;
@@ -18,7 +22,6 @@ header img {
 }
 
 .signup-page-overlay {
-  width: 100vw;
   height: 92vh;
   text-align: center;
   overflow-y: auto;
