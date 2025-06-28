@@ -62,7 +62,7 @@ header img {
   align-items: center;
 }
 
-form {
+.filter-search {
   box-sizing: border-box;
   border-radius: 10px;
   background-color: rgba(255, 255, 255, 0.1);
@@ -77,8 +77,13 @@ form {
 }
 
 .most-viewed {
+  text-align: center;
+}
+
+.most-viewed-listing {
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 25px;
+  height: 55vh;
 }
 
 .most-viewed-car-info {
@@ -86,6 +91,12 @@ form {
   display: flex;
   flex-direction: column;
   gap: .5vh;
+}
+
+#most-viewed-car-img {
+  height: 60%;
+  width: 100%;
+  object-fit: contain;
 }
 
 #favorites-label {

@@ -89,14 +89,17 @@ function BuyPage() {
             </div>
             <button type='submit'>Search</button>
           </form>
-          <div className='most-viewed pointer'>
-            <img src={car} height='400px' className='car-image'/>
-            <div className='most-viewed-car-info'>
-              <p>Make: Porsche</p>
-              <p>Model: 911</p>
-              <p>Year: 2022</p>
-              <p>Location: San Francisco, CA</p>
-              <p>Price: $214,999</p>
+          <div className='most-viewed'>
+            <p>Still Interested?</p>
+            <div className='most-viewed-listing pointer'>
+              <img src={car} id='most-viewed-car-img' className='car-image'/>
+              <div className='most-viewed-car-info'>
+                <p>Make: Porsche</p>
+                <p>Model: 911</p>
+                <p>Year: 2022</p>
+                <p>Location: San Francisco, CA</p>
+                <p>Price: $214,999</p>
+              </div>
             </div>
           </div>
         </div>
