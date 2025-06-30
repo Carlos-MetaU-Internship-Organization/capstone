@@ -5,6 +5,8 @@ const app = express()
 const PORT = 3000 // TODO: put in env
 
 const auth = require('./routes/auth');
+// const populate = require('./routes/populate_db');
+const search = require('./routes/search')
 
 let sessionConfig = {
   name: 'sessionId',
@@ -36,6 +38,8 @@ app.use(session(sessionConfig))
 app.use(express.json());
 
 app.use('/api/auth', auth);
+// app.use('/api/populate', populate);
+app.use('/api/search', search);
 
 app.listen(PORT, () => {
   console.log(`Server is listening on ${PORT}`)

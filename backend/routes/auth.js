@@ -52,7 +52,6 @@ auth.post('/login', async (req, res) => {
     logWarning('Invalid login attempt', { login })
     res.json({ status: 401, message: 'Invalid credentials.' })
   }
-
 })
 
 // Logout
