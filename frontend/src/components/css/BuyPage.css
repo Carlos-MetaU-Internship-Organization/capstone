@@ -45,6 +45,17 @@
   text-align: center;
 }
 
+/* TODO: Adjust font sizes for text to enhance readability */
+
+/* 
+h2 {
+  font-size: 4vh;
+}
+
+h3 {
+  font-size: 3vh;
+} */
+
 .most-viewed-listing {
   border-radius: 25px;
 }
