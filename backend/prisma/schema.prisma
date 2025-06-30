@@ -21,3 +21,16 @@ model User {
   phoneNumber String?   @unique
   password    String
 }
+
+model Make {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  models      Model[]
+}
+
+model Model {
+  id       Int      @id @default(autoincrement())
+  name     String
+  make     Make     @relation(fields: [makeName], references: [name])
+  makeName String
+}
