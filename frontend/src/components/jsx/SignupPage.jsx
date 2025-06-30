@@ -38,13 +38,13 @@ function SignupPage() {
   }
 
   return (
-    <div className='signup-page'>
-      <header>
-        <img src={tire}/>
+    <div id='signup-page'>
+      <header id='signup-page-header'>
+        <img src={tire} id='signup-page-header-image'/>
         <h2>CarPortal</h2>
       </header>
-      <div className='signup-page-overlay'>
-        <form className='signup-page-content' onSubmit={handleSignup} autoComplete='off'>
+      <div id='signup-page-overlay'>
+        <form id='signup-page-content' onSubmit={handleSignup} autoComplete='off'>
           <h2>Create an Account</h2>
           <h3>{message}</h3>
           {/* TODO: make signup-info's into a component */}
@@ -68,11 +68,11 @@ function SignupPage() {
             <img src={lock} height='16px' width='16px'/>
             <input type="password" className='signup-info-textbox' name='password' value={password} placeholder='Password' onChange={(e) => setPassword(e.target.value)} required />
           </div>
-          <button type='submit' className='auth-button' id='signup-button'>Sign up</button>
-          <div className='account-creation'>
+          <button type='submit' className='signup-auth-button' id='signup-button'>Sign up</button>
+          <div id='signup-account-creation'>
             <p>Already have an account?</p>
             <Link to="/">
-              <button type='button' className='auth-button'>Login</button>
+              <button type='button' className='signup-auth-button'>Login</button>
             </Link>
           </div>
         </form>

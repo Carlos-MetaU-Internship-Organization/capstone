@@ -1,102 +1,66 @@
-.buy-page {
+#buy-page {
   width: 100vw;
   height: 100vh;
   background-image: url('./../../assets/gradient.jpeg');
 }
 
-header {
-  box-sizing: border-box;
-  height: 8vh;
-  display: flex;
-  align-items: center;
-  gap: 1vw;
-  padding: .5vw .5vw .5vw 1vw;
-  border-bottom: 3px solid black;
+.translucent {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-header img {
-  height: 80%;
-}
-
-.redirect-links {
-  margin-left: 2vw;
-  display: flex;
-  gap: 1vw;
-}
-
-.header-buttons:hover {
-  color: #42b6ff;
-  text-decoration: underline;
-}
-
-#title {
-  cursor: default;
-}
-
-#logout {
-  margin-left: auto;
-  margin-right: 2vw;
-}
-
-#sidebar-opener {
-  margin-right: 1vw;
-}
-
-.filters {
+#filters {
   display: flex;
   flex-direction: column;
   gap: .5vh;
   padding: 1vh 1vw;
 }
 
-.buy-content {
+#buy-content {
   display: flex;
   justify-content: center;
   height: 62vh;
 }
 
-.buy-search {
+#buy-search {
   width: 100vw;
   display: flex;
   justify-content: space-around;
   align-items: center;
 }
 
-.filter-search {
+#filter-search {
   box-sizing: border-box;
   border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   gap: .5vh;
 }
 
-.location-details {
+#location-details {
   display: flex;
   gap: .5vw;
 }
 
-.most-viewed {
+#most-viewed-container {
   text-align: center;
 }
 
 .most-viewed-listing {
-  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 25px;
-  height: 55vh;
-}
-
-.most-viewed-car-info {
-  padding: 0 1vw 1vh;
-  display: flex;
-  flex-direction: column;
-  gap: .5vh;
 }
 
 #most-viewed-car-img {
   height: 60%;
   width: 100%;
+  height: 40vh;
   object-fit: contain;
+}
+
+#most-viewed-car-info {
+  padding: 0 1vw 1vh;
+  display: flex;
+  flex-direction: column;
+  gap: .5vh;
 }
 
 #favorites-label {
@@ -104,14 +68,14 @@ header img {
   font-size: xx-large;
 }
 
-.favorites {
+#favorites-container {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   gap: 1vh;
 }
 
-.favorite-cars {
+#favorite-cars {
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -122,26 +86,11 @@ header img {
   border-radius: 25px;
 }
 
-select {
-  background-color: rgba(255, 255, 255, 0.1);
+.buy-page-user-selection {
   border: none;
   border-radius: 10px;
 }
 
-select:focus {
-  outline: none;
-}
-
-input {
-  background-color: rgba(255, 255, 255, 0.1);
-  border: none;
-  border-radius: 10px;
-}
-
-button {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.pointer {
-  cursor: pointer;
+#search-button:hover {
+  border: 1px solid;
 }

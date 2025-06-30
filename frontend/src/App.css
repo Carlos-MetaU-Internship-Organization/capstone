@@ -1,4 +1,15 @@
 * {
   margin: 0;
   padding: 0;
+  color: black;
+}
+
+input:focus,
+button:focus,
+select:focus {
+  outline: none;
+}
+
+.pointer {
+  cursor: pointer;
 }

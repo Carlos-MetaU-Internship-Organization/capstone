@@ -1,12 +1,8 @@
-* {
-  color: black;
-}
-
-.signup-page {
+#signup-page {
   width: 100vw;
 }
 
-header {
+#signup-page-header {
   box-sizing: border-box;
   height: 8vh;
   display: flex;
@@ -17,18 +13,18 @@ header {
   border-bottom: 3px solid black;
 }
 
-header img {
+#signup-page-header-image {
   height: 80%;
 }
 
-.signup-page-overlay {
+#signup-page-overlay {
   height: 92vh;
   text-align: center;
   overflow-y: auto;
   background-image: url('./../../assets/gradient.jpeg');
 }
 
-.signup-page-content {
+#signup-page-content {
   padding: 10px;
   position: fixed;
   top: 54%;
@@ -45,8 +41,6 @@ header img {
   min-height: 200px;
   /* overflow-y: auto; */
   border-radius: 25px;
-  /* border: 1px solid black; */
-  /* background-color: #0093c4; */
 }
 
 .signup-info {
@@ -77,30 +71,21 @@ header img {
   font-size: 12px;
 }
 
-.auth-button {
-  color: white;
+.signup-auth-button {
+  color: black;
   background-color: inherit;
+}
+
+.signup-auth-button:hover {
+  border: 1px solid;
 }
 
 #signup-button {
   width: 100%;
 }
 
-.account-creation {
+#signup-account-creation {
   display: flex;
   align-items: center;
   gap: 5px;
-}
-
-input:focus,
-button:focus {
-  outline: none;
-}
-
-button:hover {
-  border: 1px solid black;
-}
-
-.signup-page-content .auth-button {
-  color: black;
 }

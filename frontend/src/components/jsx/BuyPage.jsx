@@ -1,8 +1,7 @@
 import './../css/BuyPage.css'
-import tire from './../../assets/tire.png'
-import menu from './../../assets/menu.png'
 import car from './../../assets/car.jpg'
 import arrow from './../../assets/arrow.png'
+import Header from './Header'
 import { baseURL } from '../../globals'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -39,61 +38,49 @@ function BuyPage() {
   }
 
   return (
-    <div className='buy-page'>
-      {/* TODO: make header a component*/}
-      <header>
-        <img src={tire}/>
-        <h2 id='title'>CarPortal</h2>
-        <div className='redirect-links'>
-          <h3 className='header-buttons pointer' id='buy-redirect' style={{textDecoration: 'underline'}} onClick={handleRedirectClick}>Buy</h3>
-          <h3 className='header-buttons pointer' id='sell-redirect' onClick={handleRedirectClick}>Sell</h3>
-        </div>
-        <h3 className='header-buttons pointer' id='logout' onClick={handleLogout}>Logout</h3>
-        <img className='header-buttons pointer' id='sidebar-opener' src={menu}/>
-      </header>
-      <div className='buy-content'>
-        <div className='buy-search'>
-          <form className='filter-search' onSubmit={handleSearch}>
-            <div className='filters'>
+    <div id='buy-page'>
+      <Header />
+      <div id='buy-content'>
+        <div id='buy-search'>
+          <form className='translucent' id='filter-search' onSubmit={handleSearch}>
+            <div id='filters'>
               <label>New/Used</label>
-              <select id="new-used-selector" name="new-used-selector" required>
+              <select className='translucent buy-page-user-selection' id="new-used-selector" name="new-used-selector" required>
                 <option value="New">New</option>
                 <option value="Used">Used</option>
               </select>
               <label>Make</label>
-              <select id="make-selector" name="make-selector" required>
+              <select className='translucent buy-page-user-selection' id="make-selector" name="make-selector" required>
                 <option value="BMW">BMW</option>
                 <option value="Porsche">Porsche</option>
                 <option value="Toyota">Toyota</option>
               </select>
               <label>Model</label>
-              <select id="model-selector" name="model-selector" required>
+              <select className='translucent buy-page-user-selection' id="model-selector" name="model-selector" required>
                 {/* TODO: change model based on make selected*/}
                 <option value="M3">M3</option>
                 <option value="911">911</option>
                 <option value="4Runner">4Runner</option>
               </select>
-              <div className='location-details'>
+              <div id='location-details'>
                 <label>Distance</label>
-                <select id="model-selector" name="model-selector" required>
+                <select className='translucent buy-page-user-selection' name="model-selector" required>
                   <option value="50mi">50 miles</option>
                   <option value="250mi">250 miles</option>
                   <option value="500mi">500 miles</option>
                   <option value="Nationwide">Nationwide</option>
                 </select>
                 <label>ZIP</label>
-                {/* TODO: grab zip code based on location maybe? stretch, 
-                default is fine, but when user supplies one, save it somewhere*/}
-                <input type="text" defaultValue={94025}required/>
+                <input className='translucent buy-page-user-selection' type="text" defaultValue={94025}required/>
               </div>
             </div>
-            <button type='submit'>Search</button>
+            <button className='translucent' id='search-button' type='submit'>Search</button>
           </form>
-          <div className='most-viewed'>
+          <div id='most-viewed-container'>
             <p>Still Interested?</p>
-            <div className='most-viewed-listing pointer'>
+            <div className='translucent most-viewed-listing pointer'>
               <img src={car} id='most-viewed-car-img' className='car-image'/>
-              <div className='most-viewed-car-info'>
+              <div id='most-viewed-car-info'>
                 <p>Make: Porsche</p>
                 <p>Model: 911</p>
                 <p>Year: 2022</p>
@@ -104,12 +91,12 @@ function BuyPage() {
           </div>
         </div>
       </div>
-      <div className='favorites'>
+      <div id='favorites-container'>
         {/* TODO: THESE SHOULD ALL BE CLICKABLE 
         AND BE ABLE TO REDIRECT TO THEIR 
         APPROPRIATE LISTINGS ON A CLICK */}
         <label id='favorites-label'>Your Favorites</label>
-        <div className='favorite-cars'>
+        <div id='favorite-cars'>
           <img src={car} height='150px' className='car-image pointer'/>
           <img src={car} height='150px' className='car-image pointer'/>
           <img src={car} height='150px' className='car-image pointer'/>
