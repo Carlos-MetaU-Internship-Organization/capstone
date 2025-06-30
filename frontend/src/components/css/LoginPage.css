@@ -1,4 +1,4 @@
-.login-page-overlay {
+#login-page-overlay {
   width: 100vw;
   height: 100vh;
   text-align: center;
@@ -6,11 +6,11 @@
   background-image: url('./../../assets/gradient.jpeg');
 }
 
-.login-page-overlay * {
+#login-page-overlay * {
   color: white;
 }
 
-.login-page-content {
+#login-page-content {
   padding: 10px;
   position: fixed;
   top: 50%;
@@ -29,6 +29,10 @@
   border-radius: 25px;
 }
 
+#login-image {
+  width: 40%;;
+}
+
 .login-info {
   display: flex;
   gap: 10px;
@@ -40,7 +44,7 @@
   border-radius: 8px;
 }
 
-.login-info input {
+.login-info-textbox {
   position: relative;
   background-color: inherit;
   border: none;
@@ -50,35 +54,29 @@
   background-color: transparent;
 }
 
-.login-info input::placeholder {
+.login-info-textbox::placeholder {
   color: lightgray;
   font-size: 12px;
 }
 
-.auth-button {
-  color: white;
+.login-auth-button {
   background-color: inherit;
+}
+
+.login-auth-button:hover {
+  border: 1px solid white;
 }
 
 #login-button {
   width: 100%;
 }
 
-.account-creation {
+#login-account-creation {
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-input:focus,
-button:focus {
-  outline: none;
-}
-
-button:hover {
-  border: 1px solid white;
-}
-
-.login-page-overlay img {
+#login-page-overlay img {
   filter: invert(1);
 }

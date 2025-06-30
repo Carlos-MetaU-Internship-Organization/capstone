@@ -1,0 +1,40 @@
+#header {
+  box-sizing: border-box;
+  height: 8vh;
+  display: flex;
+  align-items: center;
+  gap: 1vw;
+  padding: .5vh .5vw .5vh 1vw;
+  border-bottom: 3px solid black;
+  background-image: url('./../../assets/gradient.jpeg');
+}
+
+.header-image {
+  height: 80%;
+}
+
+#redirect-links {
+  margin-left: 2vw;
+  display: flex;
+  gap: 1vw;
+}
+
+.header-buttons:hover {
+  color: #42b6ff;
+  text-decoration: underline;
+}
+
+#title {
+  cursor: default;
+}
+
+#logout {
+  margin-left: auto;
+  margin-right: 2vw;
+}
+
+#sidebar-opener {
+  margin-right: 1vw;
+}
+
+/* TODO: Adjust font sizes for text to enhance readability */
