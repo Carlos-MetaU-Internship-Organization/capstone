@@ -1,0 +1,25 @@
+import axios from 'axios';
+import { baseURL } from '../globals';
+import { logInfo, logWarning, logError } from './logging.service';
+
+export async function loginUser({ login, password }) {
+  if (!login || !password) {
+    logWarning('Login failed: Missing fields.');
+    return { success: false, message: 'Login and password are required.'};
+  }
+
+  try {
+    const response = await axios.post(`${baseURL}/api/auth/login/`, { login, password }, { withCredentials: true });
+
+    if (response.data.status === 200) {
+      logInfo('Login successful', { login });
+      return { success: true, message: response.data.message };
+    } else {
+      logWarning('Login failed', response.data.message);
+      return { success: false, message: response.data.message };
+    }
+  } catch (error) {
+    logError('Login HTTP request failed', error);
+    return { success: false, message: 'Login HTTP Request failed'};
+  }
+}

@@ -1,3 +1,5 @@
+const { logInfo, logWarning, logError } = require('../utils/logging.service');
+
 const argon2 = require('argon2');
 
 async function hashPassword(plainPassword) {
@@ -10,6 +12,7 @@ async function hashPassword(plainPassword) {
     })
     return hash
   } catch (error) {
+    
     console.error('Hashing failed:', err);
     throw error;
   }

@@ -6,6 +6,8 @@ import tire from './../../assets/tire.png'
 import profile from './../../assets/profile.png'
 import lock from './../../assets/lock.png'
 import { Link, useNavigate } from 'react-router-dom'
+import { logInfo, logWarning, logError } from './../../utils/logging.service'
+import { loginUser } from './../../utils/helpers'
 
 function LoginPage() {
   const [login, setLogin] = useState('');
@@ -16,21 +18,13 @@ function LoginPage() {
 
   const handleLogin = async (event) => {
     event.preventDefault();
-    if (!login || !password) {
-      alert('Username/Email and password cannot be blank')
-      return
-    }
-
-    const credentials = { login, password };
-    
-    try {
-      const response = await axios.post(`${baseURL}/api/auth/login/`, credentials, { withCredentials: true });
-      if (response.data.status === 200) {
-        navigate('/buy');
-      }
-      setMessage(response.data.message);
-    } catch (error) {
-      console.log(`Error logging in: ${error.response.data}`);
+    const result = await loginUser({ login, password });
+    if (result.success) {
+      // TODO: send message to buy page.
+      logInfo('Navigating to Buy Page after successful login.');
+      navigate('/buy');
+    } else {
+      setMessage(result.message);
     }
   }
 
@@ -39,7 +33,7 @@ function LoginPage() {
       <form id='login-page-content' onSubmit={handleLogin} autoComplete='off'>
         <img src={tire} id='login-image'/>
         <h2>CarPortal Login</h2>
-        <h3>{message}</h3>
+        <h3 style={{ color: 'red' }}>{message}</h3>
         <div className='login-info'>
           <img src={profile} height='16px' width='16px'/>
           <input type="text" className='login-info-textbox' name='login' value={login} placeholder='Username or email' onChange={(e) => setLogin(e.target.value)} required />

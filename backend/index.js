@@ -2,13 +2,13 @@ const express = require('express')
 const session = require('express-session')
 const cors = require('cors')
 const app = express()
-const PORT = 3000 //TODO: put in env
+const PORT = 3000 // TODO: put in env
 
 const auth = require('./routes/auth');
 
 let sessionConfig = {
   name: 'sessionId',
-  secret: 'keep it secret, keep it safe',
+  secret: 'keep it secret, keep it safe', // TODO: put in env 
   cookie: {
     maxAge: 1000 * 60 * 60 * 24,
     secure: process.env.RENDER ? true : false,
@@ -18,7 +18,7 @@ let sessionConfig = {
   saveUninitialized: false,
 }
 
-const allowedOrigins = ['http://localhost:5173'];
+const allowedOrigins = ['http://localhost:5173']; // TODO: change on deployment
 
 let corsOptions = {
   origin: function (origin, callback) {
