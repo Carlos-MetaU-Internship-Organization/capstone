@@ -1,3 +1,5 @@
+const { logInfo, logWarning, logError } = require('../utils/logging.service');
+
 const express = require('express')
 const auth = express.Router()
 const { hashPassword, verifyPassword } = require('./argon')
@@ -31,6 +33,8 @@ auth.post('/signup', async (req, res) => {
 // Login 
 auth.post('/login', async (req, res) => {
   const { login, password: plainPassword } = req.body;
+
+  logInfo('Login request received', { login })
   const user = await prisma.user.findFirst({
     where: {
       OR: [
@@ -41,10 +45,11 @@ auth.post('/login', async (req, res) => {
   })
 
   if (user && (await verifyPassword(plainPassword, user.password))) {
+    logInfo('User logged in successfully', { userId: user.id });
     req.session.user = user;
     res.json({ status: 200, message: `Good to see you again, ${user.name}` })
   } else {
-    //TODO: use next
+    logWarning('Invalid login attempt', { login })
     res.json({ status: 401, message: 'Invalid credentials.' })
   }
 
