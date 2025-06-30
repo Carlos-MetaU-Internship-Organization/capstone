@@ -15,10 +15,10 @@ search.get('/makes', async (req, res) => {
     }
     );
     logInfo('All makes retrieved successfully')
-    res.send(makes);
+    res.json(makes);
   } catch (error) {
     logError('An error occured', error);
-    res.send(error);
+    res.json(error);
   }
 })
 
@@ -35,10 +35,10 @@ search.get('/:make/models', async (req, res) => {
     })
     //TODO: if invalid make (models.length <= 0), then log and return bad
     logInfo('All models retrieved successfully')
-    res.send(models)
+    res.json(models)
   } catch (error) {
     logError('An error occured', error);
-    res.send(error);
+    res.json(error);
   }
 })
 
@@ -68,10 +68,10 @@ search.get('/:make/:model/:condition/:zip/:distance/:page', async (req, res) => 
     const response = await axios.get(reqLink, headers);
     const data = response.data;
     logInfo(`Successfully retrieved ${data.hitsCount} listings`)
-    res.send(data);
+    res.json(data);
   } catch (error) {
     logError('Error during Search for Listings', error);
-    res.send(error);
+    res.json(error);
   }
 })
 

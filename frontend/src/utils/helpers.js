@@ -19,7 +19,7 @@ export async function loginUser({ login, password }) {
       return { success: false, message: response.data.message };
     }
   } catch (error) {
-    logError('Login HTTP request failed', error);
-    return { success: false, message: 'Login HTTP Request failed'};
+    logError('HTTP request failed when trying to log in', error);
+    return { success: false, message: 'HTTP Request failed when trying to log in'};
   }
 }

@@ -5,9 +5,12 @@ import Header from './Header'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { logInfo, logWarning, logError } from './../../utils/logging.service';
 import axios from 'axios'
 
 function BuyPage() {
+
+  // TODO: display error/warning messages to users
 
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
@@ -38,51 +41,56 @@ function BuyPage() {
       try {
         const response = await axios.get(`${baseURL}/api/search/makes`, { withCredentials: true });
         const makes = response.data;
+        logInfo('Makes successfully retrieved');
         setMakes(makes);
       } catch (error) {
-        // SOMETHING WENT BAD:
-        // TODO: handle by displaying error message to usser.
-        console.log(error);
+        logError('HTTP request failed when trying to fetch makes', error);
       }
     }
     getAllMakes();
-
-  getAllMakes();
   }, [navigate]);
-
-  const handleSearch = async (event) => {
-    event.preventDefault();
-    console.log(event.target);
-
-    // TODO: handle translating ZIP to longitude / latitude
-    const response = await axios.get(`${baseURL}/api/search/${form.make}/${form.model}/${form.condition}/${form.zip}/${form.distance}/1`, { withCredentials: true });
-    console.log('done');
-  }
-
+  
   const handleLogout = () => {
     // call axios backend logout endpoint
   }
-
+  
   const updateForm = async (event) => {
     const elem = event.target.name;
     const value = event.target.value;
     setForm(prev => ({...prev, [elem]: value}));
-
+    
     if (elem === 'make') {
-      handleMakeSelection(value);
+      updateModels(value);
     }
   }
-
-  const handleMakeSelection = async (selection) => {
+  
+  const updateModels = async (selection) => {
     try {
       const response = await axios.get(`${baseURL}/api/search/${selection}/models`, { withCredentials: true });
       const models = response.data;
+      logInfo('Models successfully retrieved');
       setModels(models);
       setForm(prev => ({...prev, model: models[0].name}))
     } catch (error) {
-      // SOMETHING WENT BAD:
-      // TODO: handle by displaying error message to usser.
-      console.log(error);
+      logError('HTTP request failed when trying to fetch models', error);
+    }
+  }
+  
+  const handleSearch = async (event) => {
+    event.preventDefault();
+
+    const { make, model, condition, zip, distance } = form;
+    if (!make || !model || !condition || !zip || !distance) {
+      logWarning('Search failed: Missing fields.');
+      return
+    }
+
+    try {
+      const response = await axios.get(`${baseURL}/api/search/${form.make}/${form.model}/${form.condition}/${form.zip}/${form.distance}/1`, { withCredentials: true });
+      const listings = response.data.records;
+      // navigate to results page here, passing in listings as a state
+    } catch (error) {
+      logError('Listings HTTP request failed', error);
     }
   }
 
@@ -145,9 +153,6 @@ function BuyPage() {
         </div>
       </div>
       <div id='favorites-container'>
-        {/* TODO: THESE SHOULD ALL BE CLICKABLE 
-        AND BE ABLE TO REDIRECT TO THEIR 
-        APPROPRIATE LISTINGS ON A CLICK */}
         <label id='favorites-label'>Your Favorites</label>
         <div id='favorite-cars'>
           <img src={car} height='150px' className='car-image pointer'/>
