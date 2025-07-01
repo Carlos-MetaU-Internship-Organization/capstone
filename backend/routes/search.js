@@ -65,9 +65,8 @@ search.get('/:make/:model/:condition/:zip/:distance/:page', async (req, res) => 
   };
   let reqLink = `https://auto.dev/api/listings?make=${make}&model=${model}&latitude=${latitude}&longitude=${longitude}&radius=${distance}page=${page}`;
   if (condition != 'new&used') {
-    reqLink = reqLink.concat(reqLink, [`&condition[]=${condition}`]);
+    reqLink += `&condition[]=${condition}`;
   }
-  console.log(reqLink);
   try {
     const response = await axios.get(reqLink, headers);
     const data = response.data;
