@@ -87,7 +87,7 @@ function BuyPage() {
 
     try {
       const response = await axios.get(`${baseURL}/api/search/${form.make}/${form.model}/${form.condition}/${form.zip}/${form.distance}/1`, { withCredentials: true });
-      const listings = response.data.records;
+      const listings = response.data;
       navigate('/results', {state: {
         listings,
         makes,

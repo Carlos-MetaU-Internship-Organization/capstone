@@ -6,27 +6,33 @@ import Listing from './Listing'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { logInfo, logWarning, logError } from './../../utils/logging.service';
 import axios from 'axios'
 
 function ResultsPage() {
-  const listingData = useLocation();
-  const listings = listingData.state.listings;
-  const makes = listingData.state.makes;
-  const models = listingData.state.models;
-  const filters = listingData.state.filters;
+  const info = useLocation();
+  const makes = info.state.makes;
+  const filters = info.state.filters;
 
   const navigate = useNavigate();
 
-  const [isSearchFavorited, setIsSearchFavorited] = useState(false);
   const [form, setForm] = useState({
     ...filters,
+    color: '',
     minYear: '',
     maxYear: '',
-    max_mileage: '',
+    maxMileage: '',
     minPrice: '',
-    maxPrice: ''
+    maxPrice: '',
+    sortOption: ''
   })
 
+  const [models, setModels] = useState(info.state.models);
+  const [isSearchFavorited, setIsSearchFavorited] = useState(false);
+  const [listings, setListings] = useState(info.state.listings.records);
+  const [page, setPage] = useState(1);
+  const [searchChange, setSearchChange] = useState(false);
+  
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -41,8 +47,86 @@ function ResultsPage() {
     checkAuth();
   }, [navigate]);
 
+  useEffect(() => {
+    if (form.sortOption != '') {
+      handleSearch();
+    }
+  }, [form.sortOption])
+
   const handleSearchFavoriteClick = (event) => {
     setIsSearchFavorited(prev => !prev);
+  }
+
+  const handlePageChange = (event) => {
+    setPage(prev => prev + 1);
+  }
+
+  const updateModels = async (selection) => {
+    try {
+      const response = await axios.get(`${baseURL}/api/search/${selection}/models`, { withCredentials: true });
+      const models = response.data;
+      logInfo('Models successfully retrieved');
+      setModels(models);
+      setForm(prev => ({...prev, model: models[0].name}))
+    } catch (error) {
+      logError('HTTP request failed when trying to fetch models', error);
+    }
+  }
+
+  const updateForm = async (event) => {
+    if (event.target.name != 'sortOption') {
+      setSearchChange(true);
+    }
+    const elem = event.target.name;
+    const value = event.target.value;
+    setForm(prev => ({...prev, [elem]: value}));
+    
+    if (elem === 'make') {
+      updateModels(value);
+    }
+  }
+
+  const handleSearch = async (event) => {
+    if (event) {
+      event.preventDefault();
+    }
+
+    setPage(1);
+
+    const { make, model } = form;
+    if (!make || !model) {
+      logWarning('Search failed: Missing fields.');
+      return
+    }
+
+    try {
+      const response = await axios.get(`${baseURL}/api/search/`, {
+        params: {
+          make: form.make,
+          model: form.model,
+          condition: form.condition,
+          zip: form.zip,
+          distance: form.distance,
+          color: form.color,
+          minYear: form.minYear,
+          maxYear: form.maxYear,
+          maxMileage: form.maxMileage,
+          minPrice: form.minPrice, 
+          maxPrice: form.maxPrice,
+          sortOption: form.sortOption,
+          page
+        },
+        withCredentials: true
+      });
+      logInfo('Successfully retrieved listings!');
+
+      const listings = response.data.records;
+      setListings(listings);
+
+      setSearchChange(false)
+    } catch (error) {
+      logError('Listings HTTP request failed', error);
+    }
   }
 
   const colors = ['beige', 'black', 'blue', 'brown', 'gold', 'gray', 'green', 'orange', 'purple', 'red', 'silver', 'white', 'yellow'];
@@ -53,18 +137,18 @@ function ResultsPage() {
       <div id='result-page-content'>
         <div id='result-page-form-content' className='translucent'>
           <img id='favorite-search-button' className='pointer' height={25} src={isSearchFavorited ? pinkHeart : heart} onClick={handleSearchFavoriteClick}/>
-          <form id='advanced-filters'>
-            {/* <div className='filter'>
-              <label>New/Used</label>
-              <select className='result-page-filter translucent pointer'>
+          <form id='advanced-filters' onSubmit={handleSearch}>
+            <div className='filter'>
+              <label>Condition</label>
+              <select className='translucent buy-page-user-selection pointer' id="condition-selector" name="condition" onChange={updateForm} required>
                 <option value="new&used">New & Used</option>
                 <option value="new">New</option>
                 <option value="used">Used</option>
               </select>
-            </div> */}
+            </div>
             <div className='filter'>
               <label>Make</label>
-              <select className='result-page-filter translucent pointer' value={form.make}>
+              <select className='filter-input translucent pointer' value={form.make} name='make' onChange={updateForm}>
                 {
                   makes.map(make => {
                     return <option value={make.name}>{make.name}</option>
@@ -74,7 +158,8 @@ function ResultsPage() {
             </div>
             <div className='filter'>
               <label>Model</label>
-              <select className='result-page-filter translucent pointer' value={form.model}>
+              <select className='filter-input translucent pointer' value={form.model} name='model' onChange={updateForm}>
+                {/* <option value="" disabled></option> */}
                 {
                   models.map(model => {
                     return <option value={model.name}>{model.name}</option>
@@ -82,9 +167,20 @@ function ResultsPage() {
                 }
               </select>
             </div>
+              <div id='result-page-location-details'>
+                <label>Distance</label>
+                <select className='translucent pointer' name="distance" onChange={updateForm} required>
+                  <option value="50">50 miles</option>
+                  <option value="250">250 miles</option>
+                  <option value="500">500 miles</option>
+                  <option value="3000">Nationwide</option>
+                </select>
+                <label>ZIP</label>
+                <input className='translucent' type="text" name="zip" defaultValue={form.zip} onChange={updateForm} required/>
+              </div>
             <div className='filter'>
               <label>Color</label>
-              <select className='result-page-filter translucent pointer'>
+              <select className='filter-input translucent pointer' name='color' onChange={updateForm}>
                 <option disabled selected></option>
                 {
                   colors.map(color => {
@@ -95,54 +191,48 @@ function ResultsPage() {
             </div>
             <div className='filter'>
               <label>Min Year</label>
-              <select className='result-page-filter translucent pointer'>
-                <option disabled selected></option>
-              </select>
+              <input type='text' className='filter-input translucent' name='minYear' onChange={updateForm}/>
             </div>
             <div className='filter'>
               <label>Max Year</label>
-              <select className='result-page-filter translucent pointer'>
-                <option disabled selected></option>
-              </select>
+              <input type='text' className='filter-input translucent' name='maxYear' onChange={updateForm}/>
             </div>
             <div className='filter'>
-              <label>Mileage</label>
-              <select className='result-page-filter translucent pointer'>
-                <option disabled selected></option>
-              </select>
+              <label>Max # of Miles</label>
+              <input type='text' className='filter-input translucent' name='maxMileage' onChange={updateForm}/>
             </div>
             <div className='filter'>
               <label>Min Price</label>
-              <select className='result-page-filter translucent pointer'>
-                <option disabled selected></option>
-              </select>
+              <input type='text' className='filter-input translucent' name='minPrice' onChange={updateForm}/>
             </div>
             <div className='filter'>
               <label>Max Price</label>
-              <select className='result-page-filter translucent pointer'>
-                <option disabled selected></option>
-              </select>
+              <input type='text' className='filter-input translucent' name='maxPrice' onChange={updateForm}/>
             </div>
+            {
+              searchChange && (<button id='result-page-search-button' type='submit'>Search</button>)
+            }
           </form>
         </div>
         <div id='result-page-listings-content'>
-          <select className='translucent pointer' id='sort-menu'>
+          <select className='translucent pointer' id='sort-menu' name='sortOption' onChange={updateForm}>
             <option value="Sort By:" disabled selected>Sort By: </option>
-            <option value="Lowest Price">Lowest Price</option>
-            <option value="Highest Price">Highest Price</option>
-            <option value="Nearest Location">Nearest Location</option>
-            <option value="Newest Year">Newest Year</option>
-            <option value="Oldest Year">Oldest Year</option>
-            <option value="Newest Listed">Newest Listed</option>
-            <option value="Oldest Listed">Oldest Listed</option>
+            <option value="price:asc">Price (Least Expensive First)</option>
+            <option value="price:desc">Price (Most Expensive First)</option>
+            <option value="distance:asc">Distance (Nearest First)</option>
+            <option value="year:desc">Year (Newest First)</option>
+            <option value="year:asc">Year (Oldest First)</option>
+            <option value="mileage:asc">Mileage (Lowest First)</option>
+            <option value="created_at:desc">Time on Market (Shortest First)</option>
+            <option value="created_at:asc">Time on Market (Longest First)</option>
           </select>
           <div id='car-listing-list'>
             {
               listings && listings.map(listing => {
-                console.log(listing);
                 return <Listing listingData={listing} />
               })
             }
+            <button id='load-more-button' className='translucent pointer'>Load More</button>
           </div>
         </div>
       </div>
