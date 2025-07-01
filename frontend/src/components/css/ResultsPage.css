@@ -1,0 +1,68 @@
+#results-page {
+  min-width: 99vw;
+  min-height: 100vh;
+  background-image: url('./../../assets/gradient.jpeg');
+}
+
+#result-page-content {
+  display: flex;
+  padding: 5vw;
+  gap: 20vw;
+  justify-content: space-around;
+}
+
+#result-page-form-content {
+  display: flex;
+  flex-direction: column;
+  padding: 2vw;
+  border-radius: 15px;
+  height: 75vh;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  width: 50%;
+}
+
+#favorite-search-button {
+  display: flex;
+  background-color: transparent;
+  align-self: end;
+}
+
+#advanced-filters {
+  display: flex;
+  flex-direction: column;
+  padding: 1vh 1vw;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.filter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.result-page-filter {
+  border: none;
+  border-radius: 10px;
+}
+
+#result-page-listings-content {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: 2vh;
+}
+
+#car-listing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#sort-menu {
+  border: none;
+  border-radius: 10px;
+  align-self: end;
+  padding: .5vh .5vw;
+  margin-right: 50px;
+}

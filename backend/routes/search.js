@@ -63,7 +63,10 @@ search.get('/:make/:model/:condition/:zip/:distance/:page', async (req, res) => 
   const headers = {
     Authorization: `Bearer ${apiKey}`
   };
-  const reqLink = `https://auto.dev/api/listings?make=${make}&model=${model}&condition[]=${condition}&latitude=${latitude}&longitude=${longitude}&radius=${distance}page=${page}`;
+  let reqLink = `https://auto.dev/api/listings?make=${make}&model=${model}&latitude=${latitude}&longitude=${longitude}&radius=${distance}page=${page}`;
+  if (condition != 'new&used') {
+    reqLink += `&condition[]=${condition}`;
+  }
   try {
     const response = await axios.get(reqLink, headers);
     const data = response.data;
