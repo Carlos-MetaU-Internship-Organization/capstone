@@ -15,7 +15,7 @@ function BuyPage() {
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
   const [form, setForm] = useState({
-    condition: 'new',
+    condition: 'new&used',
     make: '',
     model: '',
     distance: '50',
@@ -88,7 +88,12 @@ function BuyPage() {
     try {
       const response = await axios.get(`${baseURL}/api/search/${form.make}/${form.model}/${form.condition}/${form.zip}/${form.distance}/1`, { withCredentials: true });
       const listings = response.data.records;
-      // navigate to results page here, passing in listings as a state
+      navigate('/results', {state: {
+        listings,
+        makes,
+        models,
+        filters: form
+      }});
     } catch (error) {
       logError('Listings HTTP request failed', error);
     }
@@ -101,8 +106,9 @@ function BuyPage() {
         <div id='buy-search'>
           <form className='translucent' id='filter-search' onSubmit={handleSearch}>
             <div id='filters'>
-              <label>New/Used</label>
+              <label>Condition</label>
               <select className='translucent buy-page-user-selection pointer' id="condition-selector" name="condition" onChange={updateForm} required>
+                <option value="new&used">New & Used</option>
                 <option value="new">New</option>
                 <option value="used">Used</option>
               </select>

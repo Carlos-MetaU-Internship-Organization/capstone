@@ -1,0 +1,27 @@
+.car-listing {
+  border-radius: 10px;
+  display: flex;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  /* height: 250px; */
+  border-radius: 15px;
+}
+
+.car-listing-image {
+  height: 100%;
+  width: 60%;
+  border-radius: 15px;
+  object-fit: cover;
+}
+
+.car-listing-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 2vw;
+  height: 100%;
+  flex-grow: 1;
+}
+
+#favorite-listing-button {
+  align-self: end;
+}

@@ -20,7 +20,7 @@ function Header() {
       <img src={tire} className='header-image'/>
       <h2 id='title'>CarPortal</h2>
       <div id='redirect-links'>
-        <h3 className='header-buttons pointer' id='buy-redirect' style={{textDecoration: 'underline'}} onClick={handleRedirectClick}>Buy</h3>
+        <h3 className='header-buttons pointer' id='buy-redirect' onClick={handleRedirectClick}>Buy</h3>
         <h3 className='header-buttons pointer' id='sell-redirect' onClick={handleRedirectClick}>Sell</h3>
       </div>
       <h3 className='header-buttons pointer' id='logout' onClick={handleLogout}>Logout</h3>

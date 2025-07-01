@@ -4,6 +4,7 @@ import LoginPage from './components/jsx/LoginPage'
 import SignupPage from './components/jsx/SignupPage'
 import BuyPage from './components/jsx/BuyPage'
 import SellPage from './components/jsx/SellPage'
+import ResultsPage from './components/jsx/ResultsPage'
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
         <Route path="/signup" element={<SignupPage/>} />
         <Route path="/buy" element={<BuyPage />} />
         <Route path="/sell" element={<SellPage />} />
+        <Route path="/results" element={<ResultsPage />} />
       </Routes>
     </Router>
    </div>

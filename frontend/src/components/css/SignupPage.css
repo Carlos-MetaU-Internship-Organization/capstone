@@ -3,14 +3,13 @@
 }
 
 #signup-page-header {
-  box-sizing: border-box;
   height: 8vh;
   display: flex;
   align-items: center;
   gap: 1vw;
-  background-image: url('./../../assets/gradient.jpeg');
-  padding-left: 1vw;
+  padding: .5vh .5vw .5vh 1vw;
   border-bottom: 3px solid black;
+  background-image: url('./../../assets/gradient.jpeg');
 }
 
 #signup-page-header-image {
@@ -44,7 +43,6 @@
 }
 
 .signup-info {
-  box-sizing: border-box;
   padding-left: 1vw;
   display: flex;
   gap: 10px;
