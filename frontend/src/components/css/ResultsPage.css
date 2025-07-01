@@ -35,15 +35,31 @@
   justify-content: space-between;
 }
 
+#result-page-location-details {
+  display: flex;
+  gap: .5vw;
+}
+
+#result-page-location-details > select,
+#result-page-location-details > input {
+  width: 50%;
+  border: none;
+  border-radius: 10px;
+}
+
 .filter {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.result-page-filter {
+.filter-input {
   border: none;
   border-radius: 10px;
+}
+
+#result-page-search-button {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 #result-page-listings-content {

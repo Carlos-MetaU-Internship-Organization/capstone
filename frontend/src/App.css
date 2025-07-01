@@ -6,6 +6,10 @@
   cursor: default;
 }
 
+input {
+  cursor: text;
+}
+
 input:focus,
 button:focus,
 select:focus {
