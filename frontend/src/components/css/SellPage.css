@@ -1,0 +1,106 @@
+#sell-page {
+  width: 100vw;
+  height: 100vh;
+  background-image: url('./../../assets/gradient.jpeg');
+}
+
+.translucent {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+#listing-options {
+  display: flex;
+  flex-direction: column;
+  gap: .5vh;
+  padding: 1vh 1vw;
+}
+
+#listing-option {
+  display: flex;
+  flex-direction: column;
+}
+
+#sell-content {
+  display: flex;
+  justify-content: center;
+  height: 62vh;
+}
+
+#sell-search {
+  width: 100vw;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#new-listing-form {
+  border-radius: 10px;
+  display: flex;
+  gap: 5.5vw;
+  padding: 2vh 2vw;
+}
+
+#listings-label {
+  margin-left: 4vw;
+  font-size: xx-large;
+}
+
+#listings-cars {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.listings-car-image {
+  border-radius: 25px;
+}
+
+#create-listing-button:hover {
+  border: 1px solid;
+}
+
+#price-helper-container {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 30px;
+  gap: 20px;
+  border-radius: 10px;
+}
+
+#price-helper-button {
+  width: 50%
+}
+
+#finalize-listing {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#description-input {
+  height: 200px;
+  width: 400px;
+  resize: none;
+}
+
+#description-input:focus {
+  outline: none;
+}
+
+.new-listing-input {
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+input::file-selector-button {
+  border: none;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  width: 50%;
+}

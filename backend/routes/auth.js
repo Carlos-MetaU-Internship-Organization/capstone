@@ -9,7 +9,7 @@ const prisma = new PrismaClient()
 
 // Signup
 auth.post('/signup', async (req, res) => {
-  const { name, email, phoneNumber, username, password: plainPassword } = req.body;
+  const { name, email, phoneNumber, zip, username, password: plainPassword } = req.body;
   const user = await prisma.user.findFirst({
     where: {
       OR: [
@@ -21,7 +21,7 @@ auth.post('/signup', async (req, res) => {
 
   if (!user) {
     const hash = await hashPassword(plainPassword);
-    const newUser = {name, username, email, phoneNumber, password: hash};
+    const newUser = {name, username, email, zip, phoneNumber, password: hash};
     await prisma.user.create({data: newUser});
     res.json({ status: 200, message: `Welcome, ${name}`});
   } else {

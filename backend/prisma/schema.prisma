@@ -4,6 +4,8 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+//TODO: incorporate indexing
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,10 +18,12 @@ datasource db {
 model User {
   id          Int      @id @default(autoincrement())
   name        String
-  username    String?   @unique
-  email       String?   @unique
-  phoneNumber String?   @unique
+  username    String   @unique
+  phoneNumber String
+  zip         String
+  email       String   @unique
   password    String
+  listings    Listing[]
 }
 
 model Make {
@@ -29,8 +33,26 @@ model Make {
 }
 
 model Model {
-  id       Int      @id @default(autoincrement())
-  name     String
-  make     Make     @relation(fields: [makeName], references: [name])
-  makeName String
+  id          Int      @id @default(autoincrement())
+  name        String
+  make        Make     @relation(fields: [makeName], references: [name])
+  makeName    String
+}
+
+model Listing {
+  id          Int      @id @default(autoincrement())
+  condition   String
+  make        String
+  model       String
+  year        String
+  color       String
+  mileage     String
+  vin         String
+  description String
+  images      String[]
+  price       String
+  sold        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
 }
