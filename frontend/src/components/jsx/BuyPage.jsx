@@ -6,6 +6,7 @@ import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
+import { fetchListings } from '../../utils/helpers'
 import axios from 'axios'
 
 function BuyPage() {
@@ -76,28 +77,33 @@ function BuyPage() {
     }
   }
   
-  const handleSearch = async (event) => {
-    event.preventDefault();
+ const handleSearch = async (event) => {
+   event.preventDefault();
 
-    const { make, model, condition, zip, distance } = form;
-    if (!make || !model || !condition || !zip || !distance) {
-      logWarning('Search failed: Missing fields.');
-      return
-    }
+   const { make, model, condition, zip, distance } = form;
+   if (!make || !model || !condition || !zip || !distance) {
+     logWarning('Search failed: Missing fields.');
+     return
+   }
 
-    try {
-      const response = await axios.get(`${baseURL}/api/search/${form.make}/${form.model}/${form.condition}/${form.zip}/${form.distance}/1`, { withCredentials: true });
-      const listings = response.data;
-      navigate('/results', {state: {
-        listings,
-        makes,
-        models,
-        filters: form
-      }});
-    } catch (error) {
-      logError('Listings HTTP request failed', error);
-    }
-  }
+   const params = {
+     make,
+     model,
+     condition,
+     zip,
+     distance
+   }
+
+   fetchListings(params).then(data => {
+     navigate('/results', {state: {
+       listings: data,
+       makes,
+       models,
+       filters: form
+     }});
+   })
+ }
+
 
   return (
     <div id='buy-page'>
