@@ -100,6 +100,7 @@ search.get('/', async (req, res) => {
     Authorization: `Bearer ${apiKey}`
   };
   let reqLink = `https://auto.dev/api/listings?make=${make}&model=${model}&latitude=${latitude}&longitude=${longitude}&radius=${distance}&page=${page}`;
+  logInfo(`Making request to: ${reqLink}`)
 
   if (condition != 'new&used') {
     reqLink += `&condition[]=${condition}`;
