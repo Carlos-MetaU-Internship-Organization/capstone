@@ -82,3 +82,7 @@
   padding: .5vh .5vw;
   margin-right: 50px;
 }
+
+#load-more-button:hover {
+  border: 1px solid;
+}

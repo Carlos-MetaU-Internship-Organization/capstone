@@ -23,3 +23,18 @@ export async function loginUser({ login, password }) {
     return { success: false, message: 'HTTP Request failed when trying to log in'};
   }
 }
+
+export async function fetchListings(params) {
+  try {
+    const response = await axios.get(`${baseURL}/api/search/`, {
+      params,
+      withCredentials: true
+    });
+    logInfo('Successfully retrieved listings!');
+
+    const matching_listings = response.data;
+    return matching_listings;
+  } catch (error) {
+    logError('Listings HTTP request failed', error);
+  }
+}
