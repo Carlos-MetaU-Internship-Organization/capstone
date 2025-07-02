@@ -30,7 +30,10 @@ function ResultsPage() {
 
   const [models, setModels] = useState(info.state.models);
   const [isSearchFavorited, setIsSearchFavorited] = useState(false);
-  const [listings, setListings] = useState(info.state.listings.records);
+  const [listingsInfo, setListingsInfo] = useState({
+    listings: info.state.listings.records,
+    totalListingsCount: info.state.listings.totalCount 
+  });
   const [page, setPage] = useState(1);
   const [searchChange, setSearchChange] = useState(false);
   
@@ -118,11 +121,12 @@ function ResultsPage() {
     }
 
     fetchListings(params).then(data => {
-      const matching_listings = data.records;
+      const listings = data.records;
+      const listingCount = data.totalCount;
       if (page === 1) {
-        setListings(matching_listings);
+        setListingsInfo(prev => ({...prev, listings: listings, totalListingsCount: listingCount}));
       } else {
-        setListings(prev => [...prev, ...matching_listings])
+        setListingsInfo(prev => ({...prev, listings: [...prev.listings, ...listings], totalListingsCount: listingCount }))
       }
   
       setSearchChange(false);
@@ -228,11 +232,13 @@ function ResultsPage() {
           </select>
           <div id='car-listing-list'>
             {
-              listings && listings.map(listing => {
+              listingsInfo.listings && listingsInfo.listings.map(listing => {
                 return <Listing listingData={listing} />
               })
             }
-            <button id='load-more-button' className='translucent pointer' onClick={handlePageChange}>Load More</button>
+            {
+              (page * 20 < listingsInfo.totalListingsCount) && (<button id='load-more-button' className='translucent pointer' onClick={handlePageChange}>Load More</button>)
+            }
           </div>
         </div>
       </div>
