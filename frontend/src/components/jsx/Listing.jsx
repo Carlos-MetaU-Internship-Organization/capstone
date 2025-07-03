@@ -7,8 +7,10 @@ function Listing({ listingData }) {
 
   // TODO: check if listing is already favorited from backend and set this to intial val
   const [isListingFavorited, setIsListingFavorited] = useState(false);
+
   const carTitle = `${listingData.year} ${listingData.make} ${listingData.model}`
   const carLocation = `${listingData.city}, ${listingData.state}`
+  
   return (
     <div className='car-listing translucent'>
       <img className='car-listing-image pointer' src={listingData.primaryPhotoUrl}/>

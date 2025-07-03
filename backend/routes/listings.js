@@ -20,7 +20,11 @@ listings.get('/', async (req, res) => {
 
 listings.post('/user/', async (req, res) => {
   const userId = parseInt(req.session.user.id);
-  // const { condition, make, model, year, color, mileage, vin, description, images, price } = req.body;
+  const { condition, make, model, year, color, mileage, vin, description, images, price } = req.body;
+  if (!condition || !make || !model || !year || !color || !mileage || !vin || !description || images.length === 0 || !price) {
+    logWarning('Listing creation failed: Missing fields.');
+    res.json({ status: 400, message: 'Missing fields'})
+  }
   // const newListing = req.body;
   // TODO: validate input
   logInfo(`Request to add a local listing for User: ${userId} received`);

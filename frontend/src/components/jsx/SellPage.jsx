@@ -26,9 +26,23 @@ function SellPage() {
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
   const [form, setForm] = useState(initialFormState);
-  const [listings, setListings] = useState()
+  const [listings, setListings] = useState([])
+  const [page, setPage] = useState(1);
 
   const navigate = useNavigate();
+
+  const fetchUserListings = async () => {
+    try {
+      const response = await axios.get(`${baseURL}/api/listings/user/`, { withCredentials: true });
+      const data = response.data;
+      logInfo('Active listings successfully retrieved');
+      if (data.length > 0) {
+        setListings(data);
+      }
+    } catch (error) {
+      logError('Something went wrong when trying to fetch your active listings', error);
+    }
+  }
 
   // ON BOOT
   useEffect(() => {
@@ -44,6 +58,9 @@ function SellPage() {
     }
     checkAuth();
 
+  }, [navigate]);
+
+  useEffect(() => {
     const getAllMakes = async () => {
       try {
         const response = await axios.get(`${baseURL}/api/search/makes`, { withCredentials: true });
@@ -55,7 +72,9 @@ function SellPage() {
       }
     }
     getAllMakes();
-  }, []);
+
+    fetchUserListings();
+  }, [])
   
   const handleLogout = () => {
     // call axios backend logout endpoint
@@ -87,7 +106,7 @@ function SellPage() {
     event.preventDefault();
 
     const { condition, make, model, year, color, mileage, vin, description, images, price } = form;
-    if (!condition || !make || !model || !year || !color || !mileage || !vin || !description || !images || !price) {
+    if (!condition || !make || !model || !year || !color || !mileage || !vin || !description || images.length === 0 || !price) {
       logWarning('Search failed: Missing fields.');
       return
     }
@@ -105,9 +124,14 @@ function SellPage() {
       price
     }
 
-    const response = await axios.post(`${baseURL}/api/listings/user/`, listingInfo, { withCredentials: true });
-    const data = response.data;
-    setForm(initialFormState);
+    try {
+      await axios.post(`${baseURL}/api/listings/user/`, listingInfo, { withCredentials: true });
+      logInfo('New listing created successfully');
+      setForm(initialFormState);
+      fetchUserListings();
+    } catch (error) {
+      logError('Something went wrong when trying to create a new listing', error);
+    }
   }
 
   const handleFileUpload = async (event) => {
@@ -124,8 +148,12 @@ function SellPage() {
     setForm(prev => ({...prev, images}))
   }
 
-  const fetchUserListings = async () => {
-
+  const handlePageChange = (event) => {
+    if (event.target.id === 'flipped-arrow') {
+      setPage(prev => prev - 1);
+    } else {
+      setPage(prev => prev + 1);
+    }
   }
 
   const colors = ['beige', 'black', 'blue', 'brown', 'gold', 'gray', 'green', 'orange', 'purple', 'red', 'silver', 'white', 'yellow'];
@@ -133,98 +161,109 @@ function SellPage() {
   return (
     <div id='sell-page'>
       <Header />
-      <div id='sell-content'>
-        <div id='sell-search'>
-          <form className='translucent' id='new-listing-form' onSubmit={handleListingCreation}>
-            <div id='listing-options'>
+      <div id='sell-page-container'>
+        <div id='sell-content'>
+          <div id='sell-search'>
+            <form className='translucent' id='new-listing-form' onSubmit={handleListingCreation}>
+              <div id='listing-options'>
+                  <div id='listing-option'>
+                    <label>Condition</label>
+                    <select className='translucent new-listing-input pointer' id="condition-selector" value={form.condition} name="condition" onChange={updateForm} required>
+                      <option value="" disabled selected></option>
+                      <option value="new">New</option>
+                      <option value="used">Used</option>
+                    </select>
+                  </div>
+                  <div id='listing-option'>
+                    <label>Make</label>
+                    <select className='translucent new-listing-input pointer' id="make-selector" value={form.make} name="make" onChange={updateForm} required>
+                      <option value="" disabled selected></option>
+                      {
+                        makes.map(make => {
+                          return <option value={make.name}>{make.name}</option>
+                        })
+                      }
+                    </select>
+                  </div>
+                  <div id='listing-option'>
+                    <label>Model</label>
+                    <select className='translucent new-listing-input pointer' id="model-selector" value={form.model} name="model" onChange={updateForm} required>
+                      <option value="" disabled selected></option>
+                      {
+                        models.length > 0 && models.map(model => {
+                          return <option value={model.name}>{model.name}</option>
+                        })
+                      }
+                    </select>
+                  </div>
+                  <div id='listing-option'>
+                    <label>Year</label>
+                    <input type='number' className='new-listing-input translucent' value={form.year} name='year' onChange={updateForm} required/>
+                  </div>
+                  <div id='listing-option'>
+                    <label>Color</label>
+                    <select className='new-listing-input translucent pointer' value={form.color} name='color' onChange={updateForm} required>
+                      <option disabled selected></option>
+                      {
+                        colors.map(color => {
+                          return <option value={color}>{(color.charAt(0).toUpperCase()).concat(color.slice(1))}</ option>
+                        })
+                      }
+                    </select>
+                  </div>
+                  <div id='listing-option'>
+                    <label>Mileage</label>
+                    <input type='number' inputmode='numeric' className='new-listing-input translucent' value={form.mileage} name='mileage' onChange={updateForm} required/>
+                  </div>
+                  <div id='listing-option'>
+                    <label>VIN</label>
+                    <input type='text' className='new-listing-input translucent' value={form.vin} name='vin' onChange={updateForm} required/>
+                  </div>
+                </div>
+              <div id='finalize-listing'>
                 <div id='listing-option'>
-                  <label>Condition</label>
-                  <select className='translucent new-listing-input pointer' id="condition-selector" value={form.condition} name="condition" onChange={updateForm} required>
-                    <option value="" disabled selected></option>
-                    <option value="new">New</option>
-                    <option value="used">Used</option>
-                  </select>
+                  <label>Description</label>
+                  <textarea id="description-input" className='new-listing-input translucent' value={form.description} name='description' onChange={updateForm} required />
                 </div>
                 <div id='listing-option'>
-                  <label>Make</label>
-                  <select className='translucent new-listing-input pointer' id="make-selector" value={form.make} name="make" onChange={updateForm} required>
-                    <option value="" disabled selected></option>
-                    {
-                      makes.map(make => {
-                        return <option value={make.name}>{make.name}</option>
-                      })
-                    }
-                  </select>
+                  <label>Upload Images</label>
+                  <input type="file" id='image-upload-input' className='new-listing-input translucent pointer' onChange={handleFileUpload} multiple required />
                 </div>
                 <div id='listing-option'>
-                  <label>Model</label>
-                  <select className='translucent new-listing-input pointer' id="model-selector" value={form.model} name="model" onChange={updateForm} required>
-                    <option value="" disabled selected></option>
-                    {
-                      models.length > 0 && models.map(model => {
-                        return <option value={model.name}>{model.name}</option>
-                      })
-                    }
-                  </select>
+                  {/* TODO: after submission, reset images */}
+                  <label>Asking Price</label>
+                  <input type="number" id='asking-price-input' className='new-listing-input translucent' value={form.price} name='price' onChange={updateForm} required/>
                 </div>
-                <div id='listing-option'>
-                  <label>Year</label>
-                  <input type='number' className='new-listing-input translucent' value={form.year} name='year' onChange={updateForm} required/>
-                </div>
-                <div id='listing-option'>
-                  <label>Color</label>
-                  <select className='new-listing-input translucent pointer' value={form.color} name='color' onChange={updateForm} required>
-                    <option disabled selected></option>
-                    {
-                      colors.map(color => {
-                        return <option value={color}>{(color.charAt(0).toUpperCase()).concat(color.slice(1))}</ option>
-                      })
-                    }
-                  </select>
-                </div>
-                <div id='listing-option'>
-                  <label>Mileage</label>
-                  <input type='number' inputmode='numeric' className='new-listing-input translucent' value={form.mileage} name='mileage' onChange={updateForm} required/>
-                </div>
-                <div id='listing-option'>
-                  <label>VIN</label>
-                  <input type='text' className='new-listing-input translucent' value={form.vin} name='vin' onChange={updateForm} required/>
-                </div>
+                <button className='translucent' id='create-listing-button' type='submit'>Create Listing</button>
               </div>
-            <div id='finalize-listing'>
-              <div id='listing-option'>
-                <label>Description</label>
-                <textarea id="description-input" className='new-listing-input translucent' value={form.description} name='description' onChange={updateForm} required />
-              </div>
-              <div id='listing-option'>
-                <label>Upload Images</label>
-                <input type="file" id='image-upload-input' className='new-listing-input translucent' value={form.images} onChange={handleFileUpload} multiple required />
-              </div>
-              <div id='listing-option'>
-                {/* TODO: after submission, reset images */}
-                <label>Asking Price</label>
-                <input type="number" id='asking-price-input' className='new-listing-input translucent' name='price' onChange={updateForm} required/>
-              </div>
-              <button className='translucent' id='create-listing-button' type='submit'>Create Listing</button>
+            </form>
+            <div id='price-helper-container' className='translucent'>
+              <p>Don't know what to price your car?</p>
+              <button id='price-helper-button' className='translucent'>Click Me</button>
             </div>
-          </form>
-          <div id='price-helper-container' className='translucent'>
-            <p>Don't know what to price your car?</p>
-            <button id='price-helper-button' className='translucent'>Click Me</button>
           </div>
         </div>
-      </div>
-      <div id='listings-container'>
-        <label id='listings-label'>Your Listings</label>
-        <div id='listings-cars'>
-          <img src={car} height='150px' className='listings-car-image pointer'/>
-          <img src={car} height='150px' className='listings-car-image pointer'/>
-          <img src={car} height='150px' className='listings-car-image pointer'/>
-          <img src={car} height='150px' className='listings-car-image pointer'/>
-          <img src={car} height='150px' className='listings-car-image pointer'/>
-          {/* Button that fetches the next 4 Favorited cars */}
-          <img src={arrow} height='50px' className='pointer'/>
-        </div>
+        {
+          listings.length > 0 &&
+          (
+            <div id='listings-container'>
+              <label id='listings-label'>Your Listings</label>
+              <div id='listings-cars'>
+                {
+                  page > 1 && (<img src={arrow} height='50px' id='flipped-arrow' className='pointer' onClick={handlePageChange}/>) 
+                }
+                {
+                  listings.slice((4 * (page - 1)), (4 * page)).map(listing => {
+                    return <img key={listing.id} src={listing.images[0]} className='listing-image pointer'/>
+                  })
+                }
+                {
+                  listings.length > page * 4 && (<img src={arrow} height='50px' className='pointer' onClick={handlePageChange}/>)
+                }
+              </div>
+            </div>
+          )
+        }
       </div>
     </div>
   )
