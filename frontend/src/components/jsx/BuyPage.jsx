@@ -49,7 +49,7 @@ function BuyPage() {
       }
     }
     getAllMakes();
-  }, [navigate]);
+  }, []);
   
   const handleLogout = () => {
     // call axios backend logout endpoint

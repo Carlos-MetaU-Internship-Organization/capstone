@@ -1,0 +1,130 @@
+#sell-page {
+  display: flex;
+  flex-direction: column;
+  min-width: 99vw;
+  min-height: 100vh;
+  background-image: url('./../../assets/gradient.jpeg');
+}
+
+.translucent {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+#listing-options {
+  display: flex;
+  flex-direction: column;
+  gap: .5vh;
+  padding: 1vh 1vw;
+}
+
+#listing-option {
+  display: flex;
+  flex-direction: column;
+}
+
+#sell-page-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex-grow: 1;
+}
+
+#sell-content {
+  display: flex;
+  justify-content: center;
+  /* height: 62vh; */
+  padding: 50px;
+}
+
+#sell-search {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#new-listing-form {
+  border-radius: 10px;
+  display: flex;
+  gap: 5.5vw;
+  padding: 2vh 2vw;
+}
+
+#listings-container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 100px;
+  align-items: center;
+}
+
+
+#listings-label {
+  font-size: xx-large;
+}
+
+#listings-cars {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 0;
+}
+
+#create-listing-button:hover {
+  border: 1px solid;
+}
+
+#price-helper-container {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 30px;
+  margin: 100px;
+  gap: 20px;
+  border-radius: 10px;
+}
+
+#price-helper-button {
+  width: 50%
+}
+
+#finalize-listing {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#description-input {
+  height: 200px;
+  width: 400px;
+  resize: none;
+}
+
+#description-input:focus {
+  outline: none;
+}
+
+.new-listing-input {
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+input::file-selector-button {
+  border: none;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  width: 50%;
+}
+
+.listing-image {
+  width: 15vw;
+  border-radius: 25px;
+  margin: 10px 40px 0px;
+}
+
+#flipped-arrow {
+  transform: scaleX(-1);
+}

@@ -7,6 +7,7 @@ const PORT = 3000 // TODO: put in env
 const auth = require('./routes/auth');
 // const populate = require('./routes/populate_db');
 const search = require('./routes/search')
+const listings = require('./routes/listings')
 
 let sessionConfig = {
   name: 'sessionId',
@@ -35,11 +36,12 @@ let corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(session(sessionConfig))
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 app.use('/api/auth', auth);
 // app.use('/api/populate', populate);
 app.use('/api/search', search);
+app.use('/api/listings', listings);
 
 app.listen(PORT, () => {
   console.log(`Server is listening on ${PORT}`)

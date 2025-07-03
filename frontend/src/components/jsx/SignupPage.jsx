@@ -7,6 +7,7 @@ import profile from './../../assets/profile.png'
 import lock from './../../assets/lock.png'
 import phone from './../../assets/phone.png'
 import mail from './../../assets/mail.png'
+import pin from './../../assets/pin.png'
 import { Link, useNavigate } from 'react-router-dom'
 
 function SignupPage() {
@@ -16,6 +17,7 @@ function SignupPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [zip, setZip] = useState('');
   const [message, setMessage] = useState('');
 
   const navigate = useNavigate();
@@ -24,7 +26,7 @@ function SignupPage() {
     event.preventDefault();
 
     const fullName = `${firstName} ${lastName}`;
-    const credentials = { name: fullName, email, phoneNumber, username, password };
+    const credentials = { name: fullName, email, phoneNumber, zip, username, password };
 
     try {
       const response = await axios.post(`${baseURL}/api/auth/signup`, credentials);
@@ -59,6 +61,10 @@ function SignupPage() {
           <div className='signup-info'>
             <img src={phone} height='16px' width='16px'/>
             <input type="text" className='signup-info-textbox' name='phone-number' value={phoneNumber} placeholder='Phone Number' onChange={(e) => setPhoneNumber(e.target.value)} required />
+          </div>
+          <div className='signup-info'>
+            <img src={pin} height='16px' width='16px'/>
+            <input type="text" className='signup-info-textbox' name='zip' value={zip} placeholder='ZIP' onChange={(e) => setZip(e.target.value)} required />
           </div>
           <div className='signup-info'>
             <img src={profile} height='16px' width='16px'/>
