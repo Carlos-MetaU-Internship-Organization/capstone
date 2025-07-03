@@ -5,7 +5,6 @@ const app = express()
 const PORT = 3000 // TODO: put in env
 
 const auth = require('./routes/auth');
-// const populate = require('./routes/populate_db');
 const search = require('./routes/search')
 const listings = require('./routes/listings')
 
@@ -39,7 +38,6 @@ app.use(session(sessionConfig))
 app.use(express.json({ limit: '50mb' }));
 
 app.use('/api/auth', auth);
-// app.use('/api/populate', populate);
 app.use('/api/search', search);
 app.use('/api/listings', listings);
 

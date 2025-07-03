@@ -1,0 +1,19 @@
+#seller-listings-page {
+  display: flex;
+  flex-direction: column;
+  min-width: 99vw;
+  min-height: 100vh;
+  background-image: url('./../../assets/gradient.jpeg');
+}
+
+#seller-listings-title {
+  text-align: center;
+}
+
+#seller-listings {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 50px;
+  padding: 20px;
+}

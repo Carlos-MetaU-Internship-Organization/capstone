@@ -1,0 +1,47 @@
+.seller-listing {
+  height: 500px;
+  width: 340px;
+  padding: 40px;
+  border-radius: 25px;
+}
+
+.seller-listing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: space-around;
+}
+
+.seller-listing-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.seller-listing-info img {
+  height: 20px;
+}
+
+.seller-listing-image {
+  width: 240px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.seller-listing-info-container {
+  height: 60%;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.edit-sold-container {
+  display: flex;
+  justify-content: space-around;
+  border-radius: 10px;
+}
