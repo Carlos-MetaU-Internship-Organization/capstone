@@ -1,16 +1,15 @@
 import './../css/SellPage.css'
-import car from './../../assets/car.jpg'
 import arrow from './../../assets/arrow.png'
 import Header from './Header'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
 import axios from 'axios'
 
 function SellPage() {
 
-  const initialFormState = {
+  let initialFormState = {
     condition: '',
     make: '',
     model: '',
@@ -22,6 +21,8 @@ function SellPage() {
     images: [],
     price: ''
   }
+
+  const info = useLocation();
 
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
@@ -41,6 +42,17 @@ function SellPage() {
       }
     } catch (error) {
       logError('Something went wrong when trying to fetch your active listings', error);
+    }
+  }
+
+  const updateModels = async (selection) => {
+    try {
+      const response = await axios.get(`${baseURL}/api/search/${selection}/models`, { withCredentials: true });
+      const models = response.data;
+      logInfo('Models successfully retrieved');
+      setModels(models);
+    } catch (error) {
+      logError('HTTP request failed when trying to fetch models', error);
     }
   }
 
@@ -73,6 +85,12 @@ function SellPage() {
     }
     getAllMakes();
 
+    if (info.state) {
+      initialFormState = info.state.data;
+      updateModels(initialFormState.make);
+      setForm(initialFormState)
+    }
+
     fetchUserListings();
   }, [])
   
@@ -88,17 +106,6 @@ function SellPage() {
     
     if (elem === 'make') {
       updateModels(value);
-    }
-  }
-  
-  const updateModels = async (selection) => {
-    try {
-      const response = await axios.get(`${baseURL}/api/search/${selection}/models`, { withCredentials: true });
-      const models = response.data;
-      logInfo('Models successfully retrieved');
-      setModels(models);
-    } catch (error) {
-      logError('HTTP request failed when trying to fetch models', error);
     }
   }
   
@@ -156,6 +163,10 @@ function SellPage() {
     }
   }
 
+  const redirectToListingsPage = () => {
+    navigate('/my-listings')
+  }
+
   const colors = ['beige', 'black', 'blue', 'brown', 'gold', 'gray', 'green', 'orange', 'purple', 'red', 'silver', 'white', 'yellow'];
 
   return (
@@ -164,7 +175,7 @@ function SellPage() {
       <div id='sell-page-container'>
         <div id='sell-content'>
           <div id='sell-search'>
-            <form className='translucent' id='new-listing-form' onSubmit={handleListingCreation}>
+            <form className='translucent' id='new-listing-form' onSubmit={handleListingCreation} autoComplete='off'>
               <div id='listing-options'>
                   <div id='listing-option'>
                     <label>Condition</label>
@@ -247,7 +258,7 @@ function SellPage() {
           listings.length > 0 &&
           (
             <div id='listings-container'>
-              <label id='listings-label'>Your Listings</label>
+              <label id='listings-label' className='pointer' onClick={redirectToListingsPage}>Your Listings</label>
               <div id='listings-cars'>
                 {
                   page > 1 && (<img src={arrow} height='50px' id='flipped-arrow' className='pointer' onClick={handlePageChange}/>) 

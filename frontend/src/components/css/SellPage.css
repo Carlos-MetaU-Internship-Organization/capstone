@@ -62,6 +62,11 @@
   font-size: xx-large;
 }
 
+#listings-label:hover {
+  color: #42b6ff;
+  text-decoration: underline;
+}
+
 #listings-cars {
   display: flex;
   align-items: center;
