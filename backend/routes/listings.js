@@ -1,5 +1,5 @@
 const { logInfo, logWarning, logError } = require('../utils/logging.service');
-
+const axios = require('axios')
 const express = require('express')
 const listings = express.Router()
 const { PrismaClient } = require('@prisma/client')
@@ -28,18 +28,39 @@ listings.get('/', async (req, res) => {
   }
 })
 
-listings.post('/user/', async (req, res) => {
-  const userId = parseInt(req.session.user.id);
-  const { condition, make, model, year, color, mileage, vin, description, images, price } = req.body;
+listings.post('/', async (req, res) => {
+  // TODO: validate input
+  let userId = null;
+  if (req.session.user) {
+    userId = parseInt(req.session.user.id);
+  }
+  let { condition, make, model, year, color, mileage, vin, description, images, price, zip = '', owner_name = '', owner_number = '', city = '', state = '', latitude = 0, longitude = 0 } = req.body;
   if (!condition || !make || !model || !year || !color || !mileage || !vin || !description || images.length === 0 || !price) {
     logWarning('Listing creation failed: Missing fields.');
     res.json({ status: 400, message: 'Missing fields'})
   }
-  // const newListing = req.body;
-  // TODO: validate input
   logInfo(`Request to add a local listing for User: ${userId} received`);
   try {
-    const listing = await prisma.listing.create({data: {...req.body, ownerId: userId}});
+    let listing = null;
+    if (userId) {
+      const { zip, name: owner_name, phoneNumber: owner_number } = await prisma.user.findFirst({
+        where: { id: userId },
+        select: { name: true, phoneNumber: true, zip: true}
+      })
+  
+      const apiKey = process.env.CAR_API_KEY;
+      const headers = {
+        Authorization: `Bearer ${apiKey}`
+      };
+  
+      const location_info = await axios.get(`https://auto.dev/api/zip/${zip}`, headers);
+      let { city, state, latitude, longitude } = location_info.data.payload;
+
+      listing = await prisma.listing.create({data: {...req.body, ownerId: userId, zip, owner_name, owner_number, city, state, latitude, longitude }});
+    } else {
+      listing = await prisma.listing.create({data: {...req.body, zip, owner_name, owner_number, city, state, latitude, longitude }});
+    }
+    
     logInfo('Local listing created successfully')
     res.json(listing);
   } catch (error) {

@@ -42,20 +42,27 @@ model Model {
 
 model Listing {
   id                   Int         @id @default(autoincrement())
+  vin                  String      @unique
   condition            String
   make                 String
   model                String
   year                 String
   color                String
   mileage              String
-  vin                  String
   description          String
   images               String[]
   price                String
+  zip                  String
+  latitude             Float
+  longitude            Float
+  city                 String
+  state                String
+  owner_name           String
+  owner_number         String
   sold                 Boolean     @default(false)
   createdAt            DateTime    @default(now())
-  owner                User        @relation("owner", fields: [ownerId], references: [id])
-  ownerId              Int
+  owner                User?       @relation("owner", fields: [ownerId], references: [id])
+  ownerId              Int?
   views                Int         @default(0)
   favorites            Int         @default(0)
   favoriters           User[]      @relation("favoriter")

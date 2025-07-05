@@ -1,6 +1,5 @@
 const { logInfo, logWarning, logError } = require('../utils/logging.service');
 const axios = require('axios')
-
 const express = require('express')
 const search = express.Router()
 const { PrismaClient } = require('@prisma/client')
