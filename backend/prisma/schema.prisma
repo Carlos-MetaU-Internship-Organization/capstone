@@ -42,13 +42,13 @@ model Model {
 
 model Listing {
   id                   Int         @id @default(autoincrement())
+  vin                  String      @unique
   condition            String
   make                 String
   model                String
   year                 String
   color                String
   mileage              String
-  vin                  String
   description          String
   images               String[]
   price                String
