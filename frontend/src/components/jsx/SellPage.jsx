@@ -132,7 +132,7 @@ function SellPage() {
     }
 
     try {
-      await axios.post(`${baseURL}/api/listings/user/`, listingInfo, { withCredentials: true });
+      await axios.post(`${baseURL}/api/listings/`, listingInfo, { withCredentials: true });
       logInfo('New listing created successfully');
       setForm(initialFormState);
       fetchUserListings();
