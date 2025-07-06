@@ -104,7 +104,6 @@
 #description-input {
   height: 200px;
   width: 400px;
-  resize: none;
 }
 
 #description-input:focus {

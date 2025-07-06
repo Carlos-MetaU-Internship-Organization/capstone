@@ -265,7 +265,7 @@ function SellPage() {
                 }
                 {
                   listings.slice((4 * (page - 1)), (4 * page)).map(listing => {
-                    return <img key={listing.id} src={listing.images[0]} className='listing-image pointer'/>
+                    return <img key={listing.id} src={listing.images[0]} className='listing-image pointer' onClick={() => navigate(`/listing/${listing.vin}`)}/>
                   })
                 }
                 {
