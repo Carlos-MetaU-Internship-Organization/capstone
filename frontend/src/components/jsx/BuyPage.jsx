@@ -78,32 +78,20 @@ function BuyPage() {
   }
   
  const handleSearch = async (event) => {
-   event.preventDefault();
+  event.preventDefault();
 
-   const { make, model, condition, zip, distance } = form;
-   if (!make || !model || !condition || !zip || !distance) {
-     logWarning('Search failed: Missing fields.');
-     return
-   }
+  const { make, model, condition, zip, distance } = form;
+  if (!make || !model || !condition || !zip || !distance) {
+    logWarning('Search failed: Missing fields.');
+    return
+  }
 
-   const params = {
-     make,
-     model,
-     condition,
-     zip,
-     distance
-   }
-
-   fetchListings(params).then(data => {
-     navigate('/results', {state: {
-       listings: data,
-       makes,
-       models,
-       filters: form
-     }});
-   })
+  navigate('/results', {state: {
+    makes,
+    models,
+    filters: form
+  }});
  }
-
 
   return (
     <div id='buy-page'>
