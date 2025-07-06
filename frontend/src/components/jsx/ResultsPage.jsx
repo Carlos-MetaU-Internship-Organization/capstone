@@ -18,22 +18,19 @@ function ResultsPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    ...filters,
     color: '',
     minYear: '',
     maxYear: '',
     maxMileage: '',
     minPrice: '',
     maxPrice: '',
-    sortOption: ''
+    sortOption: '',
+    ...filters,
   })
 
   const [models, setModels] = useState(info.state.models);
   const [isSearchFavorited, setIsSearchFavorited] = useState(false);
-  const [listingsInfo, setListingsInfo] = useState({
-    listings: info.state.listings.records,
-    totalListingsCount: info.state.listings.totalCount 
-  });
+  const [listingsInfo, setListingsInfo] = useState({});
   const [page, setPage] = useState(1);
   const [searchChange, setSearchChange] = useState(false);
   
@@ -56,6 +53,10 @@ function ResultsPage() {
       handleSearch();
     }
   }, [form.sortOption])
+
+  useEffect(() => {
+    handleSearch();
+  }, [])
 
   const handleSearchFavoriteClick = (event) => {
     setIsSearchFavorited(prev => !prev);
@@ -128,6 +129,13 @@ function ResultsPage() {
       } else {
         setListingsInfo(prev => ({...prev, listings: [...prev.listings, ...listings], totalListingsCount: listingCount }))
       }
+
+      navigate('/results', {state: {
+        filters: form,
+        listings: listingsInfo.listings,
+        makes,
+        models
+      }})
   
       setSearchChange(false);
     })
