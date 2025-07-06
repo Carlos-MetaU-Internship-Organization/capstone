@@ -58,13 +58,40 @@ track.get('/most-dwelled-listings', async (req, res) => {
     })
 
     if (!topVisits) {
-      return res.status(400).json({ message: 'User with Id: ${userId} has no previous visits' });
+      return res.status(400).json({ message: `User with Id: ${userId} has no previous visits` });
     }
 
     res.json(topVisits);
   } catch (error) {
     logError('Something bad happened trying to fetch most-dwelled listings', error);
     res.status(500).json({ message: 'Failed to retrieve 10 listings with highest dwell time'})
+  }
+})
+
+track.get('/most-recently-visited-listings', async (req, res) => {
+  const userId = req.session.user?.id;
+  
+  if (!userId) {
+    logWarning('Invalid session');
+    return res.status(400).json({ message: 'Invalid session '});
+  }
+
+  try {
+    const mostRecentVisits = await prisma.listingVisit.findMany({
+      where: { userId },
+      orderBy: { visitedAt: 'desc' },
+      take: 20,
+      include: { listing: true }
+    })
+
+    if (!mostRecentVisits) {
+      return res.status(400).json({ message: `User with Id: ${userId} has no previous visits` });
+    }
+
+    res.json(mostRecentVisits);
+  } catch (error) {
+    logError('Something bad happened trying to fetch most-recently-visited listings', error);
+    res.status(500).json({ message: 'Failed to retrieve the 20 most-recently visited listings'})
   }
 })
 

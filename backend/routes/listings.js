@@ -44,6 +44,23 @@ listings.get('/', async (req, res) => {
   }
 })
 
+listings.get('/popular', async (req, res) => {
+  logInfo(`Request to get the 20 most viewed local listings received`);
+
+  try {
+    const listings = await prisma.listing.findMany({
+      orderBy: {views: 'desc'},
+      take: 20
+    });
+    logInfo('The 20 most viewed local listings retrieved successfully')
+    res.json(listings)
+  } catch (error) {
+    logError('An error occured', error);
+    res.status(500).json({ message: error.message });
+  }
+
+})
+
 listings.post('/', async (req, res) => {
   // TODO: validate input
   let userId = null;

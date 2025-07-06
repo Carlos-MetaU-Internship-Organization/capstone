@@ -21,12 +21,49 @@ select:focus {
   cursor: pointer;
 }
 
+.grow {
+  transition: transform 0.2s ease;
+}
+
+.grow:hover {
+  transform: scale(1.05);
+}
+
+.listings-container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 100px;
+  align-items: center;
+}
+
+.listings-label {
+  font-size: xx-large;
+}
+
+.listings-cars {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 0;
+}
+
+.listing-image {
+  min-height: 100px;
+  min-width: 175px;
+  height: 20vh;
+  width: 20vw;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 25px;
+  flex-shrink: 0;
+}
+
+.flipped-arrow {
+  transform: scaleX(-1);
+}
+
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
-
-/* input[type='file'] {
-  color: rgba(0, 0, 0, 0);
-} */

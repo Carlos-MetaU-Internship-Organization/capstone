@@ -22,7 +22,7 @@ function LoginPage() {
     if (result.success) {
       // TODO: send message to buy page.
       logInfo('Navigating to Buy Page after successful login.');
-      navigate('/buy');
+      navigate('/home');
     } else {
       setMessage(result.message);
     }
