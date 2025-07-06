@@ -74,22 +74,26 @@ h3 {
 }
 
 #favorites-label {
-  margin-left: 4vw;
   font-size: xx-large;
+}
+
+#favorites-label:hover {
+  color: #42b6ff;
+  text-decoration: underline;
 }
 
 #favorites-container {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  gap: 1vh;
+  padding: 20px 100px;
+  align-items: center;
 }
 
 #favorite-cars {
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  width: 100%;
+  justify-content: flex-start;
+  flex-grow: 0;
 }
 
 .car-image {

@@ -22,6 +22,10 @@ function BuyPage() {
     distance: '50',
     zip: '94025'
   })
+  const [mostDwelledListing, setMostDwelledListing] = useState(null);
+  const [favoritedListings, setFavoritedListings] = useState([]);
+  const [page, setPage] = useState(1);
+
   const navigate = useNavigate();
 
   // ON BOOT
@@ -49,11 +53,28 @@ function BuyPage() {
       }
     }
     getAllMakes();
+
+    const getFavoritedListings = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true });
+        const favoritedListings = response.data.favoritedListings;
+        setFavoritedListings(favoritedListings);
+      } catch (error) {
+        logError('Something bad happened when trying to fetch your favorited listings', error);
+      }
+    }
+    getFavoritedListings();
+
+    const getMostDwelledListing = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/api/track/most-dwelled-listings`, { withCredentials: true });
+        setMostDwelledListing(response.data[0].listing)
+      } catch (error) {
+        logError('Something bad happened when trying to fetch your 10 most-dwelled listings', error);
+      }
+    }
+    getMostDwelledListing();
   }, []);
-  
-  const handleLogout = () => {
-    // call axios backend logout endpoint
-  }
   
   const updateForm = async (event) => {
     const elem = event.target.name;
@@ -77,21 +98,29 @@ function BuyPage() {
     }
   }
   
- const handleSearch = async (event) => {
-  event.preventDefault();
+  const handleSearch = async (event) => {
+    event.preventDefault();
 
-  const { make, model, condition, zip, distance } = form;
-  if (!make || !model || !condition || !zip || !distance) {
-    logWarning('Search failed: Missing fields.');
-    return
+    const { make, model, condition, zip, distance } = form;
+    if (!make || !model || !condition || !zip || !distance) {
+      logWarning('Search failed: Missing fields.');
+      return
+    }
+
+    navigate('/results', {state: {
+      makes,
+      models,
+      filters: form
+    }});
   }
 
-  navigate('/results', {state: {
-    makes,
-    models,
-    filters: form
-  }});
- }
+  const handlePageChange = (event) => {
+    if (event.target.id === 'flipped-arrow') {
+      setPage(prev => prev - 1);
+    } else {
+      setPage(prev => prev + 1);
+    }
+  }
 
   return (
     <div id='buy-page'>
@@ -137,33 +166,45 @@ function BuyPage() {
             </div>
             <button className='translucent' id='search-button' type='submit'>Search</button>
           </form>
-          <div id='most-viewed-container'>
-            <p>Still Interested?</p>
-            <div className='translucent most-viewed-listing pointer'>
-              <img src={car} id='most-viewed-car-img' className='car-image'/>
-              <div id='most-viewed-car-info'>
-                <p>Make: Porsche</p>
-                <p>Model: 911</p>
-                <p>Year: 2022</p>
-                <p>Location: San Francisco, CA</p>
-                <p>Price: $214,999</p>
+          {
+            mostDwelledListing &&
+            <div id='most-viewed-container'>
+              <p>Still Interested?</p>
+              <div className='translucent most-viewed-listing pointer'>
+                <img src={mostDwelledListing.images[0]} id='most-viewed-car-img' className='car-image' onClick={() => navigate(`/listing/${mostDwelledListing.vin}`)}/>
+                <div id='most-viewed-car-info'>
+                  <p>Make: {mostDwelledListing.make}</p>
+                  <p>Model: {mostDwelledListing.model}</p>
+                  <p>Year: {mostDwelledListing.year}</p>
+                  <p>Location: {mostDwelledListing.city}, {mostDwelledListing.state}</p>
+                  <p>Price: ${parseInt(mostDwelledListing.price).toLocaleString('en-US')}</p>
+                </div>
               </div>
             </div>
+          }
+        </div>
+      </div>
+      {
+        favoritedListings.length > 0 &&
+        (
+          <div id='favorites-container'>
+            <label id='favorites-label' className='pointer'>Your Favorites</label>
+            <div id='favorite-cars'>
+              {
+                page > 1 && (<img src={arrow} height='50px' id='flipped-arrow' className='pointer' onClick={handlePageChange}/>) 
+              }
+              {
+                favoritedListings.slice((4 * (page - 1)), (4 * page)).map(listing => {
+                  return <img key={listing.id} src={listing.images[0]} className='listing-image pointer' onClick={() => navigate(`/listing/${listing.vin}`)}/>
+                })
+              }
+              {
+                favoritedListings.length > page * 4 && (<img src={arrow} height='50px' className='pointer' onClick={handlePageChange}/>)
+              }
+            </div>
           </div>
-        </div>
-      </div>
-      <div id='favorites-container'>
-        <label id='favorites-label'>Your Favorites</label>
-        <div id='favorite-cars'>
-          <img src={car} height='150px' className='car-image pointer'/>
-          <img src={car} height='150px' className='car-image pointer'/>
-          <img src={car} height='150px' className='car-image pointer'/>
-          <img src={car} height='150px' className='car-image pointer'/>
-          <img src={car} height='150px' className='car-image pointer'/>
-          <img src={arrow} height='50px' className='pointer'/>
-        </div>
-        {/* Button that fetches the next 4 Favorited cars */}
-      </div>
+        )
+      }
     </div>
   )
 }
