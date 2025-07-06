@@ -6,6 +6,7 @@ import BuyPage from './components/jsx/BuyPage'
 import SellPage from './components/jsx/SellPage'
 import ResultsPage from './components/jsx/ResultsPage'
 import SellerListingsPage from './components/jsx/SellerListingsPage'
+import SingleCarPage from './components/jsx/SingleCarPage'
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
         <Route path="/sell" element={<SellPage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path='/my-listings' element={<SellerListingsPage />} />
+        <Route path='/listing/:vin' element={<SingleCarPage />} />
       </Routes>
     </Router>
    </div>

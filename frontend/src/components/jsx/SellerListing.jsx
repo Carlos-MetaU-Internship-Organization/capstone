@@ -44,6 +44,10 @@ function SellerListing({ listingData, onDelete }) {
       logError("Something bad happened when updating the 'sold' status ", error);
     }
   }
+
+  const handleListingClick = async () => {
+    navigate(`/listing/${listingData.vin}`)
+  }
   
   return (
     <div className='seller-listing translucent'>
@@ -68,7 +72,7 @@ function SellerListing({ listingData, onDelete }) {
               <img src={money} />
             </div>
           </div>
-          <div className='seller-listing-info translucent pointer'>
+          <div className='seller-listing-info translucent pointer' onClick={handleListingClick}>
             <p>View Listing</p>
           </div>
           <div className='seller-listing-info translucent pointer' onClick={handleListingDeletion}>

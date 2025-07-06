@@ -15,6 +15,22 @@ const prisma = new PrismaClient()
  * FINAL TODO: hide encrypted password on a get request for a listing?
  */
 
+const incrementViewCount = async (vin) => {
+  try {
+    await prisma.listing.update({
+      where: { vin },
+      data: {
+        views: {
+          increment: 1
+        }
+      }
+    })
+  } catch (error) {
+    logError('Could not update the view count of this listing', error);
+    throw error;
+  }
+}
+
 listings.get('/', async (req, res) => {
   logInfo(`Request to get all local listings received`);
 
@@ -24,7 +40,7 @@ listings.get('/', async (req, res) => {
     res.json(listings)
   } catch (error) {
     logError('An error occured', error);
-    res.json(error);
+    res.status(500).json({ message: error.message });
   }
 })
 
@@ -34,7 +50,7 @@ listings.post('/', async (req, res) => {
   if (req.session.user) {
     userId = parseInt(req.session.user.id);
   }
-  let { condition, make, model, year, color, mileage, vin, description, images, price, zip = '', owner_name = '', owner_number = '', city = '', state = '', latitude = 0, longitude = 0 } = req.body;
+  let { condition, make, model, year, color, mileage, vin, description, images, price, zip = '', owner_name = '', owner_number = '', city = '', state = '', latitude = 0, longitude = 0, createdAt = '', views = 0 } = req.body;
   if (!condition || !make || !model || !year || !color || !mileage || !vin || !description || images.length === 0 || !price) {
     logWarning('Listing creation failed: Missing fields.');
     res.json({ status: 400, message: 'Missing fields'})
@@ -58,14 +74,15 @@ listings.post('/', async (req, res) => {
 
       listing = await prisma.listing.create({data: {...req.body, ownerId: userId, zip, owner_name, owner_number, city, state, latitude, longitude }});
     } else {
-      listing = await prisma.listing.create({data: {...req.body, zip, owner_name, owner_number, city, state, latitude, longitude }});
+      listing = await prisma.listing.create({data: {...req.body, zip, owner_name, owner_number, city, state, latitude, longitude, createdAt, views }});
     }
     
     logInfo('Local listing created successfully')
     res.json(listing);
+    return;
   } catch (error) {
     logError('An error occured', error);
-    res.json(error);
+    res.status(500).json({ message: error.message });
   }
 })
 
@@ -94,23 +111,39 @@ listings.get('/user/', async (req, res) => {
     res.json(listings)
   } catch (error) {
     logError('An error occured', error);
-    res.json(error);
+    res.status(500).json({ message: error.message });
   }
 })
 
-listings.get('/:listingId', async (req, res) => {
-  const listingId = parseInt(req.params.listingId);
-  logInfo(`Request to get local listing with listingId: ${listingId} received`);
+listings.get('/:vin', async (req, res) => {
+  const vin = req.params.vin;
+  logInfo(`Request to get local listing with VIN: ${vin} received`);
 
   try {
     const listing = await prisma.listing.findFirst({
-      where: { id: listingId }
+      where: { vin },
+      include: {
+        favoriters: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            phoneNumber: true,
+            zip: true,
+            email: true
+          }
+        }
+      }
     })
-    logInfo(`Local listing with id: ${listingId} retrieved successfully`)
-    res.json(listing)
+
+    if (listing) {
+      await incrementViewCount(vin);
+    }
+    logInfo(`Local listing with VIN: ${vin} retrieved successfully`)
+    res.json( {listing, userId: req.session.user.id });
   } catch (error) {
     logError('An error occured', error);
-    res.json(error);
+    res.status(500).json({ message: error.message });
   }
 })
 
@@ -140,7 +173,7 @@ listings.put('/:listingId', async (req, res) => {
     res.json(listing)
   } catch (error) {
     logError('An error occured', error);
-    res.json(error);
+    res.status(500).json({ message: error.message });
   }
 })
 
@@ -157,37 +190,30 @@ listings.delete('/:listingId', async (req, res) => {
     res.json(listing)
   } catch (error) {
     logError('An error occured', error);
-    res.json(error);
+    res.status(500).json({ message: error.message });
   }
 })
 
 // Increment views column by 1 of a specific listing 
-listings.patch('/:listingId/view', async (req, res) => {
+listings.patch('/:vin/view', async (req, res) => {
   try {
-    const listingId = parseInt(req.params.listingId);
-    const updated = await prisma.listing.update({
-      where: { id: listingId },
-      data: {
-        views: {
-          increment: 1
-        }
-      }
-    });
-    res.status(200).send(updated);
+    const vin = req.params.vin;
+    await incrementViewCount(vin);
+    res.status(200).send({ message: `View count successfully increased for listing with VIN: ${vin}`});
   } catch (error) {
     logError('Could not update the view count of this listing.', error);
     res.status(404).send('Listing not found');
   }
 });
 
-listings.patch('/:listingId/favorite', async (req, res) => {
+listings.patch('/:vin/favorite', async (req, res) => {
   const userId = parseInt(req.session.user.id);
   try {
-    const listingId = parseInt(req.params.listingId);
+    const vin = req.params.vin;
 
     const listing_found = await prisma.listing.findFirst({
       where: {
-        id: listingId,
+        vin,
         favoriters: {
           some: {
             id: userId
@@ -203,7 +229,7 @@ listings.patch('/:listingId/favorite', async (req, res) => {
     if (already_favorited) {
         // Decrement listing's total favorite count
         updated_global_listing = await prisma.listing.update({
-          where: { id: listingId },
+          where: { vin },
           data: {
             favorites: {
               decrement: 1
@@ -217,7 +243,7 @@ listings.patch('/:listingId/favorite', async (req, res) => {
           where: { id: userId },
           data: {
             favoritedListings: {
-              disconnect: { id: listingId }
+              disconnect: { vin }
             }
           },
           select: { favoritedListings: true }
@@ -226,7 +252,7 @@ listings.patch('/:listingId/favorite', async (req, res) => {
     } else {
         // Increment listing's total favorite count
         updated_global_listing = await prisma.listing.update({
-          where: { id: listingId },
+          where: { vin },
           data: {
             favorites: {
               increment: 1
@@ -240,7 +266,7 @@ listings.patch('/:listingId/favorite', async (req, res) => {
           where: { id: userId },
           data: {
             favoritedListings: {
-              connect: { id: listingId }
+              connect: { vin }
             }
           },
           select: { favoritedListings: true }
@@ -271,12 +297,28 @@ listings.patch('/:listingId/sold', async (req, res) => {
       }
     });
 
-
     res.status(200).send(updated_global_listing);
   } catch (error) {
     logError('Something went wrong trying to mark the listing as sold/unsold', error);
     res.status(404).send('Listing not found')
   }
 });
+
+listings.get('/:vin/data', async (req, res) => {
+  const vin = req.params.vin;
+  logInfo(`Request to get information about listing with VIN: ${vin} received`);
+  try {
+    const apiKey = process.env.CAR_API_KEY;
+    const headers = {
+      Authorization: `Bearer ${apiKey}`
+    };
+    const listingData = await axios.get(`https://auto.dev/api/listings/${vin}`, headers);
+    logInfo(`Successfully fetched data using Autodev API for listing with VIN: ${vin}`);
+    res.json(listingData.data);
+  } catch (error) {
+    logError(`Something went wrong trying to fetch data using AutoDev API for listing with VIN: ${vin}`, error);
+    res.status(500).json({ message: error.message });
+  }
+})
 
 module.exports = listings;
