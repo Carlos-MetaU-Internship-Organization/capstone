@@ -321,4 +321,27 @@ listings.get('/:vin/data', async (req, res) => {
   }
 })
 
+listings.get('/user/favorited', async (req, res) => {
+  const userId = parseInt(req.session.user.id);
+  logInfo(`Request to get all favorited local listings for User: ${userId} received`);
+
+  try {
+    const favoritedListingVINs = await prisma.user.findFirst({
+      where: { id: userId },
+      select: { 
+        favoritedListings: {
+          select: {
+            vin: true
+          }
+        } 
+      }
+    })
+    logInfo(`All favorited local listings for User: ${userId} retrieved successfully`)
+    res.json(favoritedListingVINs)
+  } catch (error) {
+    logError('An error occured', error);
+    res.status(500).json({ message: error.message });
+  }
+})
+
 module.exports = listings;
