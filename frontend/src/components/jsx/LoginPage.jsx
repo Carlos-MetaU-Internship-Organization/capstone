@@ -1,5 +1,5 @@
 import './../css/LoginPage.css'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { baseURL } from '../../globals'
 import axios from 'axios'
 import tire from './../../assets/tire.png'
@@ -15,6 +15,20 @@ function LoginPage() {
   const [message, setMessage] = useState('');
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/api/auth/check-auth`, { withCredentials: true });
+        if (response.data.authenticated) {
+          navigate('/home');
+        }
+      } catch (error) {
+        logError('Something went wrong when trying to check for a valid session', error);
+      }
+    }
+    checkAuth();
+  }, []);
 
   const handleLogin = async (event) => {
     event.preventDefault();

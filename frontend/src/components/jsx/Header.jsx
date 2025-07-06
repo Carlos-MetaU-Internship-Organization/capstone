@@ -2,6 +2,8 @@ import './../css/Header.css'
 import tire from './../../assets/tire.png'
 import menu from './../../assets/menu.png'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import { baseURL } from '../../globals'
 
 
 function Header() {
@@ -11,8 +13,9 @@ function Header() {
     navigate(`/${event.target.textContent}`)
   }
   
-  const handleLogout = () => {
-    // call axios backend logout endpoint
+  const handleLogout = async () => {
+    await axios.post(`${baseURL}/api/auth/logout`, {}, { withCredentials: true });
+    navigate('/')
   }
 
   return (

@@ -25,7 +25,6 @@ auth.post('/signup', async (req, res) => {
     await prisma.user.create({data: newUser});
     res.json({ status: 200, message: `Welcome, ${name}`});
   } else {
-    //TODO: use next
     res.json({ status: 409, message: 'Account already exists' });
   }
 })
@@ -58,9 +57,9 @@ auth.post('/login', async (req, res) => {
 auth.post('/logout', (req, res) => {
   req.session.destroy(error => {
     if (!error) {
-      res.json({ message: 'Goodbye.'})
+      res.json({ status: 200, message: 'Goodbye.' })
     } else {
-      res.json({ message: 'Logout failed' })
+      res.json({ status: 500, message: 'Logout failed.' })
     }
   });
 })
