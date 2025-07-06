@@ -59,7 +59,7 @@ function ResultsPage() {
     axios
       .get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true })
       .then(response => {
-        const vins = response.data.favoritedListings.map(vin_obj => vin_obj.vin);
+        const vins = response.data.favoritedListings.map(listing => listing.vin);
         setFavoritedVins(vins);
         handleSearch();
       })

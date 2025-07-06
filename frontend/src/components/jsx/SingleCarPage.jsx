@@ -5,16 +5,18 @@ import heart from './../../assets/heart.png'
 import pinkHeart from './../../assets/pinkHeart.png'
 import Header from './Header'
 import { baseURL } from '../../globals'
-import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
 import axios from 'axios'
 
 function SingleCarPage() {
 
   let { vin } = useParams();
-
   const navigate = useNavigate();
+  const path = useRef(window.location.href);
+  const enterTime = useRef();
+  const listingIdRef = useRef();
 
   const [listing, setListing] = useState(null);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -65,23 +67,59 @@ function SingleCarPage() {
             }
             const newListing = await axios.post(`${baseURL}/api/listings`, newListingInfo);
             setListing(newListing.data);
+            listingIdRef.current = newListing.data.id;
           } else {
             const favorited = listing.favoriters.some(favoriter => favoriter.id === userId);
             setListing(response.data.listing);
             setIsFavorited(favorited);
+            listingIdRef.current = response.data.listing.id;
           }
         } catch (error) {
           logError(`Something went wrong when trying to fetch listing with VIN: ${vin}`, error)
         }
       }
       await fetchData();
-    }
-    boot();
-  }, []);
 
-  const redirectToResultsPage = () => {
-    navigate('/results')
-  }
+      enterTime.current = Date.now();
+    }
+
+    boot();
+
+    const sendDwellTime = async () => {
+      const leaveTime = Date.now();
+      const dwellTime = Math.round((leaveTime - enterTime.current) / 1000);
+      enterTime.current = leaveTime;
+
+      fetch(`${baseURL}/api/track/dwell`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          listingId: listingIdRef.current,
+          dwellTime: dwellTime,
+        }),
+        keepalive: true
+      })
+    }
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState == 'hidden') {
+        sendDwellTime();
+      } else if (document.visibilityState == 'visible') {
+        enterTime.current = Date.now();
+      }
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      if (window.location.href != path.current) {
+        sendDwellTime();
+      }
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, []);
 
   const handleFavoriteClick = async () => {
     try {
@@ -91,7 +129,6 @@ function SingleCarPage() {
       logError(`Something went wrong when trying to favorite listing with VIN: ${vin}`, error)
     }
   }
-
   
   if (!listing) {
     return <div>Loading...</div>

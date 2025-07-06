@@ -326,18 +326,12 @@ listings.get('/user/favorited', async (req, res) => {
   logInfo(`Request to get all favorited local listings for User: ${userId} received`);
 
   try {
-    const favoritedListingVINs = await prisma.user.findFirst({
+    const favoritedListings = await prisma.user.findFirst({
       where: { id: userId },
-      select: { 
-        favoritedListings: {
-          select: {
-            vin: true
-          }
-        } 
-      }
+      select: { favoritedListings: true }
     })
     logInfo(`All favorited local listings for User: ${userId} retrieved successfully`)
-    res.json(favoritedListingVINs)
+    res.json(favoritedListings)
   } catch (error) {
     logError('An error occured', error);
     res.status(500).json({ message: error.message });
