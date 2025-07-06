@@ -7,6 +7,7 @@ import SellPage from './components/jsx/SellPage'
 import ResultsPage from './components/jsx/ResultsPage'
 import SellerListingsPage from './components/jsx/SellerListingsPage'
 import SingleCarPage from './components/jsx/SingleCarPage'
+import HomePage from './components/jsx/HomePage'
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LoginPage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/signup" element={<SignupPage/>} />
         <Route path="/buy" element={<BuyPage />} />
         <Route path="/sell" element={<SellPage />} />
