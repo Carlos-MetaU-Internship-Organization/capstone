@@ -31,6 +31,7 @@ function ResultsPage() {
   const [models, setModels] = useState(info.state.models);
   const [isSearchFavorited, setIsSearchFavorited] = useState(false);
   const [listingsInfo, setListingsInfo] = useState({});
+  const [favoritedVins, setFavoritedVins] = useState([]);
   const [page, setPage] = useState(1);
   const [searchChange, setSearchChange] = useState(false);
   
@@ -55,7 +56,16 @@ function ResultsPage() {
   }, [form.sortOption])
 
   useEffect(() => {
-    handleSearch();
+    axios
+      .get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true })
+      .then(response => {
+        const vins = response.data.favoritedListings.map(vin_obj => vin_obj.vin);
+        setFavoritedVins(vins);
+        handleSearch();
+      })
+      .catch(error => {
+        logError('Something bad happened when trying to fetch your favorited listings', error);
+      })
   }, [])
 
   const handleSearchFavoriteClick = (event) => {
@@ -163,7 +173,7 @@ function ResultsPage() {
               <select className='filter-input translucent pointer' value={form.make} name='make' onChange={updateForm}>
                 {
                   makes.map(make => {
-                    return <option value={make.name}>{make.name}</option>
+                    return <option key={make.name} value={make.name}>{make.name}</option>
                   })
                 }
               </select>
@@ -171,10 +181,9 @@ function ResultsPage() {
             <div className='filter'>
               <label>Model</label>
               <select className='filter-input translucent pointer' value={form.model} name='model' onChange={updateForm}>
-                {/* <option value="" disabled></option> */}
                 {
                   models.map(model => {
-                    return <option value={model.name}>{model.name}</option>
+                    return <option key={model.name} value={model.name}>{model.name}</option>
                   })
                 }
               </select>
@@ -193,10 +202,10 @@ function ResultsPage() {
             <div className='filter'>
               <label>Color</label>
               <select className='filter-input translucent pointer' name='color' value={form.color} onChange={updateForm}>
-                <option disabled selected></option>
+                <option value="" disabled></option>
                 {
                   colors.map(color => {
-                    return <option value={color}>{(color.charAt(0).toUpperCase()).concat(color.slice(1))}</ option>
+                    return <option key={color} value={color}>{(color.charAt(0).toUpperCase()).concat(color.slice(1))}</ option>
                   })
                 }
               </select>
@@ -228,7 +237,7 @@ function ResultsPage() {
         </div>
         <div id='result-page-listings-content'>
           <select className='translucent pointer' id='sort-menu' value={form.sortOption} name='sortOption' onChange={updateForm}>
-            <option value="" disabled selected>Sort By: </option>
+            <option value="" disabled>Sort By: </option>
             <option value="price:asc">Price (Least Expensive First)</option>
             <option value="price:desc">Price (Most Expensive First)</option>
             <option value="distance:asc">Distance (Nearest First)</option>
@@ -241,7 +250,7 @@ function ResultsPage() {
           <div id='car-listing-list'>
             {
               listingsInfo.listings && listingsInfo.listings.map(listing => {
-                return <Listing listingData={listing} />
+                return <Listing key={listing.vin} listingData={listing} favoritedOnLoad={favoritedVins.includes(listing.vin)}/>
               })
             }
             {
