@@ -21,6 +21,8 @@ function SingleCarPage() {
   const [listing, setListing] = useState(null);
   const [isFavorited, setIsFavorited] = useState(false);
 
+  const [imageIndex, setImageIndex] = useState(0);
+
   // ON BOOT
   useEffect(() => {
     const boot = async () => {
@@ -129,6 +131,14 @@ function SingleCarPage() {
       logError(`Something went wrong when trying to favorite listing with VIN: ${vin}`, error)
     }
   }
+
+  const handleNextImage = () => {
+    setImageIndex(prev => (prev + 1) % listing.images.length);
+  }
+
+  const handlePreviousImage = () => {
+    setImageIndex(prev => (prev - 1 + listing.images.length) % listing.images.length);
+  }
   
   if (!listing) {
     return <div>Loading...</div>
@@ -146,7 +156,11 @@ function SingleCarPage() {
         <div id='main-content'>
           <div id='listing-container'>
             <div id='listing-info'>
-              <img src={listing.images[0]} id='single-car-image'/>
+              <img src={listing.images[imageIndex]} id='single-car-image'/>
+              <div id='image-cycler'>
+                <img src={arrow} id='previous-image' className='pointer' onClick={handlePreviousImage}/>
+                <img src={arrow} id='next-image' className='pointer' onClick={handleNextImage}/>
+              </div>
               <p id='single-car-title'><strong>{listing.year} {listing.make} {listing.model}</strong></p>
               <p className='single-car-info'><strong>Condition: </strong>{formattedCondition}</p>
               <p className='single-car-info'><strong>Miles: </strong>{formattedMiles}</p>

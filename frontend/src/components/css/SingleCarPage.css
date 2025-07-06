@@ -27,9 +27,24 @@
   gap: 20px;
 }
 
+#image-cycler {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+}
+
 #single-car-image {
   width: 100%;
   border-radius: 25px;
+}
+
+#previous-image {
+  transform: scaleX(-1);
+}
+
+#previous-image,
+#next-image {
+  height: 5vh;
 }
 
 #single-car-title {
