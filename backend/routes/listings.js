@@ -62,17 +62,21 @@ listings.get('/popular', async (req, res) => {
 })
 
 listings.post('/', async (req, res) => {
-  // TODO: validate input
-  let userId = null;
-  if (req.session.user) {
-    userId = parseInt(req.session.user.id);
+  const userId = parseInt(req.session.user?.id)
+
+  if (!userId) {
+    logWarning('Invalid session');
+    return res.status(401).json({ message: 'Invalid session'});
   }
+
   let { condition, make, model, year, color, mileage, vin, description, images, price, zip = '', owner_name = '', owner_number = '', city = '', state = '', latitude = 0, longitude = 0, createdAt = '', views = 0 } = req.body;
   if (!condition || !make || !model || !year || !color || !mileage || !vin || !description || images.length === 0 || !price) {
     logWarning('Listing creation failed: Missing fields.');
-    res.json({ status: 400, message: 'Missing fields'})
+    return res.json({ status: 400, message: 'Missing fields'})
   }
+
   logInfo(`Request to add a local listing for User: ${userId} received`);
+  
   try {
     let listing = null;
     if (userId) {
@@ -104,7 +108,13 @@ listings.post('/', async (req, res) => {
 })
 
 listings.get('/user/', async (req, res) => {
-  const userId = parseInt(req.session.user.id);
+  const userId = parseInt(req.session.user?.id)
+
+  if (!userId) {
+    logWarning('Invalid session');
+    return res.status(401).json({ message: 'Invalid session'});
+  }
+
   logInfo(`Request to get all local listings for User: ${userId} received`);
 
   try {
@@ -134,6 +144,12 @@ listings.get('/user/', async (req, res) => {
 
 listings.get('/:vin', async (req, res) => {
   const vin = req.params.vin;
+
+  if (!vin) {
+    logWarning('No VIN provided');
+    return res.status(400).json({ message: 'Invalid VIN'});
+  }
+
   logInfo(`Request to get local listing with VIN: ${vin} received`);
 
   try {
@@ -156,8 +172,9 @@ listings.get('/:vin', async (req, res) => {
     if (listing) {
       await incrementViewCount(vin);
     }
+
     logInfo(`Local listing with VIN: ${vin} retrieved successfully`)
-    res.json( {listing, userId: req.session.user.id });
+    res.json( {listing, userId: req.session.user?.id });
   } catch (error) {
     logError('An error occured', error);
     res.status(500).json({ message: error.message });
@@ -168,6 +185,11 @@ listings.put('/:listingId', async (req, res) => {
   const { condition, make, model, year, color, mileage, vin, description, price, sold } = req.body;
 
   const listingId = parseInt(req.params.listingId);
+  if (!listingId) {
+    logWarning('No listingId provided');
+    return res.status(400).json({ message: 'Invalid listingId'});
+  }
+
   logInfo(`Request to update local listing with listingId: ${listingId} received`);
 
   try {
@@ -186,6 +208,7 @@ listings.put('/:listingId', async (req, res) => {
         sold
       }
     })
+
     logInfo(`Local listing with listingId: ${listingId} updated successfully`)
     res.json(listing)
   } catch (error) {
@@ -195,8 +218,14 @@ listings.put('/:listingId', async (req, res) => {
 })
 
 listings.delete('/:listingId', async (req, res) => {
-  // const userId = parseInt(req.session.user.id);
+  // const userId = parseInt(req.session.user?.id);
   const listingId = parseInt(req.params.listingId);
+
+  if (!listingId) {
+    logWarning('No listingId provided');
+    return res.status(400).json({ message: 'Invalid listingId'});
+  }
+  
   logInfo(`Request to delete local listing with listingId: ${listingId} received`);
 
   try {
@@ -211,10 +240,17 @@ listings.delete('/:listingId', async (req, res) => {
   }
 })
 
+// NOT IN USE
 // Increment views column by 1 of a specific listing 
 listings.patch('/:vin/view', async (req, res) => {
+  const vin = req.params.vin;
+
+  if (!vin) {
+    logWarning('No VIN provided');
+    return res.status(400).json({ message: 'Invalid parameters'});
+  }
+
   try {
-    const vin = req.params.vin;
     await incrementViewCount(vin);
     res.status(200).send({ message: `View count successfully increased for listing with VIN: ${vin}`});
   } catch (error) {
@@ -224,10 +260,20 @@ listings.patch('/:vin/view', async (req, res) => {
 });
 
 listings.patch('/:vin/favorite', async (req, res) => {
-  const userId = parseInt(req.session.user.id);
-  try {
-    const vin = req.params.vin;
+  const userId = parseInt(req.session.user?.id);
+  const vin = req.params.vin;
 
+  if (!userId) {
+    logWarning('Invalid session');
+    return res.status(401).json({ message: 'Invalid session'});
+  }
+
+  if (!vin) {
+    logWarning('No VIN provided');
+    return res.status(400).json({ message: 'Invalid VIN'});
+  }
+
+  try {
     const listing_found = await prisma.listing.findFirst({
       where: {
         vin,
@@ -302,11 +348,21 @@ listings.patch('/:vin/favorite', async (req, res) => {
 
 listings.patch('/:listingId/sold', async (req, res) => {
   const { new_sold_status } = req.body;
+  const listingId = parseInt(req.params.listingId);
+  
+  if (!new_sold_status) {
+    logWarning('No sold status provided');
+    return res.status(400).json({ message: 'Invalid sold status'});
+  }
+
+  if (!listingId) {
+    logWarning('No listingId provided');
+    return res.status(400).json({ message: 'Invalid listingId'});
+  }
+
+  logInfo(`Set sold status of listing with id ${listingId} to ${new_sold_status}`);
 
   try {
-    const listingId = parseInt(req.params.listingId);
-    logInfo(`Set sold status of listing with id ${listingId} to ${new_sold_status}`);
-    
     const updated_global_listing = await prisma.listing.update({
       where: { id: listingId },
       data: {
@@ -323,7 +379,14 @@ listings.patch('/:listingId/sold', async (req, res) => {
 
 listings.get('/:vin/data', async (req, res) => {
   const vin = req.params.vin;
+
+  if (!vin) {
+    logWarning('No VIN provided');
+    return res.status(400).json({ message: 'Invalid VIN'});
+  }
+
   logInfo(`Request to get information about listing with VIN: ${vin} received`);
+
   try {
     const apiKey = process.env.CAR_API_KEY;
     const headers = {
@@ -339,7 +402,13 @@ listings.get('/:vin/data', async (req, res) => {
 })
 
 listings.get('/user/favorited', async (req, res) => {
-  const userId = parseInt(req.session.user.id);
+  const userId = parseInt(req.session.user?.id);
+
+  if (!userId) {
+    logWarning('Invalid session');
+    return res.status(401).json({ message: 'Invalid session'});
+  }
+
   logInfo(`Request to get all favorited local listings for User: ${userId} received`);
 
   try {

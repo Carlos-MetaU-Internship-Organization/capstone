@@ -9,9 +9,14 @@ track.post('/dwell', async (req, res) => {
   let { listingId, dwellTime } = req.body;
   const userId = req.session.user?.id;
 
-  if (!userId || !listingId || dwellTime == '0') {
+  if (!userId) {
+    logWarning('Invalid session');
+    return res.status(401).json({ message: 'Invalid session'});
+  }
+
+  if (!listingId || dwellTime == '0') {
     logWarning('Invalid parameters');
-    return res.status(400).json({ message: 'Invalid parameters '});
+    return res.status(400).json({ message: 'Invalid parameters'});
   }
 
   try {
@@ -46,7 +51,7 @@ track.get('/most-dwelled-listings', async (req, res) => {
   
   if (!userId) {
     logWarning('Invalid session');
-    return res.status(400).json({ message: 'Invalid session '});
+    return res.status(401).json({ message: 'Invalid session '});
   }
 
   try {
@@ -73,7 +78,7 @@ track.get('/most-recently-visited-listings', async (req, res) => {
   
   if (!userId) {
     logWarning('Invalid session');
-    return res.status(400).json({ message: 'Invalid session '});
+    return res.status(401).json({ message: 'Invalid session '});
   }
 
   try {

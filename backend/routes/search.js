@@ -24,7 +24,14 @@ search.get('/makes', async (req, res) => {
 search.get('/:make/models', async (req, res) => {
   // TODO: input validation
   const make = req.params.make;
+
+  if (!make) {
+    logWarning('No make provided');
+    return res.status(400).json({ message: 'Invalid make'});
+  }
+
   logInfo(`Request to get all models for Make: ${make} received`);
+
   try {
     const make = req.params.make;
     const models = await prisma.model.findMany({
@@ -44,6 +51,7 @@ search.get('/', async (req, res) => {
   const { make, model, condition, zip, distance, color = '', minYear = '', maxYear = '', maxMileage = '', minPrice = '', maxPrice = '', sortOption = '', page = 1} = req.query;
 
   logInfo(`Request to get listings for Make: ${make}, Model: ${model}, Page: ${page} received`);
+  
   let latitude = null;
   let longitude = null;
   
