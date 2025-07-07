@@ -100,9 +100,16 @@ function ResultsPage() {
 
   const handleSearchFavoriteClick = async () => {
     const response = await axios.post(`${baseURL}/api/preferences`, form, { withCredentials: true })
-    setSavedPreferences(prev => [...prev, response.data])
+    const preference = response.data.preference;
+    if (response.data.inDB) {
+      setSavedPreferences(prev => [...prev, preference])
+    } else {
+      setSavedPreferences(prev => prev.filter(pref => pref.id !== preference.id));
+      document.getElementById('saved-search-select-elem').value = "";
+    }
     setIsSearchFavorited(prev => !prev);
   }
+
 
   const handlePageChange = () => {
     const newPage = page + 1;
@@ -115,7 +122,9 @@ function ResultsPage() {
       const models = response.data;
       logInfo('Models successfully retrieved');
       setModels(models);
-      setForm(prev => ({...prev, model: models[0].name}))
+      if (!form.model) {
+        setForm(prev => ({...prev, model: models[0].name}))
+      }
     } catch (error) {
       logError('HTTP request failed when trying to fetch models', error);
     }
@@ -166,6 +175,8 @@ function ResultsPage() {
     fetchListings(params).then(data => {
       const listings = data.records;
       const listingCount = data.totalCount;
+      setForm(customForm)
+      updateModels(customForm.make)
       if (page === 1) {
         setListingsInfo(prev => ({...prev, listings: listings, totalListingsCount: listingCount}));
       } else {
@@ -173,8 +184,7 @@ function ResultsPage() {
       }
 
       navigate('/results', {state: {
-        filters: customForm,
-        listings: listingsInfo.listings,
+        filters: form,
         makes,
         models
       }})
@@ -292,7 +302,7 @@ function ResultsPage() {
           <div id='saved-search-selection-box'>
             <label id='saved-search-label'>Load a Saved Search</label>
             <select name="" id="saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedPrefLoad}>
-              <option value="" disabled></option>
+              <option value="" disabled selected></option>
               {
                 savedPreferences.map(pref => (
                   <option key={pref.id} value={pref.id}>

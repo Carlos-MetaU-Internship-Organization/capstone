@@ -33,16 +33,17 @@ preferences.post('/', async (req, res) => {
     })
 
     if (existing) {
-      await prisma.searchPreference.delete({
+      const deletedPreference = await prisma.searchPreference.delete({
         where: { id: existing.id }
       })
-      return res.json({ saved: false })
+      return res.json({ preference: deletedPreference, inDB: false })
     } else {
       const newPreference = await prisma.searchPreference.create({
         data: { userId, ...data }
       })
-      return res.json(newPreference);
+      return res.json({ preference: newPreference, inDB: true });
     }
+
 
   } catch (error) {
     logError('Something bad happened when trying to create a new search preference', error);
