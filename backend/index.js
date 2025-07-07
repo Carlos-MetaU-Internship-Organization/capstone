@@ -2,7 +2,10 @@ const express = require('express')
 const session = require('express-session')
 const cors = require('cors')
 const app = express()
-const PORT = 3000 // TODO: put in env
+const dotenv = require('dotenv')
+const config = dotenv.config()
+
+const PORT = process.env.PORT;
 
 const auth = require('./routes/auth');
 const search = require('./routes/search')
@@ -13,17 +16,17 @@ const messages = require('./routes/messages')
 
 let sessionConfig = {
   name: 'sessionId',
-  secret: 'keep it secret, keep it safe', // TODO: put in env 
+  secret: process.env.SESSION_SECRET,
   cookie: {
     maxAge: 1000 * 60 * 60 * 24,
     secure: process.env.RENDER ? true : false,
-    httpOnly: false,
+    httpOnly: true,
   },
   resave: false,
   saveUninitialized: false,
 }
 
-const allowedOrigins = ['http://localhost:5173']; // TODO: change on deployment
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(", ");
 
 let corsOptions = {
   origin: function (origin, callback) {
