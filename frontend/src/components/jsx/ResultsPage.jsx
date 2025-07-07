@@ -29,11 +29,13 @@ function ResultsPage() {
   })
 
   const [models, setModels] = useState(info.state.models);
-  const [isSearchFavorited, setIsSearchFavorited] = useState(false);
   const [listingsInfo, setListingsInfo] = useState({});
   const [favoritedVins, setFavoritedVins] = useState([]);
   const [page, setPage] = useState(1);
   const [searchChange, setSearchChange] = useState(false);
+  
+  const [savedPreferences, setSavedPreferences] = useState([]);
+  const [isSearchFavorited, setIsSearchFavorited] = useState(false);
   
   useEffect(() => {
     const checkAuth = async () => {
@@ -56,21 +58,58 @@ function ResultsPage() {
   }, [form.sortOption])
 
   useEffect(() => {
-    axios
-      .get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true })
-      .then(response => {
-        const vins = response.data.favoritedListings.map(listing => listing.vin);
+    const fetchData = async () => {
+      try {
+        const favoritedListingsResponse = await axios.get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true });
+        const vins = favoritedListingsResponse.data.favoritedListings.map(listing => listing.vin);
         setFavoritedVins(vins);
+
+        const searchPreferences = await axios.get(`${baseURL}/api/preferences/`, { withCredentials: true });
+        if (searchPreferences) {
+          setSavedPreferences(searchPreferences.data);
+        }
+
         handleSearch();
-      })
-      .catch(error => {
-        logError('Something bad happened when trying to fetch your favorited listings', error);
-      })
+      } catch (error) {
+        logError('Something went wrong when initializing the page', error);
+      }
+    }
+    fetchData();
   }, [])
 
-  const handleSearchFavoriteClick = (event) => {
+  useEffect(() => {
+    if (savedPreferences.length > 0) {
+      const isSaved = savedPreferences.some(preference => {
+        return (
+          preference.condition == form.condition &&
+          preference.make == form.make &&
+          preference.model == form.model &&
+          preference.distance == form.distance &&
+          preference.zip == form.zip &&
+          preference.color == form.color &&
+          preference.minYear == form.minYear &&
+          preference.maxYear == form.maxYear &&
+          preference.maxMileage == form.maxMileage &&
+          preference.minPrice == form.minPrice &&
+          preference.maxPrice == form.maxPrice
+        )
+      })
+      setIsSearchFavorited(isSaved);
+    }
+  }, [form, savedPreferences])
+
+  const handleSearchFavoriteClick = async () => {
+    const response = await axios.post(`${baseURL}/api/preferences`, form, { withCredentials: true })
+    const preference = response.data.preference;
+    if (response.data.inDB) {
+      setSavedPreferences(prev => [...prev, preference])
+    } else {
+      setSavedPreferences(prev => prev.filter(pref => pref.id !== preference.id));
+      document.getElementById('saved-search-select-elem').value = "";
+    }
     setIsSearchFavorited(prev => !prev);
   }
+
 
   const handlePageChange = () => {
     const newPage = page + 1;
@@ -83,7 +122,9 @@ function ResultsPage() {
       const models = response.data;
       logInfo('Models successfully retrieved');
       setModels(models);
-      setForm(prev => ({...prev, model: models[0].name}))
+      if (!form.model) {
+        setForm(prev => ({...prev, model: models[0].name}))
+      }
     } catch (error) {
       logError('HTTP request failed when trying to fetch models', error);
     }
@@ -102,38 +143,40 @@ function ResultsPage() {
     }
   }
 
-  const handleSearch = async (event, page = 1) => {
+  const handleSearch = async (event, page = 1, customForm = form) => {
     if (event) {
       event.preventDefault();
     }
 
     setPage(page);
 
-    const { make, model } = form;
+    const { make, model } = customForm;
     if (!make || !model) {
       logWarning('Search failed: Missing fields.');
       return
     }
 
     const params = {
-      make: form.make,
-      model: form.model,
-      condition: form.condition,
-      zip: form.zip,
-      distance: form.distance,
-      color: form.color,
-      minYear: form.minYear,
-      maxYear: form.maxYear,
-      maxMileage: form.maxMileage,
-      minPrice: form.minPrice, 
-      maxPrice: form.maxPrice,
-      sortOption: form.sortOption,
+      make: customForm.make,
+      model: customForm.model,
+      condition: customForm.condition,
+      zip: customForm.zip,
+      distance: customForm.distance,
+      color: customForm.color,
+      minYear: customForm.minYear,
+      maxYear: customForm.maxYear,
+      maxMileage: customForm.maxMileage,
+      minPrice: customForm.minPrice, 
+      maxPrice: customForm.maxPrice,
+      sortOption: customForm.sortOption,
       page
     }
 
     fetchListings(params).then(data => {
       const listings = data.records;
       const listingCount = data.totalCount;
+      setForm(customForm)
+      updateModels(customForm.make)
       if (page === 1) {
         setListingsInfo(prev => ({...prev, listings: listings, totalListingsCount: listingCount}));
       } else {
@@ -142,13 +185,34 @@ function ResultsPage() {
 
       navigate('/results', {state: {
         filters: form,
-        listings: listingsInfo.listings,
         makes,
         models
       }})
   
       setSearchChange(false);
     })
+  }
+
+  const handleSavedPrefLoad = (event) => {
+    const prefId = event.target.value;
+    const pref = savedPreferences.find(pref => pref.id == prefId)
+    
+    const updatedForm = {
+      make: pref.make,
+      model: pref.model,
+      condition: pref.condition,
+      zip: pref.zip,
+      distance: pref.distance,
+      color: pref.color,
+      minYear: pref.minYear,
+      maxYear: pref.maxYear,
+      maxMileage: pref.maxMileage,
+      minPrice: pref.minPrice, 
+      maxPrice: pref.maxPrice,
+      sortOption: form.sortOption
+    }
+
+    handleSearch(null, 1, updatedForm);
   }
 
   const colors = ['beige', 'black', 'blue', 'brown', 'gold', 'gray', 'green', 'orange', 'purple', 'red', 'silver', 'white', 'yellow'];
@@ -234,6 +298,20 @@ function ResultsPage() {
               searchChange && (<button id='result-page-search-button' type='submit'>Search</button>)
             }
           </form>
+
+          <div id='saved-search-selection-box'>
+            <label id='saved-search-label'>Load a Saved Search</label>
+            <select name="" id="saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedPrefLoad}>
+              <option value="" disabled selected></option>
+              {
+                savedPreferences.map(pref => (
+                  <option key={pref.id} value={pref.id}>
+                    {`${pref.make} ${pref.model}, ${pref.distance}mi from ${pref.zip}, Color: ${pref.color.charAt(0).toUpperCase() + pref.color.slice(1) || 'Any'}`}
+                  </option>
+                ))
+              }
+            </select>
+          </div>
         </div>
         <div id='result-page-listings-content'>
           <select className='translucent pointer' id='sort-menu' value={form.sortOption} name='sortOption' onChange={updateForm}>

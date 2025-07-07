@@ -26,6 +26,7 @@ model User {
   ownedListings        Listing[]  @relation("owner")
   favoritedListings    Listing[]  @relation("favoriter")
   listingVisits        ListingVisit[]
+  searchPreferences    SearchPreference[]
 }
 
 model Make {
@@ -81,4 +82,21 @@ model ListingVisit {
 
   @@unique([userId, listingId])
   @@index([userId, visitedAt])
+}
+
+model SearchPreference {
+  id                   Int         @id @default(autoincrement())
+  user                 User        @relation(fields: [userId], references: [id])
+  userId               Int
+  condition            String
+  make                 String
+  model                String
+  distance             String
+  zip                  String
+  color                String
+  minYear              String
+  maxYear              String
+  maxMileage           String
+  minPrice             String
+  maxPrice             String
 }
