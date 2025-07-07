@@ -64,11 +64,6 @@ listings.get('/popular', async (req, res) => {
 listings.post('/', async (req, res) => {
   const userId = parseInt(req.session.user?.id)
 
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
-
   let { condition, make, model, year, color, mileage, vin, description, images, price, zip = '', owner_name = '', owner_number = '', city = '', state = '', latitude = 0, longitude = 0, createdAt = '', views = 0 } = req.body;
   if (!condition || !make || !model || !year || !color || !mileage || !vin || !description || images.length === 0 || !price) {
     logWarning('Listing creation failed: Missing fields.');
