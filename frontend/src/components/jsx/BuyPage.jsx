@@ -24,6 +24,7 @@ function BuyPage() {
   })
   const [mostDwelledListing, setMostDwelledListing] = useState(null);
   const [favoritedListings, setFavoritedListings] = useState([]);
+  const [savedPreferences, setSavedPreferences] = useState([]);
   const [page, setPage] = useState(1);
 
   const navigate = useNavigate();
@@ -74,6 +75,18 @@ function BuyPage() {
       }
     }
     getMostDwelledListing();
+
+    const getSavedSearchPreferences = async () => {
+      try {
+        const searchPreferences = await axios.get(`${baseURL}/api/preferences/`, { withCredentials: true });
+        if (searchPreferences) {
+          setSavedPreferences(searchPreferences.data);
+        }
+      } catch (error) {
+        logError('Something bad happened when trying to fetch saved search preferences', error);
+      }
+    }
+    getSavedSearchPreferences();
   }, []);
   
   const updateForm = async (event) => {
@@ -122,6 +135,32 @@ function BuyPage() {
     }
   }
 
+  const handleSavedPrefLoad = (event) => {
+    const prefId = event.target.value;
+    const pref = savedPreferences.find(pref => pref.id == prefId)
+    
+    const updatedForm = {
+      make: pref.make,
+      model: pref.model,
+      condition: pref.condition,
+      zip: pref.zip,
+      distance: pref.distance,
+      color: pref.color,
+      minYear: pref.minYear,
+      maxYear: pref.maxYear,
+      maxMileage: pref.maxMileage,
+      minPrice: pref.minPrice, 
+      maxPrice: pref.maxPrice
+    }
+
+    navigate('/results', {state: {
+      makes,
+      models,
+      filters: updatedForm
+    }});
+  }
+
+
   return (
     <div id='buy-page'>
       <Header />
@@ -166,23 +205,37 @@ function BuyPage() {
             </div>
             <button className='translucent' id='search-button' type='submit'>Search</button>
           </form>
-          {
-            mostDwelledListing &&
-            <div id='most-viewed-container'>
-              <p>Still Interested?</p>
-              <div className='translucent most-viewed-listing pointer'>
-                <img src={mostDwelledListing.images[0]} id='most-viewed-car-img' className='car-image' onClick={() => navigate(`/listing/${mostDwelledListing.vin}`)}/>
-                <div id='most-viewed-car-info'>
-                  <p>Make: {mostDwelledListing.make}</p>
-                  <p>Model: {mostDwelledListing.model}</p>
-                  <p>Year: {mostDwelledListing.year}</p>
-                  <p>Location: {mostDwelledListing.city}, {mostDwelledListing.state}</p>
-                  <p>Price: ${parseInt(mostDwelledListing.price).toLocaleString('en-US')}</p>
-                </div>
+          <h3>OR</h3>
+          <div id='buy-page-saved-search-selection-box'>
+            <label id='buy-page-saved-search-label'>Load a Saved Search</label>
+            <select id="buy-page-saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedPrefLoad}>
+              <option value="" disabled></option>
+              {
+                savedPreferences.map(pref => (
+                  <option key={pref.id} value={pref.id}>
+                    {`${pref.make} ${pref.model}, ${pref.distance}mi from ${pref.zip}, Color: ${pref.color.charAt(0).toUpperCase() + pref.color.slice(1) || 'Any'}`}
+                  </option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
+        {
+          mostDwelledListing &&
+          <div id='most-viewed-container'>
+            <h2>Still Interested?</h2>
+            <div className='translucent most-viewed-listing pointer'>
+              <img src={mostDwelledListing.images[0]} id='most-viewed-car-img' className='car-image' onClick={() => navigate(`/listing/${mostDwelledListing.vin}`)}/>
+              <div id='most-viewed-car-info'>
+                <p>Make: {mostDwelledListing.make}</p>
+                <p>Model: {mostDwelledListing.model}</p>
+                <p>Year: {mostDwelledListing.year}</p>
+                <p>Location: {mostDwelledListing.city}, {mostDwelledListing.state}</p>
+                <p>Price: ${parseInt(mostDwelledListing.price).toLocaleString('en-US')}</p>
               </div>
             </div>
-          }
-        </div>
+          </div>
+        }
       </div>
       {
         favoritedListings.length > 0 &&
