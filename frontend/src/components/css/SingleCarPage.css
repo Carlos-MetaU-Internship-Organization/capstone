@@ -12,13 +12,17 @@
 
 #main-content {
   display: flex;
-  gap: 25vw;
+  gap: 15vw;
+  justify-content: space-around;
 }
 
 #listing-container {
   display: flex;
+  justify-content: center;
   flex: 3;
   gap: 50px;
+  margin: 100px;
+  max-width: 60vw;
 }
 
 #listing-info {
@@ -60,14 +64,49 @@
 }
 
 #contact-seller-container {
-  /* display: flex;
-  flex-direction: column; */
-  max-height: 200px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  height: fit-content;
   flex: 2;
+  margin: 100px;
+  padding: 25px;
+  border-radius: 25px;
+  
+}
+
+#messages {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 #reply-box {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+#reply-input {
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  width: 100%;
+}
+
+#reply-input::placeholder {
+  color: black;
+}
+
+#reply-input:focus {
+  outline: none;
+}
+
+#reply-send-button {
+  width: fit-content;
+}
+
+#reply-send-button:hover {
+  border: 1px solid;
 }

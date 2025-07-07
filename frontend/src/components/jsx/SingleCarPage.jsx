@@ -17,11 +17,19 @@ function SingleCarPage() {
   const path = useRef(window.location.href);
   const enterTime = useRef();
   const listingIdRef = useRef();
+  const listingOwnerIdRef = useRef();
+  const activeUserIdRef = useRef();
 
   const [listing, setListing] = useState(null);
   const [isFavorited, setIsFavorited] = useState(false);
 
   const [imageIndex, setImageIndex] = useState(0);
+
+  const [chatHistory, setChatHistory] = useState([]);
+  const [allMessages, setAllMessages] = useState({}); // for seller use only
+  const [selectedBuyerId, setSelectedBuyerId] = useState(null); // for seller use only
+
+  const [messageToSend, setMessageToSend] = useState('');
 
   // ON BOOT
   useEffect(() => {
@@ -32,6 +40,7 @@ function SingleCarPage() {
           if (!response.data.authenticated) {
             navigate('/');
           }
+          activeUserIdRef.current = response.data.id;
         } catch {
           navigate('/');
         }
@@ -75,12 +84,25 @@ function SingleCarPage() {
             setListing(response.data.listing);
             setIsFavorited(favorited);
             listingIdRef.current = response.data.listing.id;
+            listingOwnerIdRef.current = response.data.listing.owner.id;
           }
         } catch (error) {
           logError(`Something went wrong when trying to fetch listing with VIN: ${vin}`, error)
         }
       }
       await fetchData();
+
+      const fetchMessages = async () => {
+        try {
+          const response = await axios.get(`${baseURL}/api/messages/listing/${listingIdRef.current}/seller/${listingOwnerIdRef.current}`, { withCredentials: true })
+          if (response.data.length > 0) {
+            setChatHistory(response.data);
+          }
+        } catch (error) {
+          logError(`Something went wrong when trying to fetch chat history between you and seller with id: ${listingOwnerIdRef.current}`, error)
+        }
+      }
+      await fetchMessages();
 
       enterTime.current = Date.now();
     }
@@ -139,6 +161,24 @@ function SingleCarPage() {
   const handlePreviousImage = () => {
     setImageIndex(prev => (prev - 1 + listing.images.length) % listing.images.length);
   }
+
+  const handleMessageSend = async () => {
+    if (!messageToSend) return;
+
+    const bodyToSend = {
+      receiverId: listing.owner.id,
+      content: messageToSend,
+      listingId: listing.id
+    }
+
+    try {
+      const response = await axios.post(`${baseURL}/api/messages/`, bodyToSend, { withCredentials: true });
+      setChatHistory(prev => [...prev, response.data]);
+      setMessageToSend('');
+    } catch (error) {
+      logError(`Something went wrong when trying to send a message to seller with id: ${listing.owner.id}`, error);
+    }
+  }
   
   if (!listing) {
     return <div>Loading...</div>
@@ -175,16 +215,24 @@ function SingleCarPage() {
             </div>
             <img src={isFavorited ? pinkHeart : heart} id='favorite-listing-img' onClick={handleFavoriteClick}/>
           </div>
-          <div id='contact-seller-container'>
-            <h3>Contact Seller</h3>
-            <div id='messages'>
-              {/* Messages between Seller/Buyer here*/}
-            </div>
-            <div id='reply-box'>
-              <textarea placeholder='Reply:' rows={3}></textarea>
-              <button>Send</button>
-            </div>
-          </div>
+          {
+            listing.owner && listing.owner.id !== activeUserIdRef.current && (
+              <div id='contact-seller-container' className='translucent'>
+                <h3>Contact Seller</h3>
+                <div id='messages'>
+                  {
+                    chatHistory.map(message => {
+                      return <p><strong>{message.senderId === listing.owner.id ? listing.owner_name : 'You'}:</strong> {message.content}</p>
+                    })
+                  }
+                </div>
+                <div id='reply-box'>
+                  <textarea id='reply-input' className='translucent' placeholder={'Reply:'} rows={3} value={messageToSend} onChange={(e) => setMessageToSend(e.target.value)}></textarea>
+                  <button id='reply-send-button' className='translucent' onClick={handleMessageSend}>Send</button>
+                </div>
+              </div>
+            )
+          }
         </div>
       </div>
     </div>

@@ -67,7 +67,7 @@ auth.post('/logout', (req, res) => {
 // Check if they are authenticated
 auth.get('/check-auth', (req, res) => {
   if (req.session && req.session.user) {
-    res.json({ authenticated: true});
+    res.json({ id: req.session.user.id, authenticated: true});
   } else {
     res.json({ authenticated: false});
   }
