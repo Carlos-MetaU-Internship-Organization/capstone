@@ -165,6 +165,11 @@ listings.get('/:vin', async (req, res) => {
             zip: true,
             email: true
           }
+        },
+        owner: {
+          select: {
+            id: true
+          }
         }
       }
     })

@@ -9,6 +9,7 @@ const search = require('./routes/search')
 const listings = require('./routes/listings')
 const track = require('./routes/track')
 const preferences = require('./routes/preferences')
+const messages = require('./routes/messages')
 
 let sessionConfig = {
   name: 'sessionId',
@@ -44,6 +45,7 @@ app.use('/api/search', search);
 app.use('/api/listings', listings);
 app.use('/api/track', track);
 app.use('/api/preferences', preferences);
+app.use('/api/messages', messages);
 
 app.listen(PORT, () => {
   console.log(`Server is listening on ${PORT}`)
