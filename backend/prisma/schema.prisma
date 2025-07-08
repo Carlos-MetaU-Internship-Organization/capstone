@@ -83,11 +83,12 @@ model ListingVisit {
   userId                       Int
   listing                      Listing             @relation(fields: [listingId], references: [id])
   listingId                    Int
-  visitedAt                    DateTime            @default(now())
+  firstVisitAt                 DateTime            @default(now())
+  recentVisitAt                DateTime            @default(now())
   dwellTime                    Int                 @default(0)
+  clickCount                   Int                 @default(0)
 
   @@unique([userId, listingId])
-  @@index([userId, visitedAt])
 }
 
 model SearchPreference {
