@@ -6,7 +6,7 @@ import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
-import { fetchListings } from '../../utils/helpers'
+import { fetchListings } from '../../utils/api'
 import axios from 'axios'
 
 function BuyPage() {
@@ -78,7 +78,7 @@ function BuyPage() {
 
     const getSavedSearchPreferences = async () => {
       try {
-        const searchPreferences = await axios.get(`${baseURL}/api/preferences/`, { withCredentials: true });
+        const searchPreferences = await axios.get(`${baseURL}/api/preferences/favorites`, { withCredentials: true });
         if (searchPreferences) {
           setSavedPreferences(searchPreferences.data);
         }

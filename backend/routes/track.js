@@ -5,8 +5,8 @@ const track = express.Router()
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
-track.post('/dwell', async (req, res) => {
-  let { listingId, dwellTime } = req.body;
+track.post('/dwell-and-click', async (req, res) => {
+  let { listingId, clickCount, dwellTime } = req.body;
   const userId = req.session.user?.id;
 
   if (!userId) {
@@ -14,9 +14,9 @@ track.post('/dwell', async (req, res) => {
     return res.status(401).json({ message: 'Invalid session'});
   }
 
-  if (!listingId || dwellTime == '0') {
-    logWarning('Invalid parameters');
-    return res.status(400).json({ message: 'Invalid parameters'});
+  if (!listingId) {
+    logWarning('Invalid listingId');
+    return res.status(400).json({ message: 'Invalid listingId'});
   }
 
   try {
@@ -28,21 +28,22 @@ track.post('/dwell', async (req, res) => {
       await prisma.listingVisit.update({
         where: { id: prev_visit.id },
         data: {
+          clickCount: prev_visit.clickCount + clickCount,
           dwellTime: prev_visit.dwellTime + dwellTime,
-          visitedAt: new Date()
+          recentVisitAt: new Date()
         }
       })
     } else {
       await prisma.listingVisit.create({
-        data: { userId, listingId, dwellTime }
+        data: { userId, listingId, clickCount, dwellTime }
       })
     }
 
-    logInfo(`Successfully tracked ${dwellTime} seconds of dwell time for listingId: ${listingId} and userId: ${userId}`)
-    res.json({ message: 'Successfully tracked dwell time.'})
+    logInfo(`Successfully tracked ${dwellTime} seconds of dwell time & ${clickCount} clicks for listingId: ${listingId} and userId: ${userId}`)
+    res.json({ message: 'Successfully tracked dwell time & click count.'})
   } catch (error) {
-    logError('Something bad happened when trying to save dwell time', error);
-    res.status(500).json({ message: 'Failed to save dwell time '})
+    logError('Something bad happened when trying to save dwell time & click count', error);
+    res.status(500).json({ message: 'Failed to save dwell time & click count'})
   }  
 })
 
@@ -84,7 +85,7 @@ track.get('/most-recently-visited-listings', async (req, res) => {
   try {
     const mostRecentVisits = await prisma.listingVisit.findMany({
       where: { userId },
-      orderBy: { visitedAt: 'desc' },
+      orderBy: { recentVisitAt: 'desc' },
       take: 20,
       include: { listing: true }
     })

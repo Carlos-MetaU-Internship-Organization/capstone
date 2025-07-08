@@ -7,7 +7,7 @@ import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
-import { fetchListings } from './../../utils/helpers'
+import { fetchListings } from '../../utils/api'
 import axios from 'axios'
 
 function ResultsPage() {
@@ -64,7 +64,7 @@ function ResultsPage() {
         const vins = favoritedListingsResponse.data.favoritedListings.map(listing => listing.vin);
         setFavoritedVins(vins);
 
-        const searchPreferences = await axios.get(`${baseURL}/api/preferences/`, { withCredentials: true });
+        const searchPreferences = await axios.get(`${baseURL}/api/preferences/favorites/`, { withCredentials: true });
         if (searchPreferences) {
           setSavedPreferences(searchPreferences.data);
         }
@@ -99,7 +99,7 @@ function ResultsPage() {
   }, [form, savedPreferences])
 
   const handleSearchFavoriteClick = async () => {
-    const response = await axios.post(`${baseURL}/api/preferences`, form, { withCredentials: true })
+    const response = await axios.post(`${baseURL}/api/preferences/favorite`, form, { withCredentials: true })
     const preference = response.data.preference;
     if (response.data.inDB) {
       setSavedPreferences(prev => [...prev, preference])
@@ -172,11 +172,16 @@ function ResultsPage() {
       page
     }
 
-    fetchListings(params).then(data => {
+    Promise.all([
+      fetchListings(params),
+      updateModels(customForm.make),
+      axios.post(`${baseURL}/api/preferences/view`, customForm, { withCredentials: true })
+    ]).then(([data, _, resposne]) => {
       const listings = data.records;
       const listingCount = data.totalCount;
+
       setForm(customForm)
-      updateModels(customForm.make)
+  
       if (page === 1) {
         setListingsInfo(prev => ({...prev, listings: listings, totalListingsCount: listingCount}));
       } else {
@@ -190,6 +195,8 @@ function ResultsPage() {
       }})
   
       setSearchChange(false);
+    }).catch(error => {
+      logError('Something went wrong when searching for listings', error);
     })
   }
 

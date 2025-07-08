@@ -16,6 +16,8 @@ function SingleCarPage() {
   const navigate = useNavigate();
   const path = useRef(window.location.href);
   const enterTime = useRef();
+  const inactivityTimeout = useRef(null);
+
   const listingIdRef = useRef();
   const listingOwnerIdRef = useRef();
   const activeUserIdRef = useRef();
@@ -26,10 +28,13 @@ function SingleCarPage() {
   const [imageIndex, setImageIndex] = useState(0);
 
   const [chatHistory, setChatHistory] = useState([]);
-  const [allMessages, setAllMessages] = useState({}); // for seller use only
-  const [selectedBuyerId, setSelectedBuyerId] = useState(null); // for seller use only
-
   const [messageToSend, setMessageToSend] = useState('');
+
+  const numClicks = useRef(0);
+
+  // TODO: implement Seller POV
+  // const [allMessages, setAllMessages] = useState({}); // for seller use only
+  // const [selectedBuyerId, setSelectedBuyerId] = useState(null); // for seller use only
 
   // ON BOOT
   useEffect(() => {
@@ -81,10 +86,10 @@ function SingleCarPage() {
             listingIdRef.current = newListing.data.id;
           } else {
             const favorited = listing.favoriters.some(favoriter => favoriter.id === userId);
-            setListing(response.data.listing);
+            setListing(listing);
             setIsFavorited(favorited);
-            listingIdRef.current = response.data.listing.id;
-            listingOwnerIdRef.current = response.data.listing.owner.id;
+            listingIdRef.current = listing.id;
+            listingOwnerIdRef.current = listing.owner?.id;
           }
         } catch (error) {
           logError(`Something went wrong when trying to fetch listing with VIN: ${vin}`, error)
@@ -102,19 +107,42 @@ function SingleCarPage() {
           logError(`Something went wrong when trying to fetch chat history between you and seller with id: ${listingOwnerIdRef.current}`, error)
         }
       }
-      await fetchMessages();
+      if (listingOwnerIdRef.current && listingOwnerIdRef.current !== activeUserIdRef.current) {
+        await fetchMessages();
+      }
 
       enterTime.current = Date.now();
     }
 
     boot();
 
-    const sendDwellTime = async () => {
+    
+    const resetEnterTime = () => {
+      enterTime.current = Date.now();
+      resetTimeout();
+    }
+    
+    const resetTimeout = () => {
+      clearTimeout(inactivityTimeout.current);
+      inactivityTimeout.current = setTimeout(resetEnterTime, 30000);
+    }
+    
+    inactivityTimeout.current = setTimeout(resetEnterTime, 30000)
+
+    document.addEventListener('mousemove', () => {
+      resetTimeout();
+    })
+
+    document.addEventListener('keydown', () => {
+      resetTimeout();
+    })
+    
+    const sendClickCountAndDwellTime = async () => {
       const leaveTime = Date.now();
       const dwellTime = Math.round((leaveTime - enterTime.current) / 1000);
       enterTime.current = leaveTime;
 
-      fetch(`${baseURL}/api/track/dwell`, {
+      fetch(`${baseURL}/api/track/dwell-and-click`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -122,26 +150,37 @@ function SingleCarPage() {
         },
         body: JSON.stringify({
           listingId: listingIdRef.current,
+          clickCount: numClicks.current,
           dwellTime: dwellTime,
         }),
         keepalive: true
       })
     }
 
+    const handlePageClick = () => {
+      numClicks.current = numClicks.current + 1;
+    }
+
     const onVisibilityChange = () => {
       if (document.visibilityState == 'hidden') {
-        sendDwellTime();
+        sendClickCountAndDwellTime();
       } else if (document.visibilityState == 'visible') {
         enterTime.current = Date.now();
       }
     }
 
+    document.addEventListener('click', handlePageClick);
     document.addEventListener('visibilitychange', onVisibilityChange);
     return () => {
       if (window.location.href != path.current) {
-        sendDwellTime();
+        sendClickCountAndDwellTime();
       }
-      document.removeEventListener('visibilitychange', onVisibilityChange)
+      document.removeEventListener('click', handlePageClick);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+
+      clearTimeout(inactivityTimeout.current);
+      document.removeEventListener('mousemove', resetTimeout);
+      document.removeEventListener('keydown', resetTimeout);
     }
   }, []);
 
@@ -222,7 +261,7 @@ function SingleCarPage() {
                 <div id='messages'>
                   {
                     chatHistory.map(message => {
-                      return <p><strong>{message.senderId === listing.owner.id ? listing.owner_name : 'You'}:</strong> {message.content}</p>
+                      return <p key={message.id}><strong>{message.senderId === listing.owner.id ? listing.owner_name : 'You'}:</strong> {message.content}</p>
                     })
                   }
                 </div>
