@@ -7,7 +7,7 @@ import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
-import { fetchListings } from './../../utils/helpers'
+import { fetchListings } from '../../utils/api'
 import axios from 'axios'
 
 function ResultsPage() {
@@ -64,7 +64,7 @@ function ResultsPage() {
         const vins = favoritedListingsResponse.data.favoritedListings.map(listing => listing.vin);
         setFavoritedVins(vins);
 
-        const searchPreferences = await axios.get(`${baseURL}/api/preferences/`, { withCredentials: true });
+        const searchPreferences = await axios.get(`${baseURL}/api/preferences/favorites/`, { withCredentials: true });
         if (searchPreferences) {
           setSavedPreferences(searchPreferences.data);
         }
@@ -99,7 +99,7 @@ function ResultsPage() {
   }, [form, savedPreferences])
 
   const handleSearchFavoriteClick = async () => {
-    const response = await axios.post(`${baseURL}/api/preferences`, form, { withCredentials: true })
+    const response = await axios.post(`${baseURL}/api/preferences/favorite`, form, { withCredentials: true })
     const preference = response.data.preference;
     if (response.data.inDB) {
       setSavedPreferences(prev => [...prev, preference])
@@ -175,6 +175,7 @@ function ResultsPage() {
     fetchListings(params).then(data => {
       const listings = data.records;
       const listingCount = data.totalCount;
+      // TODO FOR TC: send searchpref to backend, storing 5 most recent
       setForm(customForm)
       updateModels(customForm.make)
       if (page === 1) {

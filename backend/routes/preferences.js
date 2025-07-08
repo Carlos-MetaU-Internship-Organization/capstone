@@ -4,7 +4,7 @@ const preferences = express.Router()
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
-preferences.post('/', async (req, res) => {
+preferences.post('/favorite', async (req, res) => {
   const data = req.body;
   delete data.sortOption;
   const userId = req.session.user?.id;
@@ -17,7 +17,7 @@ preferences.post('/', async (req, res) => {
   try {
     const existing = await prisma.searchPreference.findFirst({
       where: {
-        userId,
+        favoriterId: userId,
         condition: data.condition,
         make: data.make,
         model: data.model,
@@ -33,13 +33,15 @@ preferences.post('/', async (req, res) => {
     })
 
     if (existing) {
+      logInfo('Found existing search preference in DB. Time to delete!')
       const deletedPreference = await prisma.searchPreference.delete({
         where: { id: existing.id }
       })
       return res.json({ preference: deletedPreference, inDB: false })
     } else {
+      logInfo('No existing search preference in DB. Time to create it!')
       const newPreference = await prisma.searchPreference.create({
-        data: { userId, ...data }
+        data: { favoriterId: userId, ...data}
       })
       return res.json({ preference: newPreference, inDB: true });
     }
@@ -51,7 +53,7 @@ preferences.post('/', async (req, res) => {
   }  
 })
 
-preferences.get('/', async (req, res) => {
+preferences.get('/favorites', async (req, res) => {
   const userId = req.session.user?.id;
 
   if (!userId) {
@@ -61,7 +63,7 @@ preferences.get('/', async (req, res) => {
 
   try {
     const searchPreferences = await prisma.searchPreference.findMany({
-      where: { userId }
+      where: { favoriterId: userId },
     })
 
     logInfo(`Successfully retrieved search preferences for userId: ${userId}`)

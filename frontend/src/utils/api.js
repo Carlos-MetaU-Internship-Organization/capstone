@@ -38,3 +38,7 @@ export async function fetchListings(params) {
     logError('Listings HTTP request failed', error);
   }
 }
+
+export async function fetchRecommendations(userId) {
+
+}

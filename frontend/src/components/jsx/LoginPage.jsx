@@ -7,7 +7,7 @@ import profile from './../../assets/profile.png'
 import lock from './../../assets/lock.png'
 import { Link, useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service'
-import { loginUser } from './../../utils/helpers'
+import { loginUser } from '../../utils/api'
 
 function LoginPage() {
   const [login, setLogin] = useState('');
