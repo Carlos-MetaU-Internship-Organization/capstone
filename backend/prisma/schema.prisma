@@ -107,6 +107,7 @@ model SearchPreference {
   maxMileage                   String
   minPrice                     String
   maxPrice                     String
+  createdAt                    DateTime            @default(now())
 }
 
 model Message {

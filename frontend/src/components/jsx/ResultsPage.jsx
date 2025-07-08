@@ -172,12 +172,16 @@ function ResultsPage() {
       page
     }
 
-    fetchListings(params).then(data => {
+    Promise.all([
+      fetchListings(params),
+      updateModels(customForm.make),
+      axios.post(`${baseURL}/api/preferences/view`, customForm, { withCredentials: true })
+    ]).then(([data, _, resposne]) => {
       const listings = data.records;
       const listingCount = data.totalCount;
-      // TODO FOR TC: send searchpref to backend, storing 5 most recent
+
       setForm(customForm)
-      updateModels(customForm.make)
+  
       if (page === 1) {
         setListingsInfo(prev => ({...prev, listings: listings, totalListingsCount: listingCount}));
       } else {
@@ -191,6 +195,8 @@ function ResultsPage() {
       }})
   
       setSearchChange(false);
+    }).catch(error => {
+      logError('Something went wrong when searching for listings', error);
     })
   }
 
