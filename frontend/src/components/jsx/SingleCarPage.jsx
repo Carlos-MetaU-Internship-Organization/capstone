@@ -16,6 +16,8 @@ function SingleCarPage() {
   const navigate = useNavigate();
   const path = useRef(window.location.href);
   const enterTime = useRef();
+  const inactivityTimeout = useRef(null);
+
   const listingIdRef = useRef();
   const listingOwnerIdRef = useRef();
   const activeUserIdRef = useRef();
@@ -114,6 +116,27 @@ function SingleCarPage() {
 
     boot();
 
+    
+    const resetEnterTime = () => {
+      enterTime.current = Date.now();
+      resetTimeout();
+    }
+    
+    const resetTimeout = () => {
+      clearTimeout(inactivityTimeout.current);
+      inactivityTimeout.current = setTimeout(resetEnterTime, 30000);
+    }
+    
+    inactivityTimeout.current = setTimeout(resetEnterTime, 30000)
+
+    document.addEventListener('mousemove', () => {
+      resetTimeout();
+    })
+
+    document.addEventListener('keydown', () => {
+      resetTimeout();
+    })
+    
     const sendClickCountAndDwellTime = async () => {
       const leaveTime = Date.now();
       const dwellTime = Math.round((leaveTime - enterTime.current) / 1000);
@@ -154,6 +177,10 @@ function SingleCarPage() {
       }
       document.removeEventListener('click', handlePageClick);
       document.removeEventListener('visibilitychange', onVisibilityChange);
+
+      clearTimeout(inactivityTimeout.current);
+      document.removeEventListener('mousemove', resetTimeout);
+      document.removeEventListener('keydown', resetTimeout);
     }
   }, []);
 
