@@ -1,11 +1,11 @@
 const { logInfo, logWarning, logError } = require('../utils/logging.service');
-
 const express = require('express')
+const axios = require('axios');
 const auth = express.Router()
 const { hashPassword, verifyPassword } = require('./argon')
-
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+
 
 // Signup
 auth.post('/signup', async (req, res) => {
@@ -21,7 +21,20 @@ auth.post('/signup', async (req, res) => {
 
   if (!user) {
     const hash = await hashPassword(plainPassword);
-    const newUser = {name, username, email, zip, phoneNumber, password: hash};
+
+    let latitude = null;
+    let longitude = null;
+    
+    try {
+      const response = await axios.get(`https://nominatim.openstreetmap.org/search?q=${zip}&format=json&limit=1`, { headers: { 'User-Agent': 'CarPortal' } });
+      const data = response.data;
+      latitude = parseFloat(data[0].lat);
+      longitude = parseFloat(data[0].lon);
+    } catch (error) {
+      res.json({ status: 500, message: 'Failed to turn ZIP into latitude & longitude' })
+    }
+
+    const newUser = {name, username, email, zip, latitude, longitude, phoneNumber, password: hash};
     await prisma.user.create({data: newUser});
     res.json({ status: 200, message: `Welcome, ${name}`});
   } else {

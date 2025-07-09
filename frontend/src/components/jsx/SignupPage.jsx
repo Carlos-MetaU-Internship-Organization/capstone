@@ -78,7 +78,7 @@ function SignupPage() {
           </div>
           <div className='signup-info'>
             <img src={pin} height='16px' width='16px'/>
-            <input type="text" className='signup-info-textbox' name='zip' value={zip} placeholder='ZIP' onChange={(e) => setZip(e.target.value)} required />
+            <input type="number" className='signup-info-textbox' name='zip' value={zip} placeholder='ZIP' onChange={(e) => setZip(e.target.value)} required />
           </div>
           <div className='signup-info'>
             <img src={profile} height='16px' width='16px'/>

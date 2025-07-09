@@ -413,13 +413,15 @@ listings.get('/user/favorited', async (req, res) => {
 
 listings.get('/recommended', async (req, res) => {
   const userId = req.session.user?.id;
+  const userLatitude = req.session.user?.latitude;
+  const userLongitude = req.session.user?.longitude;
 
   if (!userId) {
     logWarning('Invalid session');
     return res.status(401).json({ message: 'Invalid session'});
   }
 
-  getRecommendations(userId);
+  getRecommendations(userId, userLatitude, userLongitude);
 })
 
 module.exports = listings;
