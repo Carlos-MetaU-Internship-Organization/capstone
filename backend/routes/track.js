@@ -2,7 +2,8 @@ const { logInfo, logWarning, logError } = require('../utils/logging.service');
 const axios = require('axios')
 const express = require('express')
 const track = express.Router()
-const { PrismaClient } = require('@prisma/client')
+const { PrismaClient } = require('@prisma/client');
+const { fetchRecentlyClickedListings } = require('../services/fetchRelevantListingsService');
 const prisma = new PrismaClient()
 
 track.post('/dwell-and-click', async (req, res) => {
@@ -74,30 +75,23 @@ track.get('/most-dwelled-listings', async (req, res) => {
   }
 })
 
-track.get('/most-recently-visited-listings', async (req, res) => {
+track.get('/most-recently-visited-listings/:count', async (req, res) => {
   const userId = req.session.user?.id;
+  const count = parseInt(req.params.count);
   
   if (!userId) {
     logWarning('Invalid session');
     return res.status(401).json({ message: 'Invalid session '});
   }
 
-  try {
-    const mostRecentVisits = await prisma.listingVisit.findMany({
-      where: { userId },
-      orderBy: { recentVisitAt: 'desc' },
-      take: 20,
-      include: { listing: true }
-    })
+  const response = await fetchRecentlyClickedListings(userId, count);
 
-    if (!mostRecentVisits) {
-      return res.status(400).json({ message: `User with Id: ${userId} has no previous visits` });
-    }
-
-    res.json(mostRecentVisits);
-  } catch (error) {
-    logError('Something bad happened trying to fetch most-recently-visited listings', error);
-    res.status(500).json({ message: 'Failed to retrieve the 20 most-recently visited listings'})
+  if (response.status === 200) {
+    res.json(response.listings);
+  } else if (response.status === 404) {
+    res.status(404).json({ message: `User with Id: ${userId} has no previous visits`})
+  } else {
+    res.status(500).json({ message: `Failed to retrieve the ${count} most-recently visited listings` })
   }
 })
 

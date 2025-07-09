@@ -1,7 +1,8 @@
 const { logInfo, logWarning, logError } = require('../utils/logging.service');
 const express = require('express')
 const preferences = express.Router()
-const { PrismaClient } = require('@prisma/client')
+const { PrismaClient } = require('@prisma/client');
+const { fetchPastSearches } = require('../services/fetchRelevantListingsService');
 const prisma = new PrismaClient()
 
 preferences.post('/favorite', async (req, res) => {
@@ -85,6 +86,18 @@ preferences.post('/view', async (req, res) => {
   }
 
   try {
+      const existing = await prisma.searchPreference.findFirst({
+        where: { viewerId: userId, ...data }
+      })
+
+      if (existing) {
+        logInfo('Record already exists')
+        return res.json({
+          preference: existing,
+          message: 'This record already exists - No new record created'
+        })
+      }
+    
       const viewedPreference = await prisma.searchPreference.create({
         data: { viewerId: userId, ...data}
       })
@@ -116,17 +129,15 @@ preferences.get('/viewed', async (req, res) => {
     return res.status(401).json({ message: 'Invalid session'});
   }
 
-  try {
-    const searchPreferences = await prisma.searchPreference.findMany({
-      where: { viewerId: userId },
-    })
+  const response = await fetchPastSearches(userId, count);
 
-    logInfo(`Successfully retrieved viewed search preferences for userId: ${userId}`)
-    res.json(searchPreferences)
-  } catch (error) {
-    logError('Something bad happened when trying to retrieve viewed search preferences', error);
-    res.status(500).json({ message: 'Failed to retrieve viewed search preferences'})
-  }  
+  if (response.status === 200) {
+    res.json(response.searches);
+  } else if (response.status === 404) {
+    res.status(404).json({ message: response.message })
+  } else {
+    res.status(500).json({ message: response.message })
+  }
 })
 
 module.exports = preferences;

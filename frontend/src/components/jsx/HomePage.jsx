@@ -54,7 +54,7 @@ function HomePage() {
 
     const getMostRecentlyVisitedListings = async () => {
       try {
-        const response = await axios.get(`${baseURL}/api/track/most-recently-visited-listings`, { withCredentials: true });
+        const response = await axios.get(`${baseURL}/api/track/most-recently-visited-listings/20`, { withCredentials: true });
         const listings = response.data.map(item => item.listing);
         setRecentlyVisitedListings(listings)
       } catch (error) {

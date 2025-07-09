@@ -1,8 +1,25 @@
+const { fetchRecentlyClickedListings, fetchListingsFromSearchHistory } = require('./fetchRelevantListingsService')
+const { logInfo } = require('../../frontend/src/utils/logging.service')
 
-function getRecommendations(userId) {
+async function getRecommendations(userId) {
   // check cache
 
   // if not cached, fetchListingsFromSearchHistory() & fetchRecentlyClickedListings
+  
+  const allListings = []
+  const recentlyClickedListings = await fetchRecentlyClickedListings(userId);
+  if (recentlyClickedListings.status === 200) {
+    for (const listing of recentlyClickedListings.listings) {
+      allListings.push(listing.listing)
+    }
+  }
+
+  const recentlySearchedListings = await fetchListingsFromSearchHistory(userId);
+  for (const listing of recentlySearchedListings) {
+    allListings.push(listing)
+  }
+
+  const uniqueListings = Array.from(new Map(allListings.map(listing => [listing.vin, listing])).values());
 
   // for each listing, 
     // listingDataService
