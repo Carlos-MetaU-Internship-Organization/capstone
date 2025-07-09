@@ -54,42 +54,42 @@ function SingleCarPage() {
   
       const fetchData = async () => {
         try {
-          const response = await axios.get(`${baseURL}/api/listings/${vin}`, { withCredentials: true });
-          const listing = response.data.listing;
-          const userId = response.data.userId;
-          if (!listing) {
-            const listingData = await axios.get(`${baseURL}/api/listings/${vin}/data`);
-            const listingInfo = listingData.data;
+          const response = await axios.get(`${baseURL}/api/listings/vin/${vin}`, { withCredentials: true });
+          if (response.data.status === 200) {
+            const listing = response.data.listing;
+            const userId = response.data.userId;
+            const favorited = listing.favoriters.some(favoriter => favoriter.id === userId);
+            setListing(listing);
+            setIsFavorited(favorited);
+            listingIdRef.current = listing.id;
+            listingOwnerIdRef.current = listing.owner?.id;
+          } else if (response.data.status === 404) {
+            const listingResponse = await axios.get(`${baseURL}/api/listings/${vin}/data`);
+            const listingInfo = listingResponse.data;
             const newListingInfo = {
-              condition: listingInfo.condition,
-              make: listingInfo.make,
-              model: listingInfo.model,
-              year: listingInfo.year.toString(),
-              color: listingInfo.exteriorColor,
-              mileage: listingInfo.mileage ? listingInfo.mileage.toString() : "0",
+              condition: listingInfo.condition || 'N/A',
+              make: listingInfo.make || 'N/A',
+              model: listingInfo.model || 'N/A',
+              year: listingInfo.year.toString() || 'N/A',
+              color: listingInfo.exteriorColor || 'N/A',
+              mileage: listingInfo.mileage.toString() || 'N/A',
               vin: listingInfo.vin,
-              description: listingInfo.description,
+              description: listingInfo.description || 'N/A',
               images: listingInfo.photoUrls,
-              price: listingInfo.price.toString(),
-              zip: listingInfo.zip,
-              owner_name: listingInfo.dealerName,
-              owner_number: listingInfo.phoneTel,
-              city: listingInfo.city,
-              state: listingInfo.state,
-              latitude: listingInfo.latitude,
-              longitude: listingInfo.longitude,
+              price: listingInfo.price.toString() || 'N/A',
+              zip: listingInfo.zip || 'N/A',
+              owner_name: listingInfo.dealerName || 'N/A',
+              owner_number: listingInfo.phoneTel || 'N/A',
+              city: listingInfo.city || 'N/A',
+              state: listingInfo.state || 'N/A',
+              latitude: listingInfo.latitude || 0,
+              longitude: listingInfo.longitude || 0,
               createdAt: listingInfo.createdAt,
               views: 1
             }
             const newListing = await axios.post(`${baseURL}/api/listings`, newListingInfo);
             setListing(newListing.data);
             listingIdRef.current = newListing.data.id;
-          } else {
-            const favorited = listing.favoriters.some(favoriter => favoriter.id === userId);
-            setListing(listing);
-            setIsFavorited(favorited);
-            listingIdRef.current = listing.id;
-            listingOwnerIdRef.current = listing.owner?.id;
           }
         } catch (error) {
           logError(`Something went wrong when trying to fetch listing with VIN: ${vin}`, error)

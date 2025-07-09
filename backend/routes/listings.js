@@ -5,6 +5,9 @@ const listings = express.Router()
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
+const getRecommendations = require('./../services/recommendationService');
+const { fetchLocalListingFromVIN } = require('../services/fetchRelevantListingsService');
+
 /**
  * TODO: put getting userId in try catch block because sometimes
  * req.session.user does not exist..
@@ -137,9 +140,15 @@ listings.get('/user/', async (req, res) => {
   }
 })
 
-listings.get('/:vin', async (req, res) => {
+listings.get('/vin/:vin', async (req, res) => {
+  const userId = parseInt(req.session.user?.id)
   const vin = req.params.vin;
 
+  if (!userId) {
+    logWarning('Invalid session');
+    return res.status(401).json({ message: 'Invalid session'});
+  }
+  
   if (!vin) {
     logWarning('No VIN provided');
     return res.status(400).json({ message: 'Invalid VIN'});
@@ -147,37 +156,15 @@ listings.get('/:vin', async (req, res) => {
 
   logInfo(`Request to get local listing with VIN: ${vin} received`);
 
-  try {
-    const listing = await prisma.listing.findFirst({
-      where: { vin },
-      include: {
-        favoriters: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            phoneNumber: true,
-            zip: true,
-            email: true
-          }
-        },
-        owner: {
-          select: {
-            id: true
-          }
-        }
-      }
-    })
+  const response = await fetchLocalListingFromVIN(vin);
 
-    if (listing) {
-      await incrementViewCount(vin);
-    }
-
-    logInfo(`Local listing with VIN: ${vin} retrieved successfully`)
-    res.json( {listing, userId: req.session.user?.id });
-  } catch (error) {
-    logError('An error occured', error);
-    res.status(500).json({ message: error.message });
+  if (response.status === 200) {
+    await incrementViewCount(vin);
+    res.json({ status: 200, listing: response.listing, userId: req.session.user?.id });
+  } else if (response.status === 404) {
+    res.json({ status: 404, message: response.message })
+  } else {
+    res.status(500).json({ message: response.message })
   }
 })
 
@@ -252,10 +239,10 @@ listings.patch('/:vin/view', async (req, res) => {
 
   try {
     await incrementViewCount(vin);
-    res.status(200).send({ message: `View count successfully increased for listing with VIN: ${vin}`});
+    res.json({ status: 200, message: `View count successfully increased for listing with VIN: ${vin}`});
   } catch (error) {
     logError('Could not update the view count of this listing.', error);
-    res.status(404).send('Listing not found');
+    res.json({ status: 404, message: 'Listing not found' });
   }
 });
 
@@ -422,6 +409,17 @@ listings.get('/user/favorited', async (req, res) => {
     logError('An error occured', error);
     res.status(500).json({ message: error.message });
   }
+})
+
+listings.get('/recommended', async (req, res) => {
+  const userId = req.session.user?.id;
+
+  if (!userId) {
+    logWarning('Invalid session');
+    return res.status(401).json({ message: 'Invalid session'});
+  }
+
+  getRecommendations(userId);
 })
 
 module.exports = listings;
