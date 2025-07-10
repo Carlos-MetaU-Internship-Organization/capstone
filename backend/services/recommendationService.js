@@ -99,7 +99,7 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
   const listingsById = new Map();
   uniqueListings.forEach(listing => listingsById.set(listing.id, listing));
 
-  const finalListings = scoredListingsInfo.map(({ listingId }) => listingsById.get(listingId));
+  const finalListings = scoredListingsInfo.map(({ listingId }) => listingsById.get(listingId)).slice(0, 20);
 
   await setCachedRecommendations(userId, finalListings);
   
