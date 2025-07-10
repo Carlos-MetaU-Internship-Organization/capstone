@@ -9,7 +9,7 @@ async function fetchRecentlyClickedListings(userId, count) {
       where: { userId },
       orderBy: { recentVisitAt: 'desc' },
       take: count,
-      include: { listing: true }
+      select: { listing: true }
     })
 
     if (!mostRecentVisits) {
@@ -17,8 +17,9 @@ async function fetchRecentlyClickedListings(userId, count) {
       return ({ status: 404, message: `User with Id: ${userId} has never visited a listing` })
     }
     
-    logInfo(`Successfully retrieved the ${mostRecentVisits.length} most recently visited listings`);
-    return ({ status: 200, listings: mostRecentVisits})
+    const mostRecentListings = mostRecentVisits.map(visit => visit.listing);
+    logInfo(`Successfully retrieved the ${mostRecentListings.length} most recently visited listings`);
+    return ({ status: 200, listings: mostRecentListings})
   } catch (error) {
     logError('Something bad happened trying to retrieve the most recently visited listings', error);
     return ({ status: 500, message: `Failed to retrieve the ${count} most recently visited listings` })
@@ -26,7 +27,6 @@ async function fetchRecentlyClickedListings(userId, count) {
 }
 
 async function fetchListingsFromSearchHistory(userId) {
-  // Get past user searches
   const searchesResponse = await fetchPastSearches(userId);
   let pastSearches = null;
 
@@ -41,12 +41,13 @@ async function fetchListingsFromSearchHistory(userId) {
   // Fetch local listings based on user search history
   let searchedListings = []
 
-  for (const search of pastSearches) {
-    const listings = await fetchListingsFromLocal(search);
-    if (listings.status === 200) {
-      searchedListings.push(...listings.listings);
+  const promises = pastSearches.map(search => fetchListingsFromLocal(search));
+  const results = await Promise.all(promises);
+  results.forEach(result => {
+    if (result.status === 200) {
+      searchedListings.push(...result.listings);
     }
-  }
+  })
 
   return searchedListings;
 }

@@ -70,13 +70,13 @@ function SingleCarPage() {
               condition: listingInfo.condition || 'N/A',
               make: listingInfo.make || 'N/A',
               model: listingInfo.model || 'N/A',
-              year: listingInfo.year.toString() || 'N/A',
+              year: listingInfo.year?.toString() || 'N/A',
               color: listingInfo.exteriorColor || 'N/A',
-              mileage: listingInfo.mileage.toString() || 'N/A',
+              mileage: listingInfo.mileage?.toString() || 'N/A',
               vin: listingInfo.vin,
               description: listingInfo.description || 'N/A',
               images: listingInfo.photoUrls,
-              price: listingInfo.price.toString() || 'N/A',
+              price: listingInfo.price?.toString() || 'N/A',
               zip: listingInfo.zip || 'N/A',
               owner_name: listingInfo.dealerName || 'N/A',
               owner_number: listingInfo.phoneTel || 'N/A',
@@ -124,10 +124,10 @@ function SingleCarPage() {
     
     const resetTimeout = () => {
       clearTimeout(inactivityTimeout.current);
-      inactivityTimeout.current = setTimeout(resetEnterTime, 30000);
+      inactivityTimeout.current = setTimeout(resetEnterTime, 300000);
     }
     
-    inactivityTimeout.current = setTimeout(resetEnterTime, 30000)
+    inactivityTimeout.current = setTimeout(resetEnterTime, 300000)
 
     document.addEventListener('mousemove', () => {
       resetTimeout();
