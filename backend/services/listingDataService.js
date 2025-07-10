@@ -32,16 +32,12 @@ async function getGlobalMessagesCount(listingId, ownerId) {
   }
 }
 
-function getGlobalTotalClicksPerDay(listing) {
-  const views = listing.views;
-  const daysOnMarket = Math.round((new Date() - listing.createdAt) / 1000 / 60 / 60 / 24);
-  return (daysOnMarket ? views / daysOnMarket : views)
+function getGlobalTotalClicks(listing) {
+  return listing.views;
 }
 
-function getGlobalFavoritesPerDay(listing) {
-  const favorites = listing.views;
-  const daysOnMarket = Math.round((new Date() - listing.createdAt) / 1000 / 60 / 60 / 24);
-  return (daysOnMarket ? favorites / daysOnMarket : favorites)
+function getGlobalFavorites(listing) {
+  return listing.favorites;
 }
 
 async function hasUserMessagedSeller(listingId, ownerId, userId) {
@@ -99,7 +95,7 @@ async function hasUserFavoritedListing(listingId, userId) {
   }
 }
 
-async function getUserTimeSpentOnListingPerDay(listingId, userId, listingCreatedAt) {
+async function getUserTimeSpentOnListing(listingId, userId) {
   try {
     const timeSpent = await prisma.listingVisit.findFirst({
       where: {
@@ -113,23 +109,20 @@ async function getUserTimeSpentOnListingPerDay(listingId, userId, listingCreated
 
     if (!timeSpent) {
       logInfo(`User with userId: ${userId} has not visited listing with listingId: ${listingId}`)
-      return ({ status: 404, timeSpentPerDay: 0 })
+      return ({ status: 404, timeSpent: 0 })
     }
     
-    const daysOnMarket = Math.round((new Date() - listingCreatedAt) / 1000 / 60 / 60 / 24);
-    const timeSpentPerDay = daysOnMarket ? timeSpent.dwellTime / daysOnMarket : timeSpent.dwellTime
-
-    logInfo(`Successfully found that user with userId: ${userId} has spent ${timeSpentPerDay} seconds per day on listing with listingId: ${listingId}`);
-    return ({ status: 200, timeSpentPerDay })
+    logInfo(`Successfully found that user with userId: ${userId} has spent ${timeSpent.timeSpent} seconds per day on listing with listingId: ${listingId}`);
+    return ({ status: 200, timeSpent: timeSpent.dwellTime })
   } catch (error) {
     logError(`Something bad happened trying to find out how much time user with userId: ${userId} has spent on listing with listingId: ${listingId}`, error);
-    return ({ status: 500, timeSpentPerDay: 0 })
+    return ({ status: 500, timeSpent: 0 })
   }
 }
 
-async function getUserEngagementClicksPerDay(listingId, userId, listingCreatedAt) {
+async function getUserEngagementClicks(listingId, userId) {
   try {
-    const clickCount = await prisma.listingVisit.findFirst({
+    const engagementClicks = await prisma.listingVisit.findFirst({
       where: {
         listingId,
         userId
@@ -139,19 +132,16 @@ async function getUserEngagementClicksPerDay(listingId, userId, listingCreatedAt
       }
     });
 
-    if (!clickCount) {
+    if (!engagementClicks) {
       logInfo(`User with userId: ${userId} has not visited listing with listingId: ${listingId}`)
-      return ({ status: 404, engagementClicksPerDay: 0 })
+      return ({ status: 404, engagementClicks: 0 })
     }
     
-    const daysOnMarket = Math.round((new Date() - listingCreatedAt) / 1000 / 60 / 60 / 24);
-    const engagementClicksPerDay = daysOnMarket ? clickCount.clickCount / daysOnMarket : clickCount.clickCount
-
-    logInfo(`Successfully found that user with userId: ${userId} has clicked ${engagementClicksPerDay} times per day on listing with listingId: ${listingId}`);
-    return ({ status: 200, engagementClicksPerDay })
+    logInfo(`Successfully found that user with userId: ${userId} has clicked ${engagementClicks} times per day on listing with listingId: ${listingId}`);
+    return ({ status: 200, engagementClicks: engagementClicks.clickCount })
   } catch (error) {
     logError(`Something bad happened trying to find out how many clicks user with userId: ${userId} has done on listing with listingId: ${listingId}`, error);
-    return ({ status: 500, engagementClicksPerDay: 0 })
+    return ({ status: 500, engagementClicks: 0 })
   }
 }
 
@@ -178,11 +168,11 @@ function getProximityToUser(listingLatitude, listingLongitude, userLatitude, use
 
 module.exports = {
   getGlobalMessagesCount,
-  getGlobalTotalClicksPerDay,
-  getGlobalFavoritesPerDay,
+  getGlobalTotalClicks,
+  getGlobalFavorites,
   hasUserMessagedSeller,
   hasUserFavoritedListing,
-  getUserTimeSpentOnListingPerDay,
-  getUserEngagementClicksPerDay,
-  getProximityToUser
+  getUserTimeSpentOnListing,
+  getUserEngagementClicks,
+  getProximityToUser,
 };

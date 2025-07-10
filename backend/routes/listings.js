@@ -421,7 +421,8 @@ listings.get('/recommended', async (req, res) => {
     return res.status(401).json({ message: 'Invalid session'});
   }
 
-  getRecommendations(userId, userLatitude, userLongitude);
+  const recommendedListings = await getRecommendations(userId, userLatitude, userLongitude);
+  res.json(recommendedListings);
 })
 
 module.exports = listings;

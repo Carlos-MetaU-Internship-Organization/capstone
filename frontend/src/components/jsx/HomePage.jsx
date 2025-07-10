@@ -40,38 +40,31 @@ function HomePage() {
     }
     checkAuth();
 
-    const getFavoritedListings = async () => {
+    const fetchAllListings = async () => {
       try {
-        const response = await axios.get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true });
-        const favoritedListings = response.data.favoritedListings;
-        setFavoritedListings(favoritedListings);
-        setRecommendedListings(favoritedListings); // TODO: change when recommendation algorithm is done...
+        const [
+          recommendedListingsResponse,
+          favoritedListingsResponse,
+          recentlyVisitedListingsResponse,
+          popularListingsResponse
+        ] = await Promise.all([
+          axios.get(`${baseURL}/api/listings/recommended`, { withCredentials: true }),
+          axios.get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true }),
+          axios.get(`${baseURL}/api/track/most-recently-visited-listings/20`, { withCredentials: true }),
+          axios.get(`${baseURL}/api/listings/popular`)
+        ]);
+  
+        setRecommendedListings(recommendedListingsResponse.data);
+        setFavoritedListings(favoritedListingsResponse.data.favoritedListings);
+        setRecentlyVisitedListings(recentlyVisitedListingsResponse.data);
+        setPopularListings(popularListingsResponse.data)
       } catch (error) {
-        logError('Something bad happened when trying to fetch your favorited listings', error);
+        logError('Something bad happened when trying to fetch your listings', error);
       }
-    }
-    getFavoritedListings();
 
-    const getMostRecentlyVisitedListings = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/track/most-recently-visited-listings/20`, { withCredentials: true });
-        const listings = response.data.map(item => item.listing);
-        setRecentlyVisitedListings(listings)
-      } catch (error) {
-        logError('Something bad happened when trying to fetch your 10 most-dwelled listings', error);
-      }
-    }
-    getMostRecentlyVisitedListings();
+    };
+    fetchAllListings();
 
-    const getPopularListings = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/listings/popular`);
-        setPopularListings(response.data)
-      } catch (error) {
-        logError('Something bad happened when trying to fetch your 10 most-dwelled listings', error);
-      }
-    }
-    getPopularListings();
   }, []);
 
   useEffect(() => {

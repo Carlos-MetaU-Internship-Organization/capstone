@@ -124,10 +124,10 @@ function SingleCarPage() {
     
     const resetTimeout = () => {
       clearTimeout(inactivityTimeout.current);
-      inactivityTimeout.current = setTimeout(resetEnterTime, 30000);
+      inactivityTimeout.current = setTimeout(resetEnterTime, 300000);
     }
     
-    inactivityTimeout.current = setTimeout(resetEnterTime, 30000)
+    inactivityTimeout.current = setTimeout(resetEnterTime, 300000)
 
     document.addEventListener('mousemove', () => {
       resetTimeout();
