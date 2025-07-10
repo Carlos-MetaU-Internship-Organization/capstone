@@ -20,5 +20,8 @@
     "express-validator": "^7.2.1",
     "morgan": "^1.10.0",
     "prisma": "^6.10.1"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.9.0"
   }
 }
