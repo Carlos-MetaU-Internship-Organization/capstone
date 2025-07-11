@@ -1,8 +1,8 @@
-const { logInfo, logError } = require('../utils/logging.service');
+const zipcodes = require('zipcodes')
+const { logInfo, logError } = require('../utils/logging.service')
 const { hashPassword } = require('./passwordService')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const getLatitudeLongitude = require('./geoService')
 
 async function signupUser(userInfo) {
   const { name, email, phoneNumber, zip, username, password: plainPassword } = userInfo;
@@ -18,7 +18,7 @@ async function signupUser(userInfo) {
   if (!user) {
     const hash = await hashPassword(plainPassword);
 
-    const { latitude, longitude} = await getLatitudeLongitude(zip);
+    const { latitude, longitude } = zipcodes.lookup(zip);
 
     const newUser = {name, username, email, zip, latitude, longitude, phoneNumber, password: hash};
     try {
@@ -34,4 +34,26 @@ async function signupUser(userInfo) {
   }
 }
 
-module.exports = signupUser;
+/**
+ * Get all users' id, name, email, and phone number (needed to display on listing)
+ */
+async function getAllNeededUserInfo() {
+  try {
+    const allNeededUserInfo = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phoneNumber: true
+      }
+    })
+
+    logInfo("Successfully retrieved every users' id, name, email, and phone number")
+    return { status: 200, allNeededUserInfo }
+  } catch (error) {
+    logError("Error trying to retrieve every users' id, name, email, and phone number")
+    return { status: 500 }
+  }
+}
+
+module.exports = { signupUser, getAllNeededUserInfo }

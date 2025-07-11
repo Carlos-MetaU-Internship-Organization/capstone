@@ -21,6 +21,8 @@ model User {
   username                     String             @unique
   phoneNumber                  String
   zip                          String
+  latitude                     Float
+  longitude                    Float
   email                        String             @unique
   password                     String
 

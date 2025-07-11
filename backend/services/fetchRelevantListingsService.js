@@ -1,7 +1,7 @@
 const axios = require('axios')
 const { PrismaClient } = require('@prisma/client')
-const { logInfo, logError } = require('../../frontend/src/utils/logging.service')
 const prisma = new PrismaClient()
+const { logInfo, logError } = require('../../frontend/src/utils/logging.service')
 
 async function fetchRecentlyClickedListings(userId, count) {
  try {
