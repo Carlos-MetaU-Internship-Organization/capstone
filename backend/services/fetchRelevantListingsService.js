@@ -57,7 +57,7 @@ async function fetchPastSearches(userId) {
       where: { viewerId: userId },
     })
 
-    if (!pastSearches) {
+    if (pastSearches.length === 0) {
       logInfo(`No past searches were found for user with Id: ${userId}`)
       return ({ status: 404, message: `User with Id: ${userId} has no previous searches` })
     }
@@ -190,7 +190,7 @@ async function fetchListingsFromLocal(filters) {
       take: 20
     })
 
-    if (!listings) {
+    if (listings.length === 0) {
       logInfo(`No listings were found that matched this search`)
       return ({ status: 404, message: `No listings were found that matched this search` })
     }
@@ -260,10 +260,45 @@ async function fetchLocalListingFromVIN(vin) {
   }
 }
 
+async function fetchSimilarListings(listingInfo) {
+  try {
+    whereClause = {
+      condition: listingInfo.condition,
+      make: listingInfo.make,
+      model: listingInfo.model
+    }
+    if (listingInfo.condition === 'new') {
+      whereClause.year = listingInfo.year
+    } else {
+      const userListingYearInt = parseInt(listingInfo.year);
+      const userListingMileageInt = parseInt(listingInfo.mileage)
+      whereClause.year = { gte: (userListingYearInt - 1).toString(), lte: (userListingYearInt + 1).toString() };
+      // mileage definitely needs a tune, what if user listing mileage is 163mi, then you can miss out on a car with just 17mi more
+      whereClause.mileage = { gte: (userListingMileageInt * .9).toString(), lte: (userListingMileageInt * 1.1).toString() }
+    }
+    const similarListings = await prisma.listing.findMany({
+      where: whereClause
+    });
+
+    if (similarListings.length === 0) {
+      logInfo('No similar listings were found')
+      return ({ status: 404, message: 'No similar listings were found' })
+      // MAYBE EXPAND SEARCH HERE???
+    }
+    
+    logInfo(`Successfully retrieved ${similarListings.length} similar listings`);
+    return ({ status: 200, listings: similarListings})
+  } catch (error) {
+    logError('Something bad happened trying to retrieve similar listings', error);
+    return ({ status: 500, message: 'Failed to retrieve similar listings' })
+  }
+}
+
 module.exports = {
   fetchRecentlyClickedListings,
   fetchPastSearches,
   fetchListingsFromSearchHistory,
   fetchListingsFromAutoDev,
-  fetchLocalListingFromVIN
+  fetchLocalListingFromVIN,
+  fetchSimilarListings
 };
