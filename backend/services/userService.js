@@ -23,8 +23,9 @@ async function signupUser(userInfo) {
     const newUser = {name, username, email, zip, latitude, longitude, phoneNumber, password: hash};
     try {
       const dbUser = await prisma.user.create({data: newUser});
+      const userToSave = { ...dbUser, password: plainPassword }
       logInfo(`Created user with Id: ${dbUser.id}`)
-      return { status: 200, newUser: dbUser };
+      return { status: 200, newUser: userToSave };
     } catch (error) {
       logError('Failed to create user', error)
       return { status: 500 }
