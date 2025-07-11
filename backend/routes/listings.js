@@ -6,7 +6,9 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 const getRecommendations = require('./../services/recommendationService');
+const getEstimatedPrice = require('./../services/priceEstimatorService');
 const { fetchLocalListingFromVIN } = require('../services/fetchRelevantListingsService');
+const { getUserLocation } = require('../services/userService');
 
 /**
  * TODO: put getting userId in try catch block because sometimes
@@ -420,6 +422,35 @@ listings.get('/recommended', async (req, res) => {
   }
 
   getRecommendations(userId);
+})
+
+listings.post('/estimate-price', async (req, res) => {
+  const userId = req.session.user?.id;
+
+  if (!userId) {
+    logWarning('Invalid session');
+    return res.status(401).json({ message: 'Invalid session'});
+  }
+
+  let info;
+
+  const locationResponse = await getUserLocation(userId);
+  const location = (await locationResponse).userLocation;
+  if (locationResponse.status === 200) {
+    info = { latitude: location.latitude, longitude: location.longitude }
+  } else {
+    res.json( { status: 500, message: "Could not retrieve user's latitude and longitude" })
+  }
+
+  const { condition, make, model, year, color, mileage, vin, description, images } = req.body;
+
+  // TODO: handle input here
+
+  info = { ...info, ...req.body }
+
+  const { estimatedPrice } = await getEstimatedPrice(info);
+  
+  res.json(estimatedPrice);
 })
 
 module.exports = listings;
