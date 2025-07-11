@@ -1,5 +1,3 @@
-const { logInfo, logWarning, logError } = require('../utils/logging.service');
-
 const argon2 = require('argon2');
 
 async function hashPassword(plainPassword) {
