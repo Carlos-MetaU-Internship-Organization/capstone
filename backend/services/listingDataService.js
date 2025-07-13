@@ -29,13 +29,6 @@ function getUserEngagementClicksPerDay(userId, listingId) {
 
 }
 
-function getProximityToUser(userId, listingId) {
-  // get user zip
-  // get listing zip
-
-  // use some library or API
-}
-
 module.exports = {
   getGlobalMessagesCount,
   getGlobalTotalClicksPerDay,
@@ -43,6 +36,5 @@ module.exports = {
   hasUserMessagedSeller,
   hasUserFavoritedListing,
   getUserTimeSpentOnListingPerDay,
-  getUserEngagementClicksPerDay,
-  getProximityToUser
+  getUserEngagementClicksPerDay
 };
