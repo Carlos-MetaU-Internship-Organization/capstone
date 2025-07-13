@@ -57,4 +57,22 @@ async function getAllNeededUserInfo() {
   }
 }
 
-module.exports = { signupUser, getAllNeededUserInfo }
+async function getUserLocation(userId) {
+  try {
+    const userLocation = await prisma.user.findFirst({
+      where: { id: userId },
+      select: {
+        latitude: true,
+        longitude: true
+      }
+    })
+
+    logInfo("Successfully retrieved user's location ")
+    return { status: 200, userLocation }
+  } catch (error) {
+    logError("Error trying to retrieve every user's location")
+    return { status: 500 }
+  }
+}
+
+module.exports = { signupUser, getAllNeededUserInfo, getUserLocation }

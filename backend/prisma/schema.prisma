@@ -69,6 +69,7 @@ model Listing {
   owner_number                 String
   sold                         Boolean             @default(false)
   createdAt                    DateTime            @default(now())
+  soldAt                       DateTime?
   owner                        User?               @relation("owner", fields: [ownerId], references: [id])
   ownerId                      Int?
   views                        Int                 @default(0)

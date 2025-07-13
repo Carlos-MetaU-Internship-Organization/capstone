@@ -2,6 +2,9 @@ const axios = require('axios')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { logInfo, logError } = require('../../frontend/src/utils/logging.service')
+const { SIMILARITY_DEPTHS, MINIMUM_COMPS_REQUIRED } = require('../utils/constants')
+const haversineDistanceMiles = require('../utils/geo')
+const getDaysOnMarket = require('../utils/time')
 
 async function fetchRecentlyClickedListings(userId, count) {
  try {
@@ -57,7 +60,7 @@ async function fetchPastSearches(userId) {
       where: { viewerId: userId },
     })
 
-    if (!pastSearches) {
+    if (pastSearches.length === 0) {
       logInfo(`No past searches were found for user with Id: ${userId}`)
       return ({ status: 404, message: `User with Id: ${userId} has no previous searches` })
     }
@@ -190,7 +193,7 @@ async function fetchListingsFromLocal(filters) {
       take: 20
     })
 
-    if (!listings) {
+    if (listings.length === 0) {
       logInfo(`No listings were found that matched this search`)
       return ({ status: 404, message: `No listings were found that matched this search` })
     }
@@ -260,10 +263,71 @@ async function fetchLocalListingFromVIN(vin) {
   }
 }
 
+async function fetchSimilarListings(listingInfo) {
+  const { condition, make, model, year, mileage, latitude, longitude } = listingInfo;
+  const userYear = parseInt(year);
+  const userMileage = parseInt(mileage);
+
+  const comps = new Map();
+
+  for (let depth = 0; depth < SIMILARITY_DEPTHS.length; depth++) {
+    const { YEAR_RANGE, MILEAGE_FACTOR } = SIMILARITY_DEPTHS[depth];
+
+    let whereClause = {
+      condition,
+      make,
+      model
+    }
+
+    if (depth < SIMILARITY_DEPTHS.length - 1) {
+      whereClause.year = {
+        gte: (userYear - YEAR_RANGE).toString(),
+        lte: (userYear + YEAR_RANGE).toString(),
+      }
+      whereClause.mileage = {
+        gte: (Math.floor(userMileage * (1 - MILEAGE_FACTOR))).toString(),
+        lte: (Math.ceil(userMileage * (1 + MILEAGE_FACTOR))).toString()
+      }
+    }
+
+    try {
+      const similarListings = await prisma.listing.findMany({
+        where: whereClause
+      });
+  
+      if (Array.isArray(similarListings)) {
+        similarListings.forEach(listing => {
+          if (!comps.has(listing.id)) {
+            listing.depth = depth + 1;
+            listing.distanceFromSeller = haversineDistanceMiles(latitude, longitude, listing.latitude, listing.longitude);
+            listing.daysOnMarket = getDaysOnMarket(listing);
+            comps.set(listing.id, listing);
+          }
+        })
+
+        if (similarListings.length >= MINIMUM_COMPS_REQUIRED) {
+          break;
+        }
+      }
+    } catch (error) {
+      logError('Something bad happened trying to retrieve similar listings', error);
+      return ({ status: 500, message: 'Failed to retrieve similar listings' })
+    }
+  }
+  const numberOfListingsFound = comps.size;
+  if (numberOfListingsFound !== 0) {
+    logInfo(`Successfully retrieved ${numberOfListingsFound} similar listings`);
+    return ({ status: 200, listings: [...comps.values()] })
+  }
+  logInfo('No similar listings were found')
+  return ({ status: 404, message: 'No similar listings were found' })
+}
+
 module.exports = {
   fetchRecentlyClickedListings,
   fetchPastSearches,
   fetchListingsFromSearchHistory,
   fetchListingsFromAutoDev,
-  fetchLocalListingFromVIN
+  fetchLocalListingFromVIN,
+  fetchSimilarListings
 };
