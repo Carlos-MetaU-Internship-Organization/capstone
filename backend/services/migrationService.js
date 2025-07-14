@@ -5,10 +5,11 @@ const { signupUser, getAllNeededUserInfo } = require('./userService')
 const { logInfo } = require('./../utils/logging.service')
 const { logError } = require('../../frontend/src/utils/logging.service')
 const { writeFile } = require('fs').promises
+const { NUMBER_OF_FAKE_USERS, RATIO_OF_SOLD_LISTINGS } = require('../utils/constants')
 
 async function populateDBWithUsers() {
   const users = [];
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < NUMBER_OF_FAKE_USERS; i++) {
     const randomUserInfo = createRandomUser();
     const newUser = (await signupUser(randomUserInfo)).newUser;
     if (newUser) {
@@ -37,7 +38,7 @@ async function populateDBWithListings() {
 
   for (const listing of listings) {
     const randomUserIndex = Math.floor(Math.random() * (allUserInfo.length));
-    const soldStatus = Math.random() <= .3;
+    const soldStatus = Math.random() <= RATIO_OF_SOLD_LISTINGS;
     await createListing(allUserInfo[randomUserIndex], listing, soldStatus)
   }
 
