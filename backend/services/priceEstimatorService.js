@@ -1,16 +1,20 @@
 const { fetchSimilarListings } = require('./fetchRelevantListingsService')
 const { logInfo } = require('../../frontend/src/utils/logging.service');
-const computeSellerMultiplier = require('../utils/sellerHistory');
+const computeSellerDelta = require('../utils/sellerHistory');
 const { calculateMarketPrice } = require('../utils/statistics');
+const { ROUNDING_DIGIT_PRICE } = require('../utils/constants')
 
 async function getPriceRecommendationInfo(userInfo) {
+
+  userInfo.year = parseInt(userInfo.year);
+  userInfo.mileage = parseInt(userInfo.mileage);
 
   const usefulListingFeatures = {
     condition: userInfo.condition,
     make: userInfo.make,
     model: userInfo.model,
-    year: parseInt(userInfo.year),
-    mileage: parseInt(userInfo.mileage),
+    year: userInfo.year,
+    mileage: userInfo.mileage,
     latitude: userInfo.latitude,
     longitude: userInfo.longitude
   }
@@ -22,25 +26,22 @@ async function getPriceRecommendationInfo(userInfo) {
     return { estimatedPrice: 0, message: 'Could not find similar listings' }
   }
 
-  const sellerMultiplier = await computeSellerMultiplier(userInfo.sellerId);
+  const sellerDelta = await computeSellerDelta(userInfo.sellerId);
 
   const marketPrice = calculateMarketPrice(listings, userInfo)
 
-  let recommendedPrice = marketPrice;
+  const recommendedPrice = parseFloat((marketPrice * (1 + (sellerDelta / depth))).toFixed(ROUNDING_DIGIT_PRICE));
 
   const confidenceLevel = getConfidenceLevel(depth);
-  if (confidenceLevel === 'high') {
-    recommendedPrice = (recommendedPrice * sellerMultiplier).toFixed(2);
-    logInfo(`Recommended price adjusted to ${recommendedPrice} based on previous seller history`)
-  }
 
   return { marketPrice, recommendedPrice, confidenceLevel }
 }
 
 function getConfidenceLevel(depth) {
-  const confidenceLevel = depth === 1 ? "high"
-                          : depth === 2 ? "medium"
-                          : depth === 3 ? "low"
+  const confidenceLevel = depth === 1 ? "very high"
+                          : depth === 2 ? "high"
+                          : depth === 3 ? "medium"
+                          : depth === 4 ? "low"
                           : "very low"
   logInfo(`Confidence Level for the recommended price is ${confidenceLevel.toUpperCase()}`)
   return confidenceLevel;
