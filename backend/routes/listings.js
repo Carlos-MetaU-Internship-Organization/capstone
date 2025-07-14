@@ -432,12 +432,12 @@ listings.post('/estimate-price', async (req, res) => {
     return res.status(401).json({ message: 'Invalid session'});
   }
 
-  let info;
+  let info = { sellerId: userId }
 
   const locationResponse = await getUserLocation(userId);
-  const location = (await locationResponse).userLocation;
+  const location = locationResponse.userLocation;
   if (locationResponse.status === 200) {
-    info = { latitude: location.latitude, longitude: location.longitude }
+    info = { ...info, latitude: location.latitude, longitude: location.longitude }
   } else {
     res.json( { status: 500, message: "Could not retrieve user's latitude and longitude" })
   }
