@@ -5,11 +5,7 @@ const prisma = new PrismaClient()
 const { logInfo, logError, logWarning } = require('../../frontend/src/utils/logging.service');
 const levenshtein = require('js-levenshtein');
 const { PrismaClientKnownRequestError } = require('@prisma/client/runtime/library');
-
-// const CAR_API_KEY = process.env.CAR_API_KEY;
-const PAGE_SIZE = 20;
-const FIVE_PERCENT = 0.05;
-const MIN_LISTINGS_TO_FETCH = 40;
+const { PAGE_SIZE, MIN_LISTINGS_TO_FETCH, RATIO_OF_TOTAL_LISTINGS_TO_FETCH } = require('../utils/constants')
 
 async function fetchListingsForMigration() {
   const makeModelCombinations = (await fetchMakeModelCombinations()).makeModelCombinations;
@@ -26,8 +22,8 @@ async function fetchListingsForMigration() {
     
     const numberOfListings = page1.numberOfListings;
 
-    if (numberOfListings > 20) {
-      const howManyToFetch = Math.max(MIN_LISTINGS_TO_FETCH, Math.ceil(numberOfListings * FIVE_PERCENT));
+    if (numberOfListings > PAGE_SIZE) {
+      const howManyToFetch = Math.max(MIN_LISTINGS_TO_FETCH, Math.ceil(numberOfListings * RATIO_OF_TOTAL_LISTINGS_TO_FETCH));
   
       const pagesToFetch = [];
       for (let page = 2; page <= Math.ceil(howManyToFetch / PAGE_SIZE); page++) {
@@ -68,7 +64,8 @@ function cleanResultsFromAPI(listings) {
       latitude: listing.lat,
       longitude: listing.lon,
       city: listing.city,
-      state: listing.state
+      state: listing.state,
+      createdAt: listing.createdAt
     }
     cleanedResults.push(cleanedListing);
   }
@@ -152,6 +149,8 @@ async function createListing(userInfo, listingInfo, soldStatus) {
     longitude: listingInfo.longitude,
     city: formatOrNA(listingInfo.city),
     state: formatOrNA(listingInfo.state),
+    createdAt: listingInfo.createdAt,
+    soldAt: soldStatus ? new Date() : null,
     owner_name: userInfo.name,
     owner_number: userInfo.phoneNumber,
     ownerId: userInfo.id,
