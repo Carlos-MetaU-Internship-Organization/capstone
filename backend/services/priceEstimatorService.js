@@ -1,5 +1,6 @@
 const { fetchSimilarListings } = require('./fetchRelevantListingsService')
-const { logInfo } = require('../../frontend/src/utils/logging.service')
+const { logInfo } = require('../../frontend/src/utils/logging.service');
+const computeSellerMultiplier = require('../utils/sellerHistory');
 
 async function getEstimatedPrice(info) {
 
@@ -17,6 +18,8 @@ async function getEstimatedPrice(info) {
   if (similarListingsResponse.status !== 200) {
     return { estimatedPrice: 0, message: 'Could not find similar listings' }
   }
+
+  const sellerMultiplier = await computeSellerMultiplier(info.sellerId);
 
   // calculate price here
 
