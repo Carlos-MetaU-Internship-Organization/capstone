@@ -58,6 +58,7 @@ function cleanResultsFromAPI(listings) {
       year: listing.year,
       color: getClosestColor(listing.displayColor),
       mileage: listing.mileageUnformatted,
+      description: 'N/A', // no description acquired from API
       images: listing.photoUrls,
       price: listing.priceUnformatted,
       zip: gps.gps2zip(listing.lat, listing.lon).zip_code,
@@ -131,30 +132,35 @@ async function createListing(userInfo, listingInfo, soldStatus) {
 
   // TODO: add email
 
-  const formatOrNA = field => field != null ? field.toString() : 'N/A'
-
   const listing = {
     vin: listingInfo.vin,
-    condition: formatOrNA(listingInfo.condition),
-    make: formatOrNA(listingInfo.make),
-    model: formatOrNA(listingInfo.model),
-    year: formatOrNA(listingInfo.year),
-    color: formatOrNA(listingInfo.color),
-    mileage: formatOrNA(listingInfo.mileage),
-    description: formatOrNA(listingInfo.description),
+    condition: listingInfo.condition,
+    make: listingInfo.make,
+    model: listingInfo.model,
+    year: parseInt(listingInfo.year) || null,
+    color: listingInfo.color,
+    mileage: listingInfo.condition !== 'new' ? (parseInt(listingInfo.mileage) || null) : 0,
+    description: listingInfo.description,
     images: listingInfo.images || 'https://shnack.com/images/no_photo.jpg',
-    price: formatOrNA(listingInfo.price),
+    price: parseInt(listingInfo.price) || null,
     zip: listingInfo.zip.toString(),
     latitude: listingInfo.latitude,
     longitude: listingInfo.longitude,
-    city: formatOrNA(listingInfo.city),
-    state: formatOrNA(listingInfo.state),
+    city: listingInfo.city,
+    state: listingInfo.state,
     createdAt: listingInfo.createdAt,
     soldAt: soldStatus ? new Date() : null,
     owner_name: userInfo.name,
     owner_number: userInfo.phoneNumber,
     ownerId: userInfo.id,
     sold: soldStatus
+  }
+  
+  for (const key in listing) {
+    if (key !== 'soldAt' && (listing[key] === null || listing[key] === undefined || listing[key] === '')) {
+      logError(`Missing fields. ${key} is missing.`);
+      return { status: 422, message: `Missing fields. ${key} is missing.` }
+    }
   }
 
   try {

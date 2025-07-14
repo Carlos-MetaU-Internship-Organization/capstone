@@ -1,7 +1,8 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+const { logInfo } = require('../../frontend/src/utils/logging.service');
 const getDaysOnMarket = require('./time')
-const { MIN_LISTINGS_TO_FACTOR_IN_SELLER_LISTINGS, SMOOTHING_K, SELLER_FACTOR_MIN, SELLER_FACTOR_MAX } = require('./constants')
+const { MIN_LISTINGS_TO_FACTOR_IN_SELLER_LISTINGS, SMOOTHING_K, SELLER_FACTOR_MIN, SELLER_FACTOR_MAX, ROUNDING_DIGIT } = require('./constants')
 
 async function computeSellerMultiplier(sellerId) {
   const soldSellerListings = await prisma.listing.findMany({
@@ -19,6 +20,7 @@ async function computeSellerMultiplier(sellerId) {
   });
 
   if ((Array.isArray(soldSellerListings) && soldSellerListings.length < MIN_LISTINGS_TO_FACTOR_IN_SELLER_LISTINGS) || !(Array.isArray(soldSellerListings))) {
+    logInfo('Not enough seller history')
     return 1.0;
   }
 
@@ -77,7 +79,13 @@ async function computeSellerMultiplier(sellerId) {
   }
 
   const finalWeightedRatio = weightedRatioSum / totalWeights;
-  return Math.min(SELLER_FACTOR_MAX, Math.max(SELLER_FACTOR_MIN, finalWeightedRatio))
+  const sellerMultiplier = Math.min(SELLER_FACTOR_MAX, Math.max(SELLER_FACTOR_MIN, finalWeightedRatio));
+
+  const messageFragment = sellerMultiplier < 1 ? `${(1 - sellerMultiplier).toFixed(ROUNDING_DIGIT) * 100 }% lower` :
+                                                 `${(sellerMultiplier - 1).toFixed(ROUNDING_DIGIT) * 100 }% higher`
+
+  logInfo(`Based on past seller history, listings should be marked ${messageFragment}`)
+  return sellerMultiplier
 }
 
 module.exports = computeSellerMultiplier
