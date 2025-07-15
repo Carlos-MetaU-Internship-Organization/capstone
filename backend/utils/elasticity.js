@@ -1,8 +1,8 @@
-const { MS_PER_DAY, RECENCY_DECAY_DAYS, PERCENT_BUCKETS, PERCENTAGE_CONVERTER } = require('./constants')
+const { MS_PER_DAY, RECENCY_DECAY_DAYS, MINIMUM_DATA_POINTS_REQUIRED, PERCENT_BUCKETS, PERCENTAGE_CONVERTER } = require('./constants')
 
 function buildElasticityCurve(enrichedListings, recommendedPrice) {
   const soldListings = enrichedListings.filter(listing => listing.sold)
-  if (soldListings.length === 0) return {}
+  if (soldListings.length < MINIMUM_DATA_POINTS_REQUIRED) return {}
 
   const { slope, intercept } = getWeightedLinearRegression(soldListings)
   const elasticity = {};

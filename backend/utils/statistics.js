@@ -8,7 +8,7 @@ const {
   DAYS_ON_MARKET_MIN_WEIGHT,
   DAYS_IN_MONTH,
   PROXIMITY_MIN_WEIGHT,
-  ROUNDING_DIGIT_PRICE
+  ROUND_TO_NEAREST_HUNDRED
 } = require('./constants')
 
 const haversineDistanceMiles = require('./geo')
@@ -44,7 +44,7 @@ function calculateMarketPrice(listings, userInfo) {
     weightSum += totalWeight;
   })
 
-  const marketPrice = weightSum ? parseFloat((sum / weightSum).toFixed(ROUNDING_DIGIT_PRICE)) : 0;
+  const marketPrice = weightSum ? ROUND_TO_NEAREST_HUNDRED(sum / weightSum) : 0;
   logInfo(`Market price calculated for this lsiting is ${marketPrice}`)
   return { marketPrice, enrichedListings: listings };
 }

@@ -430,7 +430,7 @@ listings.post('/estimate-price', async (req, res) => {
 
   if (!userId) {
     logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
+    return res.json({ status: 401, message: 'Invalid session'});
   }
 
   if (!condition || !make || !model || !year || !mileage) {
@@ -448,7 +448,7 @@ listings.post('/estimate-price', async (req, res) => {
 
   const { marketPrice, recommendedPrice, confidenceLevel, elasticity } = await getPriceRecommendationInfo(allUserInfo);
 
-  res.json({ marketPrice, recommendedPrice, confidenceLevel, elasticity });
+  res.json({ status: 200, marketPrice, recommendedPrice, confidenceLevel, elasticity });
 })
 
 module.exports = listings;

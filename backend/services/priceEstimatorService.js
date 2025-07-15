@@ -3,7 +3,7 @@ const { logInfo } = require('../../frontend/src/utils/logging.service')
 const computeSellerDelta = require('../utils/sellerHistory')
 const { calculateMarketPrice } = require('../utils/statistics')
 const buildElasticityCurve = require('../utils/elasticity')
-const { ROUNDING_DIGIT_PRICE } = require('../utils/constants')
+const { ROUND_TO_NEAREST_HUNDRED, FORMAT_TO_PRICE } = require('../utils/constants')
 
 async function getPriceRecommendationInfo(allUserInfo) {
 
@@ -22,13 +22,14 @@ async function getPriceRecommendationInfo(allUserInfo) {
 
   const { marketPrice, enrichedListings } = calculateMarketPrice(listings, allUserInfo)
 
-  const recommendedPrice = parseFloat((marketPrice * (1 + (sellerDelta / depth))).toFixed(ROUNDING_DIGIT_PRICE));
+  // round to nearest 100
+  const recommendedPrice = ROUND_TO_NEAREST_HUNDRED(marketPrice * (1 + (sellerDelta / depth)));
 
   const confidenceLevel = getConfidenceLevel(depth);
 
   const elasticity = buildElasticityCurve(enrichedListings, recommendedPrice);
 
-  return { marketPrice, recommendedPrice, confidenceLevel, elasticity }
+  return { marketPrice: FORMAT_TO_PRICE(marketPrice), recommendedPrice: FORMAT_TO_PRICE(recommendedPrice), confidenceLevel, elasticity }
 }
 
 function getConfidenceLevel(depth) {
