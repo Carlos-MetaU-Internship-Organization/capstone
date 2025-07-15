@@ -132,3 +132,13 @@ input::file-selector-button {
 #flipped-arrow {
   transform: scaleX(-1);
 }
+
+#price-estimation {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#slider:hover {
+  cursor: pointer;
+}
