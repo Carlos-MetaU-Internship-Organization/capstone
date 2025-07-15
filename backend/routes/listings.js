@@ -426,31 +426,29 @@ listings.get('/recommended', async (req, res) => {
 
 listings.post('/estimate-price', async (req, res) => {
   const userId = req.session.user?.id;
+  const { condition, make, model, year, mileage } = req.body;
 
   if (!userId) {
     logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
+    return res.json({ status: 401, message: 'Invalid session'});
   }
 
-  let info = { sellerId: userId }
-
-  const locationResponse = await getUserLocation(userId);
-  const location = locationResponse.userLocation;
-  if (locationResponse.status === 200) {
-    info = { ...info, latitude: location.latitude, longitude: location.longitude }
-  } else {
-    res.json( { status: 500, message: "Could not retrieve user's latitude and longitude" })
+  if (!condition || !make || !model || !year || !mileage) {
+    logWarning('Listing price generation failed: Missing fields.');
+    return res.json({ status: 400, message: 'Missing fields'})
   }
 
-  const { condition, make, model, year, color, mileage, vin, description, images } = req.body;
+  const { latitude, longitude } = req.session.user;
 
-  // TODO: handle input here
+  const userInfo = { sellerId: userId, latitude, longitude }
+  
+  const userListingInfo = { condition, make, model, year, mileage }
 
-  info = { ...info, ...req.body }
+  const allUserInfo = { ...userInfo, ...userListingInfo }
 
-  const { marketPrice, recommendedPrice, confidenceLevel } = await getPriceRecommendationInfo(info);
+  const { marketPrice, recommendedPrice, confidenceLevel, elasticity } = await getPriceRecommendationInfo(allUserInfo);
 
-  res.json({ marketPrice, recommendedPrice, confidenceLevel });
+  res.json({ status: 200, marketPrice, recommendedPrice, confidenceLevel, elasticity });
 })
 
 module.exports = listings;

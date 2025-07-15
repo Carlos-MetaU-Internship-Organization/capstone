@@ -1,24 +1,16 @@
 const { fetchSimilarListings } = require('./fetchRelevantListingsService')
-const { logInfo } = require('../../frontend/src/utils/logging.service');
-const computeSellerDelta = require('../utils/sellerHistory');
-const { calculateMarketPrice } = require('../utils/statistics');
-const { ROUNDING_DIGIT_PRICE } = require('../utils/constants')
+const { logInfo } = require('../../frontend/src/utils/logging.service')
+const computeSellerDelta = require('../utils/sellerHistory')
+const { calculateMarketPrice } = require('../utils/statistics')
+const buildElasticityCurve = require('../utils/elasticity')
+const { ROUND_TO_NEAREST_HUNDRED, FORMAT_TO_PRICE } = require('../utils/constants')
 
-async function getPriceRecommendationInfo(userInfo) {
+async function getPriceRecommendationInfo(allUserInfo) {
 
-  userInfo.year = parseInt(userInfo.year);
-  userInfo.mileage = parseInt(userInfo.mileage);
+  allUserInfo.year = parseInt(allUserInfo.year);
+  allUserInfo.mileage = parseInt(allUserInfo.mileage);
 
-  const usefulListingFeatures = {
-    condition: userInfo.condition,
-    make: userInfo.make,
-    model: userInfo.model,
-    year: userInfo.year,
-    mileage: userInfo.mileage,
-    latitude: userInfo.latitude,
-    longitude: userInfo.longitude
-  }
-  const similarListingsResponse = await fetchSimilarListings(usefulListingFeatures);
+  const similarListingsResponse = await fetchSimilarListings(allUserInfo);
   const listings = similarListingsResponse.listings;
   const depth = similarListingsResponse.depth;
 
@@ -26,15 +18,18 @@ async function getPriceRecommendationInfo(userInfo) {
     return { estimatedPrice: 0, message: 'Could not find similar listings' }
   }
 
-  const sellerDelta = await computeSellerDelta(userInfo.sellerId);
+  const sellerDelta = await computeSellerDelta(allUserInfo.sellerId);
 
-  const marketPrice = calculateMarketPrice(listings, userInfo)
+  const { marketPrice, enrichedListings } = calculateMarketPrice(listings, allUserInfo)
 
-  const recommendedPrice = parseFloat((marketPrice * (1 + (sellerDelta / depth))).toFixed(ROUNDING_DIGIT_PRICE));
+  // round to nearest 100
+  const recommendedPrice = ROUND_TO_NEAREST_HUNDRED(marketPrice * (1 + (sellerDelta / depth)));
 
   const confidenceLevel = getConfidenceLevel(depth);
 
-  return { marketPrice, recommendedPrice, confidenceLevel }
+  const elasticity = buildElasticityCurve(enrichedListings, recommendedPrice);
+
+  return { marketPrice: FORMAT_TO_PRICE(marketPrice), recommendedPrice: FORMAT_TO_PRICE(recommendedPrice), confidenceLevel, elasticity }
 }
 
 function getConfidenceLevel(depth) {

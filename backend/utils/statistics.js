@@ -8,7 +8,7 @@ const {
   DAYS_ON_MARKET_MIN_WEIGHT,
   DAYS_IN_MONTH,
   PROXIMITY_MIN_WEIGHT,
-  ROUNDING_DIGIT_PRICE
+  ROUND_TO_NEAREST_HUNDRED
 } = require('./constants')
 
 const haversineDistanceMiles = require('./geo')
@@ -27,6 +27,7 @@ function calculateMarketPrice(listings, userInfo) {
     const mileageGap = Math.abs((userInfo.mileage - listing.mileage) / MILEAGE_SCALE_FACTOR)
 
     const depthWeight = (DEPTH_WEIGHT_BY_LEVEL[listing.depth] / listingCountPerDepth[listing.depth]);
+    listing.depthWeight = depthWeight;
 
     const soldWeight = listing.sold ? SOLD_LISTING_WEIGHT : UNSOLD_LISTING_WEIGHT
     
@@ -43,9 +44,9 @@ function calculateMarketPrice(listings, userInfo) {
     weightSum += totalWeight;
   })
 
-  const marketPrice = weightSum ? parseFloat((sum / weightSum).toFixed(ROUNDING_DIGIT_PRICE)) : 0;
+  const marketPrice = weightSum ? ROUND_TO_NEAREST_HUNDRED(sum / weightSum) : 0;
   logInfo(`Market price calculated for this lsiting is ${marketPrice}`)
-  return marketPrice;
+  return { marketPrice, enrichedListings: listings };
 }
 
 module.exports = { calculateMarketPrice }
