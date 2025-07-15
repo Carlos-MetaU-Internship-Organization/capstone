@@ -6,7 +6,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 const getRecommendations = require('./../services/recommendationService');
-const getEstimatedPrice = require('./../services/priceEstimatorService');
+const getPriceRecommendationInfo = require('./../services/priceEstimatorService');
 const { fetchLocalListingFromVIN } = require('../services/fetchRelevantListingsService');
 const { getUserLocation } = require('../services/userService');
 
@@ -448,9 +448,9 @@ listings.post('/estimate-price', async (req, res) => {
 
   info = { ...info, ...req.body }
 
-  const { estimatedPrice } = await getEstimatedPrice(info);
-  
-  res.json(estimatedPrice);
+  const { marketPrice, recommendedPrice, confidenceLevel } = await getPriceRecommendationInfo(info);
+
+  res.json({ marketPrice, recommendedPrice, confidenceLevel });
 })
 
 module.exports = listings;

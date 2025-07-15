@@ -265,9 +265,8 @@ async function fetchLocalListingFromVIN(vin) {
 
 async function fetchSimilarListings(listingInfo) {
   const { condition, make, model, year, mileage, latitude, longitude } = listingInfo;
-  const userYear = parseInt(year);
-  const userMileage = parseInt(mileage);
 
+  let maxDepthReached = null;
   const comps = new Map();
 
   for (let depth = 0; depth < SIMILARITY_DEPTHS.length; depth++) {
@@ -279,14 +278,15 @@ async function fetchSimilarListings(listingInfo) {
       model
     }
 
+    whereClause.year = {
+      gte: year - YEAR_RANGE,
+      lte: year + YEAR_RANGE
+    }
+
     if (depth < SIMILARITY_DEPTHS.length - 1) {
-      whereClause.year = {
-        gte: (userYear - YEAR_RANGE).toString(),
-        lte: (userYear + YEAR_RANGE).toString(),
-      }
       whereClause.mileage = {
-        gte: (Math.floor(userMileage * (1 - MILEAGE_FACTOR))).toString(),
-        lte: (Math.ceil(userMileage * (1 + MILEAGE_FACTOR))).toString()
+        gte: Math.floor(mileage * (1 - MILEAGE_FACTOR)),
+        lte: Math.ceil(mileage * (1 + MILEAGE_FACTOR))
       }
     }
 
@@ -306,6 +306,7 @@ async function fetchSimilarListings(listingInfo) {
         })
 
         if (similarListings.length >= MINIMUM_COMPS_REQUIRED) {
+          maxDepthReached = depth + 1;
           break;
         }
       }
@@ -317,7 +318,7 @@ async function fetchSimilarListings(listingInfo) {
   const numberOfListingsFound = comps.size;
   if (numberOfListingsFound !== 0) {
     logInfo(`Successfully retrieved ${numberOfListingsFound} similar listings`);
-    return ({ status: 200, listings: [...comps.values()] })
+    return ({ status: 200, depth: maxDepthReached ?? SIMILARITY_DEPTHS.length, listings: [...comps.values()] })
   }
   logInfo('No similar listings were found')
   return ({ status: 404, message: 'No similar listings were found' })

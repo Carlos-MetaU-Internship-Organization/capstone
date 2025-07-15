@@ -1,9 +1,10 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+const { logInfo } = require('../../frontend/src/utils/logging.service');
 const getDaysOnMarket = require('./time')
-const { MIN_LISTINGS_TO_FACTOR_IN_SELLER_LISTINGS, SMOOTHING_K, SELLER_FACTOR_MIN, SELLER_FACTOR_MAX } = require('./constants')
+const { MIN_LISTINGS_TO_FACTOR_IN_SELLER_LISTINGS, SMOOTHING_K, SELLER_FACTOR_MIN, SELLER_FACTOR_MAX, ROUNDING_DIGIT_DELTA, PERCENTAGE_CONVERTER } = require('./constants')
 
-async function computeSellerMultiplier(sellerId) {
+async function computeSellerDelta(sellerId) {
   const soldSellerListings = await prisma.listing.findMany({
     where: {
       ownerId: sellerId,
@@ -19,7 +20,8 @@ async function computeSellerMultiplier(sellerId) {
   });
 
   if ((Array.isArray(soldSellerListings) && soldSellerListings.length < MIN_LISTINGS_TO_FACTOR_IN_SELLER_LISTINGS) || !(Array.isArray(soldSellerListings))) {
-    return 1.0;
+    logInfo('Not enough seller history')
+    return 0.0;
   }
 
   const soldSellerListingStats = new Map();
@@ -73,11 +75,17 @@ async function computeSellerMultiplier(sellerId) {
   }
 
   if (totalWeights === 0) {
-    return 1.0;
+    return 0.0;
   }
 
   const finalWeightedRatio = weightedRatioSum / totalWeights;
-  return Math.min(SELLER_FACTOR_MAX, Math.max(SELLER_FACTOR_MIN, finalWeightedRatio))
+  const sellerMultiplier = Math.min(SELLER_FACTOR_MAX, Math.max(SELLER_FACTOR_MIN, finalWeightedRatio));
+
+  const delta = parseFloat((sellerMultiplier - 1).toFixed(ROUNDING_DIGIT_DELTA));
+  const percentage = Math.abs(delta) * PERCENTAGE_CONVERTER;
+
+  logInfo(`Based on past seller history, listings should be marked ${percentage}% ${delta < 0 ? 'lower' : 'higher'}`)
+  return delta
 }
 
-module.exports = computeSellerMultiplier
+module.exports = computeSellerDelta
