@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
 import axios from 'axios'
+import { ELASTICITY_KEYS, CAPITALIZE } from './../../utils/constants'
 
 function SellPage() {
 
@@ -27,8 +28,11 @@ function SellPage() {
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
   const [form, setForm] = useState(initialFormState);
-  const [listings, setListings] = useState([])
+  const [listings, setListings] = useState([]);
   const [page, setPage] = useState(1);
+  const [priceEstimation, setPriceEstimation] = useState();
+  const [showPriceEstimation, setShowPriceEstimation] = useState(false);
+  const [sliderIndex, setSliderIndex] = useState(Math.floor(ELASTICITY_KEYS.length / 2));
 
   const navigate = useNavigate();
 
@@ -167,7 +171,24 @@ function SellPage() {
     navigate('/my-listings')
   }
 
+  const handlePriceEstimation = async () => {
+    try {
+      const priceEstimationResponse = await axios.post(`${baseURL}/api/listings/estimate-price`, form, { withCredentials: true });
+      if (priceEstimationResponse.data.status === 200) {
+        setPriceEstimation(priceEstimationResponse.data);
+        setShowPriceEstimation(true);
+      }
+    } catch (error) {
+      logError('Something went wrong when trying to generate a price for your listing', error);
+    }
+  }
+
+  const handleSliderInput = async (event) => {
+    setSliderIndex(Number(event.target.value));
+  }
+
   const colors = ['beige', 'black', 'blue', 'brown', 'gold', 'gray', 'green', 'orange', 'purple', 'red', 'silver', 'white', 'yellow'];
+  const currentSliderKey = ELASTICITY_KEYS[sliderIndex];
 
   return (
     <div id='sell-page'>
@@ -250,7 +271,26 @@ function SellPage() {
             </form>
             <div id='price-helper-container' className='translucent'>
               <p>Don't know what to price your car?</p>
-              <button id='price-helper-button' className='translucent'>Click Me</button>
+              <button id='price-helper-button' className='translucent' onClick={handlePriceEstimation}>Click Me</button>
+              {
+                showPriceEstimation && (
+                  <div id='price-estimation'>
+                    <p>Recommended Price: <strong>{priceEstimation.recommendedPrice}</strong></p>
+                    <p>Confidence Level: <strong>{CAPITALIZE(priceEstimation.confidenceLevel)}</strong></p>
+                    {
+                      priceEstimation.recommendedPrice !== priceEstimation.marketPrice && <p>Market Price: <strong>{priceEstimation.marketPrice}</strong></p>
+                    }
+                    {
+                      Object.keys(priceEstimation.elasticity).length !== 0 && (
+                        <>
+                          <p>Expected Time to Sell: <strong>{priceEstimation.elasticity[currentSliderKey]} days {currentSliderKey != '0' ? `at ${currentSliderKey}% price change` : ''}</strong></p>
+                          <input type="range" min="0" max={ELASTICITY_KEYS.length - 1} value={sliderIndex} id='slider' onInput={handleSliderInput}/>
+                        </>
+                      )
+                    }
+                  </div>
+                )
+              }
             </div>
           </div>
         </div>
