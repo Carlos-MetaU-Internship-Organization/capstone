@@ -38,9 +38,8 @@ let corsOptions = {
     }
   },
   credentials: true,
-  headers: {
-    'Access-Control-Allow-Origin': allowedOrigins[0]
-  }
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 }
 
 app.use(cors(corsOptions));
