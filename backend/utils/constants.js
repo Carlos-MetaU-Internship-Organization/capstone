@@ -1,4 +1,5 @@
 const NUMBER_OF_FAKE_USERS = 1000;
+const BATCH_SIZE = 50;
 const PAGE_SIZE = 20;
 const RATIO_OF_TOTAL_LISTINGS_TO_FETCH = 0.05;
 const MIN_LISTINGS_TO_FETCH = 40;
@@ -50,6 +51,7 @@ const FORMAT_TO_PRICE = (price) => price.toLocaleString('en-US');
 
 module.exports = {
   NUMBER_OF_FAKE_USERS,
+  BATCH_SIZE,
   PAGE_SIZE,
   RATIO_OF_TOTAL_LISTINGS_TO_FETCH,
   MIN_LISTINGS_TO_FETCH,

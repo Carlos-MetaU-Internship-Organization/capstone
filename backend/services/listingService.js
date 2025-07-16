@@ -7,12 +7,11 @@ const levenshtein = require('js-levenshtein');
 const { PrismaClientKnownRequestError } = require('@prisma/client/runtime/library');
 const { PAGE_SIZE, MIN_LISTINGS_TO_FETCH, RATIO_OF_TOTAL_LISTINGS_TO_FETCH } = require('../utils/constants')
 
-async function fetchListingsForMigration() {
-  const makeModelCombinations = (await fetchMakeModelCombinations()).makeModelCombinations;
+async function fetchListingsForMigration(makeModelCombinationBatch) {
 
   const allListings = [];
 
-  for (const makeModelCombination of makeModelCombinations) {
+  for (const makeModelCombination of makeModelCombinationBatch) {
     const make = makeModelCombination.makeName;
     const model = makeModelCombination.name;
 
@@ -180,4 +179,4 @@ async function createListing(userInfo, listingInfo, soldStatus) {
   }
 }
 
-module.exports = { fetchListingsForMigration, createListing }
+module.exports = { fetchListingsForMigration, fetchMakeModelCombinations, createListing }
