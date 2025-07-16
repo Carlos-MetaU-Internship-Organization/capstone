@@ -1,13 +1,14 @@
-const Redis = require('ioredis')
-const redis = new Redis(process.env.REDIS_URL)
+const redis = require('redis')
+const redisClient = redis.createClient({ url: process.env.REDIS_URL })
+redisClient.connect().catch(console.error)
 
 async function getCachedRecommendations(userId) {
-  const cached = await redis.get(`recommendations:${userId}`)
+  const cached = await redisClient.get(`recommendations:${userId}`)
   return cached ? JSON.parse(cached) : null;
 }
 
 async function setCachedRecommendations(userId, listings) {
-  await redis.set(`recommendations:${userId}`, JSON.stringify(listings), 'EX', 60 * 60 * 4);
+  await redisClient.set(`recommendations:${userId}`, JSON.stringify(listings), 'EX', 60 * 60 * 4);
 }
 
 module.exports = {

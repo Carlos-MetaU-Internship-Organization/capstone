@@ -1,6 +1,7 @@
 const express = require('express')
 const session = require('express-session')
-const Redis = require('ioredis')
+const redis = require('redis')
+const { RedisStore } = require('connect-redis')
 const cors = require('cors')
 const app = express()
 const dotenv = require('dotenv')
@@ -16,8 +17,8 @@ const preferences = require('./routes/preferences')
 const messages = require('./routes/messages')
 const populate = require('./routes/populate')
 
-const { RedisStore } = require('connect-redis')
-const redisClient = new Redis(process.env.REDIS_URL);
+const redisClient = redis.createClient({ url: process.env.REDIS_URL });
+redisClient.connect().catch(console.error)
 
 const isProduction = process.env.NODE_ENV === 'production';
 const allowedOrigins = process.env.ALLOWED_ORIGINS.split(", ");
