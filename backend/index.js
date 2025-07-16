@@ -37,7 +37,10 @@ let corsOptions = {
       callback(new Error('Not allowed by CORS'))
     }
   },
-  credentials: true
+  credentials: true,
+  headers: {
+    'Access-Control-Allow-Origin': allowedOrigins[0]
+  }
 }
 
 app.use(cors(corsOptions));
