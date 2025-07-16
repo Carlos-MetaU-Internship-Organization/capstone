@@ -1,12 +1,12 @@
 const path = require('path')
 const createRandomUser = require('../utils/fakeUserGenerator')
 const { getMakesAndModels, insertMakesAndModels } = require('./makeModelService')
-const { fetchListingsForMigration, createListing } = require('./listingService')
+const { fetchListingsForMigration, fetchMakeModelCombinations, createListing } = require('./listingService')
 const { signupUser, getAllNeededUserInfo } = require('./userService')
 const { logInfo } = require('./../utils/logging.service')
 const { logError } = require('../../frontend/src/utils/logging.service')
 const { writeFile } = require('fs').promises
-const { NUMBER_OF_FAKE_USERS, RATIO_OF_SOLD_LISTINGS } = require('../utils/constants')
+const { NUMBER_OF_FAKE_USERS, BATCH_SIZE, RATIO_OF_SOLD_LISTINGS } = require('../utils/constants')
 
 async function populateDBWithMakesAndModels() {
   const makesAndModelsResponse = await getMakesAndModels();
@@ -48,23 +48,31 @@ async function populateDBWithListings() {
   if (allNeededUserInfoResponse.status !== 200) {
     return false;
   }
-  
-  const listingsResponse = await fetchListingsForMigration();
-  if (listingsResponse.status !== 200) {
-    return false;
-  }
 
-  const listings = listingsResponse.listings;
-  const allUserInfo = allNeededUserInfoResponse.allNeededUserInfo;
+  const makeModelCombinations = (await fetchMakeModelCombinations()).makeModelCombinations;
   const count = { numListingsCreated: 0 };
 
-  for (const listing of listings) {
-    const randomUserIndex = Math.floor(Math.random() * (allUserInfo.length));
-    const soldStatus = Math.random() <= RATIO_OF_SOLD_LISTINGS;
-    if ((await createListing(allUserInfo[randomUserIndex], listing, soldStatus)).listing) {
-      count.numListingsCreated++;
+  for (let i = 0; i < makeModelCombinations.length; i += BATCH_SIZE) {
+    const makeModelCombinationBatch = makeModelCombinations.slice(i, i + BATCH_SIZE);
+    const listingsResponse = await fetchListingsForMigration(makeModelCombinationBatch);
+    if (listingsResponse.status !== 200) {
+      return false;
     }
+
+    const listings = listingsResponse.listings;
+    const allUserInfo = allNeededUserInfoResponse.allNeededUserInfo;
+  
+    for (const listing of listings) {
+      const randomUserIndex = Math.floor(Math.random() * (allUserInfo.length));
+      const soldStatus = Math.random() <= RATIO_OF_SOLD_LISTINGS;
+      if ((await createListing(allUserInfo[randomUserIndex], listing, soldStatus)).listing) {
+        count.numListingsCreated++;
+      }
+    }
+
   }
+  
+
 
   logInfo(`Successfully created ${count.numListingsCreated} listings in the database`);
   return count.numListingsCreated > 0
