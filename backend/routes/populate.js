@@ -1,6 +1,11 @@
 const express = require('express')
 const populate = express.Router()
-const { populateDBWithUsers, populateDBWithListings } = require('./../services/migrationService');
+const { populateDBWithMakesAndModels, populateDBWithUsers, populateDBWithListings } = require('./../services/migrationService');
+
+populate.get('/makesAndModels', async (req, res) => {
+  const success = await populateDBWithMakesAndModels();
+  res.json({ success })
+})
 
 populate.get('/users', async (req, res) => {
   await populateDBWithUsers();
