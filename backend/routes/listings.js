@@ -415,13 +415,16 @@ listings.get('/user/favorited', async (req, res) => {
 
 listings.get('/recommended', async (req, res) => {
   const userId = req.session.user?.id;
+  const userLatitude = req.session.user?.latitude;
+  const userLongitude = req.session.user?.longitude;
 
   if (!userId) {
     logWarning('Invalid session');
     return res.status(401).json({ message: 'Invalid session'});
   }
 
-  getRecommendations(userId);
+  const recommendedListings = await getRecommendations(userId, userLatitude, userLongitude);
+  res.json(recommendedListings);
 })
 
 listings.post('/estimate-price', async (req, res) => {
