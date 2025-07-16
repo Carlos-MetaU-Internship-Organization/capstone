@@ -174,5 +174,5 @@ module.exports = {
   hasUserFavoritedListing,
   getUserTimeSpentOnListing,
   getUserEngagementClicks,
-  getProximityToUser,
+  getProximityToUser
 };

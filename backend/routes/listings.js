@@ -6,7 +6,9 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 const getRecommendations = require('./../services/recommendationService');
+const getPriceRecommendationInfo = require('./../services/priceEstimatorService');
 const { fetchLocalListingFromVIN } = require('../services/fetchRelevantListingsService');
+const { getUserLocation } = require('../services/userService');
 
 /**
  * TODO: put getting userId in try catch block because sometimes
@@ -423,6 +425,33 @@ listings.get('/recommended', async (req, res) => {
 
   const recommendedListings = await getRecommendations(userId, userLatitude, userLongitude);
   res.json(recommendedListings);
+})
+
+listings.post('/estimate-price', async (req, res) => {
+  const userId = req.session.user?.id;
+  const { condition, make, model, year, mileage } = req.body;
+
+  if (!userId) {
+    logWarning('Invalid session');
+    return res.json({ status: 401, message: 'Invalid session'});
+  }
+
+  if (!condition || !make || !model || !year || !mileage) {
+    logWarning('Listing price generation failed: Missing fields.');
+    return res.json({ status: 400, message: 'Missing fields'})
+  }
+
+  const { latitude, longitude } = req.session.user;
+
+  const userInfo = { sellerId: userId, latitude, longitude }
+  
+  const userListingInfo = { condition, make, model, year, mileage }
+
+  const allUserInfo = { ...userInfo, ...userListingInfo }
+
+  const { marketPrice, recommendedPrice, confidenceLevel, elasticity } = await getPriceRecommendationInfo(allUserInfo);
+
+  res.json({ status: 200, marketPrice, recommendedPrice, confidenceLevel, elasticity });
 })
 
 module.exports = listings;

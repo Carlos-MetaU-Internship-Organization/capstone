@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "node --watch index.js"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +20,13 @@
     "express-session": "^1.18.1",
     "express-validator": "^7.2.1",
     "ioredis": "^5.6.1",
+    "gps2zip": "^2.2.0",
+    "js-levenshtein": "^1.1.6",
     "morgan": "^1.10.0",
-    "prisma": "^6.10.1"
+    "prisma": "^6.10.1",
+    "zipcodes": "^8.0.0"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.9.0"
   }
 }

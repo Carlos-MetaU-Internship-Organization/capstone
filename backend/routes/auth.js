@@ -2,7 +2,7 @@ const { logInfo, logWarning, logError } = require('../utils/logging.service');
 const express = require('express')
 const axios = require('axios');
 const auth = express.Router()
-const { hashPassword, verifyPassword } = require('./argon')
+const { hashPassword, verifyPassword } = require('./../services/passwordService')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 

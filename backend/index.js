@@ -13,6 +13,7 @@ const listings = require('./routes/listings')
 const track = require('./routes/track')
 const preferences = require('./routes/preferences')
 const messages = require('./routes/messages')
+const populate = require('./routes/populate')
 
 let sessionConfig = {
   name: 'sessionId',
@@ -36,7 +37,9 @@ let corsOptions = {
       callback(new Error('Not allowed by CORS'))
     }
   },
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 }
 
 app.use(cors(corsOptions));
@@ -49,6 +52,7 @@ app.use('/api/listings', listings);
 app.use('/api/track', track);
 app.use('/api/preferences', preferences);
 app.use('/api/messages', messages);
+app.use('/api/populate', populate);
 
 app.listen(PORT, () => {
   console.log(`Server is listening on ${PORT}`)
