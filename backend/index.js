@@ -54,6 +54,7 @@ let corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 }
 
+app.set('trust proxy', 1);
 app.use(cors(corsOptions));
 app.use(session(sessionConfig))
 app.use(express.json({ limit: '50mb' }));
