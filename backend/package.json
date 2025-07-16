@@ -26,9 +26,7 @@
     "morgan": "^1.10.0",
     "prisma": "^6.10.1",
     "redis": "^5.6.0",
-    "zipcodes": "^8.0.0"
-  },
-  "devDependencies": {
+    "zipcodes": "^8.0.0",
     "@faker-js/faker": "^9.9.0"
   }
 }
