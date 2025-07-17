@@ -35,8 +35,6 @@ async function fetchListingsFromSearchHistory(userId) {
 
   if (searchesResponse.status === 200) {
     pastSearches = searchesResponse.searches;
-  } else if (searchesResponse.status === 404) {
-    return null;
   } else {
     return searchesResponse.message;
   }

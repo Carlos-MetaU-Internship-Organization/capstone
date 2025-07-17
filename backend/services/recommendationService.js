@@ -7,19 +7,17 @@ const calculateRecommendationScore = require('../utils/scoringUtils')
 async function getRecommendations(userId, userLatitude, userLongitude) {
 
   const cached = await getCachedRecommendations(userId);
-  if (cached) return cached;
+  if (Array.isArray(cached) && cached.length > 0) return cached;
   
   const allListings = []
   const recentlyClickedListings = await fetchRecentlyClickedListings(userId, 50);
   if (recentlyClickedListings.status === 200) {
-    for (const listing of recentlyClickedListings.listings) {
-      allListings.push(listing)
-    }
+    allListings.push(...recentlyClickedListings.listings)
   }
 
   const recentlySearchedListings = await fetchListingsFromSearchHistory(userId);
-  for (const listing of recentlySearchedListings) {
-    allListings.push(listing)
+  if (Array.isArray(recentlySearchedListings)) {
+    allListings.push(...recentlySearchedListings)
   }
 
   const uniqueListings = Array.from(new Map(allListings.map(listing => [listing.vin, listing])).values());
