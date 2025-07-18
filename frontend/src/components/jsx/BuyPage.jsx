@@ -6,7 +6,7 @@ import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
-import { fetchListings } from '../../utils/api'
+import { getModels } from '../../utils/api'
 import axios from 'axios'
 
 function BuyPage() {
@@ -99,15 +99,13 @@ function BuyPage() {
     }
   }
   
-  const updateModels = async (selection) => {
-    try {
-      const response = await axios.get(`${baseURL}/api/search/${selection}/models`, { withCredentials: true });
-      const models = response.data;
-      logInfo('Models successfully retrieved');
+  const updateModels = async (make) => {
+    const models = await getModels(make);
+    if (models) {
       setModels(models);
       setForm(prev => ({...prev, model: models[0].name}))
-    } catch (error) {
-      logError('HTTP request failed when trying to fetch models', error);
+    } else {
+      // TODO: message component error
     }
   }
   
@@ -120,11 +118,9 @@ function BuyPage() {
       return
     }
 
-    navigate('/results', {state: {
-      makes,
-      models,
-      filters: form
-    }});
+    localStorage.setItem('recentSearch', JSON.stringify( { filters: form, makes, models }))
+
+    navigate('/results');
   }
 
   const handlePageChange = (event) => {
@@ -135,7 +131,7 @@ function BuyPage() {
     }
   }
 
-  const handleSavedPrefLoad = (event) => {
+  const handleSavedPrefLoad = async (event) => {
     const prefId = event.target.value;
     const pref = savedPreferences.find(pref => pref.id == prefId)
     
@@ -153,11 +149,11 @@ function BuyPage() {
       maxPrice: pref.maxPrice
     }
 
-    navigate('/results', {state: {
-      makes,
-      models,
-      filters: updatedForm
-    }});
+    const models = await getModels(updatedForm.make);
+
+    localStorage.setItem('recentSearch', JSON.stringify( { filters: updatedForm, makes, models }))
+
+    navigate('/results');
   }
 
 
@@ -205,20 +201,26 @@ function BuyPage() {
             </div>
             <button className='translucent' id='search-button' type='submit'>Search</button>
           </form>
-          <h3>OR</h3>
-          <div id='buy-page-saved-search-selection-box'>
-            <label id='buy-page-saved-search-label'>Load a Saved Search</label>
-            <select id="buy-page-saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedPrefLoad}>
-              <option value="" disabled></option>
-              {
-                savedPreferences.map(pref => (
-                  <option key={pref.id} value={pref.id}>
-                    {`${pref.make} ${pref.model}, ${pref.distance}mi from ${pref.zip}, Color: ${pref.color.charAt(0).toUpperCase() + pref.color.slice(1) || 'Any'}`}
-                  </option>
-                ))
-              }
-            </select>
-          </div>
+          {
+            savedPreferences.length > 0 && (
+              <>
+                <h3>OR</h3>
+                <div id='buy-page-saved-search-selection-box'>
+                  <label id='buy-page-saved-search-label'>Load a Saved Search</label>
+                  <select id="buy-page-saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedPrefLoad}>
+                    <option value="" disabled></option>
+                    {
+                      savedPreferences.map(pref => (
+                        <option key={pref.id} value={pref.id}>
+                          {`${pref.make} ${pref.model}, ${pref.distance}mi from ${pref.zip}, Color: ${pref.color.charAt(0).toUpperCase() + pref.color.slice(1) || 'Any'}`}
+                        </option>
+                      ))
+                    }
+                  </select>
+                </div>
+              </>
+            )
+          }
         </div>
         {
           mostDwelledListing &&

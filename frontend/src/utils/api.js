@@ -36,6 +36,21 @@ export async function fetchListings(params) {
     return matching_listings;
   } catch (error) {
     logError('Listings HTTP request failed', error);
+    // TODO: check if 404 or 500, send message 
+    return null;
+  }
+}
+
+export async function getModels(make) {
+  try {
+    const response = await axios.get(`${baseURL}/api/search/${make}/models`, { withCredentials: true });
+    logInfo('Models successfully retrieved');
+
+    const models = response.data;
+    return models;
+  } catch (error) {
+    logError('HTTP request failed when trying to fetch models', error);
+    return null;
   }
 }
 

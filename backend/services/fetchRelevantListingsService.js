@@ -2,7 +2,7 @@ const axios = require('axios')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { logInfo, logError } = require('../../frontend/src/utils/logging.service')
-const { SIMILARITY_DEPTHS, MINIMUM_COMPS_REQUIRED } = require('../utils/constants')
+const { PAGE_SIZE, SIMILARITY_DEPTHS, MINIMUM_COMPS_REQUIRED } = require('../utils/constants')
 const haversineDistanceMiles = require('../utils/geo')
 const getDaysOnMarket = require('../utils/time')
 
@@ -35,8 +35,6 @@ async function fetchListingsFromSearchHistory(userId) {
 
   if (searchesResponse.status === 200) {
     pastSearches = searchesResponse.searches;
-  } else if (searchesResponse.status === 404) {
-    return null;
   } else {
     return searchesResponse.message;
   }
@@ -44,7 +42,7 @@ async function fetchListingsFromSearchHistory(userId) {
   // Fetch local listings based on user search history
   let searchedListings = []
 
-  const promises = pastSearches.map(search => fetchListingsFromLocal(search));
+  const promises = pastSearches.map(search => fetchListingsFromDB(search, PAGE_SIZE));
   const results = await Promise.all(promises);
   results.forEach(result => {
     if (result.status === 200) {
@@ -74,68 +72,8 @@ async function fetchPastSearches(userId) {
   }  
 }
 
-async function fetchListingsFromAutoDev(filters) {
-  const { make, model, condition, zip, distance, color = '', minYear = '', maxYear = '', maxMileage = '', minPrice = '', maxPrice = '', sortOption = '', page = 1} = filters;
-
-  let latitude = null;
-  let longitude = null;
-
-  try {
-    const response = await axios.get(`https://nominatim.openstreetmap.org/search?q=${zip}&format=json&limit=1`, { headers: { 'User-Agent': 'CarPortal' } });
-    const data = response.data;
-    latitude = data[0].lat;
-    longitude = data[0].lon;
-    logInfo(`Turned ZIP: ${zip} into Latitude: ${latitude}, Longitude: ${longitude}`);
-  } catch (error) {
-    logError('Could not turn ZIP into latitude & longitude', error);
-    return ({ status: 500, message: 'Failed to turn ZIP into latitude & longitude' })
-  }
-
-  const apiKey = process.env.CAR_API_KEY;
-  const headers = {
-    Authorization: `Bearer ${apiKey}`
-  };
-  let reqLink = `https://auto.dev/api/listings?make=${make}&model=${model}&latitude=${latitude}&longitude=${longitude}&radius=${distance}&page=${page}`;
-  logInfo(`Making request to: ${reqLink}`)
-
-  if (condition != 'new&used') {
-    reqLink += `&condition[]=${condition}`;
-  }
-  if (color != '') {
-    reqLink += `&exterior_color[]=${color}`;
-  }
-  if (minYear != '') {
-    reqLink += `&year_min=${minYear}`;
-  }
-  if (maxYear != '') {
-    reqLink += `&year_max=${maxYear}`;
-  }
-  if (maxMileage != '') {
-    reqLink += `&mileage=${maxMileage}`;
-  }
-  if (minPrice != '') {
-    reqLink += `&price_min=${minPrice}`;
-  }
-  if (maxPrice != '') {
-    reqLink += `&price_max=${maxPrice}`;
-  }
-  if (sortOption != '') {
-    reqLink += `&sort_filter=${sortOption}`
-  }
-
-  try {
-    const response = await axios.get(reqLink, headers);
-    const data = response.data;
-    logInfo(`Successfully retrieved ${data.hitsCount} listings`)
-    return ({ status: 200, listings: data });
-  } catch (error) { 
-    logError('Error during search for Listings', error);
-    return ({ status: 500, message: 'Failed to search for listings using Auto Dev API' })
-  }
-}
-
-async function fetchListingsFromLocal(filters) {
-  const { make, model, condition, zip, distance, color = '', minYear = '', maxYear = '', maxMileage = '', minPrice = '', maxPrice = '', sortOption = '', page = 1} = filters;
+async function fetchListingsFromDB(filters, count = 0) {
+  const { make, model, condition, zip, distance, color = '', minYear = '', maxYear = '', maxMileage = '', minPrice = '', maxPrice = '', sortOption = ''} = filters;
 
   let latitude = null;
   let longitude = null;
@@ -191,7 +129,7 @@ async function fetchListingsFromLocal(filters) {
   try {
     const listings = await prisma.listing.findMany({
       where: whereClause,
-      take: 20
+      ...(count && { take: count })
     })
 
     if (listings.length === 0) {
@@ -329,7 +267,7 @@ module.exports = {
   fetchRecentlyClickedListings,
   fetchPastSearches,
   fetchListingsFromSearchHistory,
-  fetchListingsFromAutoDev,
+  fetchListingsFromDB,
   fetchLocalListingFromVIN,
   fetchSimilarListings
 };

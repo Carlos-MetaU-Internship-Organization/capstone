@@ -3,7 +3,7 @@ const axios = require('axios')
 const express = require('express')
 const search = express.Router()
 const { PrismaClient } = require('@prisma/client');
-const { fetchListingsFromAutoDev } = require('../services/fetchRelevantListingsService');
+const { fetchListingsFromDB } = require('../services/fetchRelevantListingsService');
 const prisma = new PrismaClient()
 
 search.get('/makes', async (req, res) => {
@@ -49,11 +49,11 @@ search.get('/:make/models', async (req, res) => {
 })
 
 search.get('/', async (req, res) => {
-  const { make, model, condition, zip, distance, color = '', minYear = '', maxYear = '', maxMileage = '', minPrice = '', maxPrice = '', sortOption = '', page = 1} = req.query;
+  const { make, model, condition, zip, distance, color = '', minYear = '', maxYear = '', maxMileage = '', minPrice = '', maxPrice = '', sortOption = ''} = req.query;
 
-  logInfo(`Request to get listings for Make: ${make}, Model: ${model}, Page: ${page} received`);
+  logInfo(`Request to get listings for Make: ${make}, Model: ${model} received`);
   
-  const response = await fetchListingsFromAutoDev(req.query);
+  const response = await fetchListingsFromDB(req.query);
   
   if (response.status === 200) {
     res.json(response.listings);

@@ -64,13 +64,13 @@ function Listing({ listingData, favoritedOnLoad }) {
   
   return (
     <div className='car-listing translucent'>
-      <img className='car-listing-image pointer' src={listingData.primaryPhotoUrl} onClick={handleListingClick}/>
+      <img className='car-listing-image pointer' src={listingData.images[0]} onClick={handleListingClick}/>
       <div className='car-listing-info'>
           <img id='favorite-listing-button' className='pointer' height={25}src={isFavorited ? pinkHeart : heart} onClick={handleListingFavorite}/>
           <h3 className='car-listing-title'>{carTitle}</h3>
-        <p className='car-listing-miles'>{listingData.mileage}</p>
+        <p className='car-listing-miles'>{`${listingData.mileage.toLocaleString('en-US')} miles`}</p>
         <p className='car-listing-location'>{carLocation}</p>
-        <p className='car-listing-price'>{listingData.price}</p>
+        <p className='car-listing-price'>{`$${listingData.price.toLocaleString('en-US')}`}</p>
       </div>
     </div>
   )

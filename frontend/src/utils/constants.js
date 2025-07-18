@@ -7,3 +7,5 @@ export const CAPITALIZE = (sentence) => {
   }
   return splitSentence.join(' ');
 }
+
+export const PAGE_SIZE = 20;
