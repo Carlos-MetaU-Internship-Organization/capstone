@@ -46,6 +46,8 @@ const MINIMUM_DATA_POINTS_REQUIRED = 3;
 const RECENCY_DECAY_DAYS = 180;
 const PERCENT_BUCKETS = [-10, -5, 0, 5, 10]
 
+const CACHE_RECOMMENDED_LISTINGS_EXP_TIME = 60 * 60 * 4; // 4 hours
+
 const ROUND_TO_NEAREST_HUNDRED = (number) => Math.round(number / 100) * 100;
 const FORMAT_TO_PRICE = (price) => price.toLocaleString('en-US');
 
@@ -78,6 +80,7 @@ module.exports = {
   MINIMUM_DATA_POINTS_REQUIRED,
   RECENCY_DECAY_DAYS,
   PERCENT_BUCKETS,
+  CACHE_RECOMMENDED_LISTINGS_EXP_TIME,
   ROUND_TO_NEAREST_HUNDRED,
   FORMAT_TO_PRICE
 }
