@@ -34,6 +34,7 @@ function ResultsPage() {
 
   const [models, setModels] = useState(cachedModels);
   const [listingsInfo, setListingsInfo] = useState(cachedListings ? { listings: cachedListings, totalListingsCount: cachedListings.length } : {});
+  const [displayedListings, setDisplayedListings] = useState(cachedListings?.slice(0, 20) || [])
   const [favoritedVins, setFavoritedVins] = useState([]);
   const [page, setPage] = useState(1);
   const [searchChange, setSearchChange] = useState(false);
@@ -115,6 +116,8 @@ function ResultsPage() {
 
 
   const handlePageChange = () => {
+    const addedListings = listingsInfo.listings.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+    setDisplayedListings(prev => [...prev, ...addedListings])
     setPage(prev => prev + 1);
   }
 
@@ -183,7 +186,7 @@ function ResultsPage() {
         const listingCount = allListings.length;
     
         setListingsInfo({ listings: allListings, totalListingsCount: listingCount });
-    
+        setDisplayedListings(allListings.slice(0, PAGE_SIZE))
         setSearchChange(false);
       } else {
         setListingsInfo({ listings: [], totalListingsCount: 0 })
@@ -347,7 +350,7 @@ function ResultsPage() {
           </select>
           <div id='car-listing-list'>
             {
-              listingsInfo.listings?.length > 0 && listingsInfo.listings.map(listing => {
+              displayedListings.length > 0 && displayedListings.map(listing => {
                 return <Listing key={listing.vin} listingData={listing} favoritedOnLoad={favoritedVins.includes(listing.vin)}/>
               })
             }
