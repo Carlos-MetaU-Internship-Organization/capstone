@@ -32,8 +32,8 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
     uniqueListingInfo.globalMessageCount = listing.ownerId ? (await listingDataService.getGlobalMessagesCount(listing.id, listing.ownerId)).count : 0;
     uniqueListingInfo.hasUserMessagedSeller = listing.ownerId ? (await listingDataService.hasUserMessagedSeller(listing.id, listing.ownerId, userId)).hasMessaged : 0;
 
-    uniqueListingInfo.globalTotalClicks = listingDataService.getGlobalTotalClicks(listing);
-    uniqueListingInfo.globalTotalClicksPerDay = calculateValuePerDay(uniqueListingInfo.globalTotalClicks, daysOnMarket);
+    uniqueListingInfo.globalViewCount = (await listingDataService.getGlobalViewCount(listing.id)).views;
+    uniqueListingInfo.globalViewCountPerDay = calculateValuePerDay(uniqueListingInfo.globalViewCount, daysOnMarket);
 
     uniqueListingInfo.globalFavorites = listingDataService.getGlobalFavorites(listing);
     uniqueListingInfo.globalFavoritesPerDay = calculateValuePerDay(uniqueListingInfo.globalFavorites, daysOnMarket)
@@ -55,7 +55,7 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
 
   const maxValues = {
     globalMessageCount: Math.max(...uniqueListingsInfo.map(info => info.globalMessageCount)),
-    globalTotalClicks: Math.max(...uniqueListingsInfo.map(info => info.globalTotalClicks)),
+    globalViewCount: Math.max(...uniqueListingsInfo.map(info => info.globalViewCount)),
     globalTotalClicksPerDay: Math.max(...uniqueListingsInfo.map(info => info.globalTotalClicksPerDay)),
     globalFavorites: Math.max(...uniqueListingsInfo.map(info => info.globalFavorites)),
     globalFavoritesPerDay: Math.max(...uniqueListingsInfo.map(info => info.globalFavoritesPerDay)),
@@ -73,8 +73,8 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
       ownerId: info.ownerId,
       globalMessageCount: normalizeValue(info.globalMessageCount, maxValues.globalMessageCount),
       hasUserMessagedSeller: info.hasUserMessagedSeller === true ? 1 : 0,
-      globalTotalClicks: normalizeValue(info.globalTotalClicks, maxValues.globalTotalClicks),
-      globalTotalClicksPerDay: normalizeValue(info.globalTotalClicksPerDay, maxValues.globalTotalClicksPerDay),
+      globalViewCount: normalizeValue(info.globalViewCount, maxValues.globalViewCount),
+      globalViewCountPerDay: normalizeValue(info.globalViewCountPerDay, maxValues.globalViewCountPerDay),
       globalFavorites: normalizeValue(info.globalFavorites, maxValues.globalFavorites),
       globalFavoritesPerDay: normalizeValue(info.globalFavoritesPerDay, maxValues.globalFavoritesPerDay),
       hasUserFavoritedListing: info.hasUserFavoritedListing === true ? 1 : 0,

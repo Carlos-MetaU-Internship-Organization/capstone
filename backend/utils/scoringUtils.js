@@ -3,8 +3,8 @@ function calculateRecommendationScore(normalizedSignals) {
   const weightsForUserCreatedListings = {
     globalMessageCount: 0.08,
     hasUserMessagedSeller: 0.10,
-    globalTotalClicks: 0.10,
-    globalTotalClicksPerDay: 0.04,
+    globalViewCount: 0.10,
+    globalViewCountPerDay: 0.04,
     globalFavorites: 0.08,
     globalFavoritesPerDay: 0.04,
     hasUserFavoritedListing: 0.10,
