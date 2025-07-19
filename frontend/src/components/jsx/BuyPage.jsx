@@ -6,7 +6,7 @@ import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
-import { getModels } from '../../utils/api'
+import { getModels, getUserZIP } from '../../utils/api'
 import axios from 'axios'
 
 function BuyPage() {
@@ -20,7 +20,7 @@ function BuyPage() {
     make: '',
     model: '',
     distance: '50',
-    zip: '94025'
+    zip: ''
   })
   const [mostDwelledListing, setMostDwelledListing] = useState(null);
   const [favoritedListings, setFavoritedListings] = useState([]);
@@ -87,6 +87,17 @@ function BuyPage() {
       }
     }
     getSavedSearchPreferences();
+
+    const fetchZip = async () => {
+      const result = await getUserZIP();
+      if (result.success) {
+        setForm(prev => ({ ...prev, zip: result.zip }))
+      } else {
+        logError(result.message)
+        // TODO: message component error
+      }
+    }
+    fetchZip();
   }, []);
   
   const updateForm = async (event) => {

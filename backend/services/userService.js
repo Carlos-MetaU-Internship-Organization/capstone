@@ -62,6 +62,7 @@ async function getUserLocation(userId) {
     const userLocation = await prisma.user.findFirst({
       where: { id: userId },
       select: {
+        zip: true,
         latitude: true,
         longitude: true
       }
@@ -70,7 +71,7 @@ async function getUserLocation(userId) {
     logInfo("Successfully retrieved user's location ")
     return { status: 200, userLocation }
   } catch (error) {
-    logError("Error trying to retrieve every user's location")
+    logError(`Error trying to retrieve the location of user with userId: ${userId}`)
     return { status: 500 }
   }
 }

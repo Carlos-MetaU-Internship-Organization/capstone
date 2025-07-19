@@ -8,7 +8,6 @@ const prisma = new PrismaClient()
 const getRecommendations = require('./../services/recommendationService');
 const getPriceRecommendationInfo = require('./../services/priceEstimatorService');
 const { fetchLocalListingFromVIN } = require('../services/fetchRelevantListingsService');
-const { getUserLocation } = require('../services/userService');
 
 /**
  * TODO: make sure the user marking a listing as sold, 
