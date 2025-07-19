@@ -57,3 +57,13 @@ export async function getModels(make) {
 export async function fetchRecommendations(userId) {
 
 }
+
+export async function getUserZIP() {
+  try {
+    const response = await axios.get(`${baseURL}/api/user/location`, { withCredentials: true });
+    const { zip } = response.data;
+    return { success: true, zip }
+  } catch (error) {
+    return { success: false, message: error?.response?.data?.message || 'An error occured while retrieving user location' }
+  }
+}

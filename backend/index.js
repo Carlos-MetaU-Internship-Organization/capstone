@@ -17,6 +17,7 @@ const track = require('./routes/track')
 const preferences = require('./routes/preferences')
 const messages = require('./routes/messages')
 const populate = require('./routes/populate')
+const user = require('./routes/user')
 
 const isProduction = process.env.NODE_ENV === 'production';
 const allowedOrigins = process.env.ALLOWED_ORIGINS.split(", ");
@@ -64,6 +65,7 @@ app.use('/api/track', track);
 app.use('/api/preferences', preferences);
 app.use('/api/messages', messages);
 app.use('/api/populate', populate);
+app.use('/api/user', user);
 
 app.listen(PORT, () => {
   console.log(`Server is listening on ${PORT}`)
