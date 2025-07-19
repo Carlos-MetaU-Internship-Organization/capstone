@@ -1,4 +1,4 @@
-const axios = require('axios')
+const zipcodes = require('zipcodes')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { logInfo, logError } = require('../../frontend/src/utils/logging.service')
@@ -75,54 +75,39 @@ async function fetchPastSearches(userId) {
 async function fetchListingsFromDB(filters, count = 0) {
   const { make, model, condition, zip, distance, color = '', minYear = '', maxYear = '', maxMileage = '', minPrice = '', maxPrice = '', sortOption = ''} = filters;
 
-  let latitude = null;
-  let longitude = null;
-
-  try {
-    const response = await axios.get(`https://nominatim.openstreetmap.org/search?q=${zip}&format=json&limit=1`, { headers: { 'User-Agent': 'CarPortal' } });
-    const data = response.data;
-    latitude = data[0].lat;
-    longitude = data[0].lon;
-    logInfo(`Turned ZIP: ${zip} into Latitude: ${latitude}, Longitude: ${longitude}`);
-  } catch (error) {
-    logError('Could not turn ZIP into latitude & longitude', error);
-    return ({ status: 500, message: 'Failed to turn ZIP into latitude & longitude' })
-  }
+  const { latitude, longitude } = zipcodes.lookup(zip);
 
   const whereClause = {
     make,
-    model
+    model,
+    sold: false
   }
 
   if (condition != 'new&used') {
     whereClause.condition = condition;
   }
-  if (color != '') {
+
+  if (color) {
     whereClause.color = color;
   }
-  if (minYear != '') {
-    whereClause.year = { gte: minYear };
-  }
-  if (maxYear != '') {
-    if (!whereClause.year) {
-      whereClause.year = {};
-    }
-    whereClause.year.lte = maxYear;
-  }
-  if (maxMileage != '') {
-    whereClause.mileage.lte = maxMileage;
-  }
-  if (minPrice != '') {
-    whereClause.price = { gte: minPrice };
-  }
-  if (maxPrice != '') {
-    if (!whereClause.price) {
-      whereClause.price = {};
-    }
-    whereClause.price.lte = maxPrice;
+
+  if (minYear || maxYear) {
+    whereClause.year = {};
+    if (minYear) whereClause.year.gte = minYear;
+    if (maxYear) whereClause.year.lte = maxYear;
   }
 
-  const { minLatitude, maxLatitude, minLongitude, maxLongitude } = calculateBounds(parseFloat(latitude), parseFloat(longitude), parseInt(distance));
+  if (maxMileage) {
+    whereClause.mileage = { lte: maxMileage };
+  }
+
+  if (minPrice || maxPrice) {
+    whereClause.price = {};
+    if (minPrice) whereClause.price.gte = minPrice;
+    if (maxPrice) whereClause.price.lte = maxPrice;
+  }
+
+  const { minLatitude, maxLatitude, minLongitude, maxLongitude } = calculateBounds(latitude, longitude, parseInt(distance));
   whereClause.latitude = { gte: minLatitude, lte: maxLatitude };
   whereClause.longitude = { gte: minLongitude, lte: maxLongitude };
   

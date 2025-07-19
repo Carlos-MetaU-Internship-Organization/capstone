@@ -1,7 +1,7 @@
 import './../css/Listing.css'
 import heart from './../../assets/heart.png'
 import pinkHeart from './../../assets/pinkHeart.png'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { baseURL } from '../../globals'
 import { logError } from '../../utils/logging.service'
@@ -12,6 +12,10 @@ function Listing({ listingData, favoritedOnLoad }) {
   const navigate = useNavigate();
   // TODO: check if listing is already favorited from backend and set this to intial val
   const [isFavorited, setIsFavorited] = useState(favoritedOnLoad);
+
+  useEffect(() => {
+    setIsFavorited(favoritedOnLoad)
+  }, [favoritedOnLoad])
 
   const carTitle = `${listingData.year} ${listingData.make} ${listingData.model}`
   const carLocation = `${listingData.city}, ${listingData.state}`

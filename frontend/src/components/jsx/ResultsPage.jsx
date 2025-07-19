@@ -3,11 +3,13 @@ import heart from './../../assets/heart.png'
 import pinkHeart from './../../assets/pinkHeart.png'
 import Header from './Header'
 import Listing from './Listing'
+import SortMenu from './SortMenu'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
 import { fetchListings, getModels } from '../../utils/api'
+import { sortListings } from './../../utils/listings'
 import { PAGE_SIZE } from '../../utils/constants'
 import axios from 'axios'
 
@@ -16,7 +18,7 @@ function ResultsPage() {
   const navigate = useNavigate();
   
   const cachedRecentSearch = JSON.parse(localStorage.getItem('recentSearch'));
-  const { filters: cachedFilters, listings: cachedListings, makes, models: cachedModels } = cachedRecentSearch;
+  const { filters: cachedFilters, sortOption: cachedSortOption, listings: cachedListings, makes, models: cachedModels } = cachedRecentSearch;
 
   const initialFilters = {
     color: '',
@@ -25,7 +27,6 @@ function ResultsPage() {
     maxMileage: '',
     minPrice: '',
     maxPrice: '',
-    sortOption: '',
     ...cachedFilters
   }
 
@@ -34,8 +35,11 @@ function ResultsPage() {
 
   const [models, setModels] = useState(cachedModels);
   const [listingsInfo, setListingsInfo] = useState(cachedListings ? { listings: cachedListings, totalListingsCount: cachedListings.length } : {});
+  const [listingsUpdated, setListingsUpdated] = useState(false);
+  const [displayedListings, setDisplayedListings] = useState(cachedListings?.slice(0, 20) || [])
   const [favoritedVins, setFavoritedVins] = useState([]);
   const [page, setPage] = useState(1);
+  const [sortOption, setSortOption] = useState(cachedSortOption || "");
   const [searchChange, setSearchChange] = useState(false);
   
   const [savedPreferences, setSavedPreferences] = useState([]);
@@ -54,12 +58,6 @@ function ResultsPage() {
     }
     checkAuth();
   }, [navigate]);
-
-  useEffect(() => {
-    if (onScreenFilters.sortOption != '') {
-      handleSort();
-    }
-  }, [onScreenFilters.sortOption])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -115,6 +113,8 @@ function ResultsPage() {
 
 
   const handlePageChange = () => {
+    const addedListings = listingsInfo.listings.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+    setDisplayedListings(prev => [...prev, ...addedListings])
     setPage(prev => prev + 1);
   }
 
@@ -129,9 +129,7 @@ function ResultsPage() {
   }
 
   const updateForm = async (event) => {
-    if (event.target.name != 'sortOption') {
-      setSearchChange(true);
-    }
+    setSearchChange(true);
     const elem = event.target.name;
     const value = event.target.value;
     setOnScreenFilters(prev => ({...prev, [elem]: value}));
@@ -144,6 +142,13 @@ function ResultsPage() {
   useEffect(() => {
     updateListings(activeFilters)
   }, [activeFilters])
+
+  useEffect(() => {
+    if (sortOption) {
+      handleSort(sortOption)
+    }
+    setListingsUpdated(false);
+  }, [sortOption, listingsUpdated])
 
   const updateListings = async (activeFilters) => {
 
@@ -168,8 +173,7 @@ function ResultsPage() {
       maxYear: activeFilters.maxYear,
       maxMileage: activeFilters.maxMileage,
       minPrice: activeFilters.minPrice, 
-      maxPrice: activeFilters.maxPrice,
-      sortOption: activeFilters.sortOption
+      maxPrice: activeFilters.maxPrice
     }
 
     try {
@@ -179,11 +183,14 @@ function ResultsPage() {
       ])
     
       if (allListings) {
-        localStorage.setItem('recentSearch', JSON.stringify( { filters: activeFilters, listings: allListings, makes, models }))
+        localStorage.setItem('recentSearch', JSON.stringify( { filters: activeFilters, sortOption, listings: allListings, makes, models }))
         const listingCount = allListings.length;
     
         setListingsInfo({ listings: allListings, totalListingsCount: listingCount });
-    
+        setListingsUpdated(true);
+        if (!sortOption) {
+          setDisplayedListings(allListings.slice(0, PAGE_SIZE))
+        }
         setSearchChange(false);
       } else {
         setListingsInfo({ listings: [], totalListingsCount: 0 })
@@ -208,8 +215,7 @@ function ResultsPage() {
       maxYear: pref.maxYear,
       maxMileage: pref.maxMileage,
       minPrice: pref.minPrice, 
-      maxPrice: pref.maxPrice,
-      sortOption: onScreenFilters.sortOption
+      maxPrice: pref.maxPrice
     }
 
     const models = await getModels(updatedFilters.make);
@@ -228,8 +234,17 @@ function ResultsPage() {
     setSearchChange(false);
   }
 
-  const handleSort = () => {
+  const handleSort = async (newSortOption) => {
+    localStorage.setItem('recentSearch', JSON.stringify( { filters: activeFilters, sortOption: newSortOption, listings: listingsInfo.listings, makes, models }))
 
+    if (!listingsInfo?.listings?.length) return;
+
+    const [field, order] = newSortOption.split(':');
+
+    const sortedListings = sortListings(listingsInfo.listings, field, order, activeFilters.zip);
+
+    setListingsInfo({ listings: sortedListings, totalListingsCount: sortedListings.length })
+    setDisplayedListings(sortedListings.slice(0, page * PAGE_SIZE));
   }
 
   const colors = ['beige', 'black', 'blue', 'brown', 'gold', 'gray', 'green', 'orange', 'purple', 'red', 'silver', 'white', 'yellow'];
@@ -334,20 +349,10 @@ function ResultsPage() {
           }
         </div>
         <div id='result-page-listings-content'>
-          <select className='translucent pointer' id='sort-menu' value={onScreenFilters.sortOption} name='sortOption' onChange={updateForm}>
-            <option value="" disabled>Sort By: </option>
-            <option value="price:asc">Price (Least Expensive First)</option>
-            <option value="price:desc">Price (Most Expensive First)</option>
-            <option value="distance:asc">Distance (Nearest First)</option>
-            <option value="year:desc">Year (Newest First)</option>
-            <option value="year:asc">Year (Oldest First)</option>
-            <option value="mileage:asc">Mileage (Lowest First)</option>
-            <option value="created_at:desc">Time on Market (Shortest First)</option>
-            <option value="created_at:asc">Time on Market (Longest First)</option>
-          </select>
+          <SortMenu sortOption={sortOption} onChange={setSortOption} />
           <div id='car-listing-list'>
             {
-              listingsInfo.listings?.length > 0 && listingsInfo.listings.map(listing => {
+              displayedListings.length > 0 && displayedListings.map(listing => {
                 return <Listing key={listing.vin} listingData={listing} favoritedOnLoad={favoritedVins.includes(listing.vin)}/>
               })
             }
