@@ -72,7 +72,6 @@ model Listing {
   soldAt                       DateTime?
   owner                        User?               @relation("owner", fields: [ownerId], references: [id])
   ownerId                      Int?
-  views                        Int                 @default(0)
   favorites                    Int                 @default(0)
 
   favoriters                   User[]              @relation("favoriter")

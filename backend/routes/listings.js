@@ -11,30 +11,11 @@ const { fetchLocalListingFromVIN } = require('../services/fetchRelevantListingsS
 const { getUserLocation } = require('../services/userService');
 
 /**
- * TODO: put getting userId in try catch block because sometimes
- * req.session.user does not exist..
- * 
- * ALSO TODO: make sure the user marking a listing as sold, 
+ * TODO: make sure the user marking a listing as sold, 
  * deleted, or edited is the owner of the listing
  * 
  * FINAL TODO: hide encrypted password on a get request for a listing?
  */
-
-const incrementViewCount = async (vin) => {
-  try {
-    await prisma.listing.update({
-      where: { vin },
-      data: {
-        views: {
-          increment: 1
-        }
-      }
-    })
-  } catch (error) {
-    logError('Could not update the view count of this listing', error);
-    throw error;
-  }
-}
 
 listings.get('/', async (req, res) => {
   logInfo(`Request to get all local listings received`);
@@ -54,7 +35,11 @@ listings.get('/popular', async (req, res) => {
 
   try {
     const listings = await prisma.listing.findMany({
-      orderBy: {views: 'desc'},
+      orderBy: {
+        visits: {
+          _count: 'desc'
+        }
+      },
       take: 20
     });
     logInfo('The 20 most viewed local listings retrieved successfully')
@@ -161,7 +146,6 @@ listings.get('/vin/:vin', async (req, res) => {
   const response = await fetchLocalListingFromVIN(vin);
 
   if (response.status === 200) {
-    await incrementViewCount(vin);
     res.json({ status: 200, listing: response.listing, userId: req.session.user?.id });
   } else if (response.status === 404) {
     res.json({ status: 404, message: response.message })
@@ -228,25 +212,6 @@ listings.delete('/:listingId', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 })
-
-// NOT IN USE
-// Increment views column by 1 of a specific listing 
-listings.patch('/:vin/view', async (req, res) => {
-  const vin = req.params.vin;
-
-  if (!vin) {
-    logWarning('No VIN provided');
-    return res.status(400).json({ message: 'Invalid parameters'});
-  }
-
-  try {
-    await incrementViewCount(vin);
-    res.json({ status: 200, message: `View count successfully increased for listing with VIN: ${vin}`});
-  } catch (error) {
-    logError('Could not update the view count of this listing.', error);
-    res.json({ status: 404, message: 'Listing not found' });
-  }
-});
 
 listings.patch('/:vin/favorite', async (req, res) => {
   const userId = parseInt(req.session.user?.id);

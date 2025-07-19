@@ -2,7 +2,6 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { logInfo, logError } = require('../../frontend/src/utils/logging.service')
 
-
 async function getGlobalMessagesCount(listingId, ownerId) {
   try {
     if (!ownerId) {
@@ -32,8 +31,23 @@ async function getGlobalMessagesCount(listingId, ownerId) {
   }
 }
 
-function getGlobalTotalClicks(listing) {
-  return listing.views;
+async function getGlobalViewCount(listingId) {
+  try {
+    const listingVisits = await prisma.listingVisit.findMany({
+      where: { listingId }
+    })
+
+    if (!listingVisits) {
+      logInfo(`Listing with listingId: ${listingId} has no previous views`)
+      return ({ status: 404, viewCount: 0 })
+    }
+
+    logInfo(`Listing with listingId: ${listingId} has ${listingVisits.length} views`)
+    return ({ status: 200, viewCount: listingVisits.length })
+  } catch (error) {
+    logError(`Something bad happened trying to retrieve the number of views of listing with listingId: ${listingId}`, error);
+    return ({ status: 500, viewCount: 0 })
+  }
 }
 
 function getGlobalFavorites(listing) {
@@ -168,7 +182,7 @@ function getProximityToUser(listingLatitude, listingLongitude, userLatitude, use
 
 module.exports = {
   getGlobalMessagesCount,
-  getGlobalTotalClicks,
+  getGlobalViewCount,
   getGlobalFavorites,
   hasUserMessagedSeller,
   hasUserFavoritedListing,
