@@ -32,7 +32,7 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
     uniqueListingInfo.globalMessageCount = listing.ownerId ? (await listingDataService.getGlobalMessagesCount(listing.id, listing.ownerId)).count : 0;
     uniqueListingInfo.hasUserMessagedSeller = listing.ownerId ? (await listingDataService.hasUserMessagedSeller(listing.id, listing.ownerId, userId)).hasMessaged : 0;
 
-    uniqueListingInfo.globalViewCount = (await listingDataService.getGlobalViewCount(listing.id)).views;
+    uniqueListingInfo.globalViewCount = (await listingDataService.getGlobalViewCount(listing.id)).viewCount;
     uniqueListingInfo.globalViewCountPerDay = calculateValuePerDay(uniqueListingInfo.globalViewCount, daysOnMarket);
 
     uniqueListingInfo.globalFavorites = listingDataService.getGlobalFavorites(listing);
@@ -56,7 +56,7 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
   const maxValues = {
     globalMessageCount: Math.max(...uniqueListingsInfo.map(info => info.globalMessageCount)),
     globalViewCount: Math.max(...uniqueListingsInfo.map(info => info.globalViewCount)),
-    globalTotalClicksPerDay: Math.max(...uniqueListingsInfo.map(info => info.globalTotalClicksPerDay)),
+    globalViewCountPerDay: Math.max(...uniqueListingsInfo.map(info => info.globalViewCountPerDay)),
     globalFavorites: Math.max(...uniqueListingsInfo.map(info => info.globalFavorites)),
     globalFavoritesPerDay: Math.max(...uniqueListingsInfo.map(info => info.globalFavoritesPerDay)),
     userTimeSpentOnListing: Math.max(...uniqueListingsInfo.map(info => info.userTimeSpentOnListing)),
