@@ -45,3 +45,16 @@
   justify-content: space-around;
   border-radius: 10px;
 }
+
+.seller-listing-image-wrapper {
+  position: relative;
+}
+
+.seller-listing-sold-overlay-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

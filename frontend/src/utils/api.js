@@ -67,3 +67,12 @@ export async function getUserZIP() {
     return { success: false, message: error?.response?.data?.message || 'An error occured while retrieving user location' }
   }
 }
+
+export async function getListingViewCount(listingId) {
+  try {
+    const response = await axios.get(`${baseURL}/api/listings/${listingId}/viewCount`)
+    return { success: true, viewCount: response.data.viewCount }
+  } catch (error) {
+    return { success: false }
+  }
+}

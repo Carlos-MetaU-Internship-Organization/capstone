@@ -4,6 +4,7 @@
   align-items: center;
   gap: 1vw;
   padding: .5vh .5vw .5vh 1vw;
+  min-width: 99vw;
   border-bottom: 3px solid black;
   background-image: url('./../../assets/gradient.jpeg');
 }

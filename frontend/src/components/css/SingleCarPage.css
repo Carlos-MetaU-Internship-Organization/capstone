@@ -110,3 +110,10 @@
 #reply-send-button:hover {
   border: 1px solid;
 }
+
+#sold-warning {
+  text-align: center;
+  font-size: xx-large;
+  font-weight: bold;
+  color: red;
+}
