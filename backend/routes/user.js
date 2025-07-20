@@ -1,14 +1,13 @@
 const express = require('express')
-const user = express.Router()
 const { getUserLocation } = require('../services/userService');
+const { requireAuth } = require('../middleware/authMiddleware');
+const { logWarning } = require('../utils/logging.service')
+
+const user = express.Router()
+user.use(requireAuth)
 
 user.get('/location', async (req, res) => {
-  const userId = req.session.user?.id;
-  
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session '});
-  }
+  const userId = req.session.user.id;
 
   const response = await getUserLocation(userId);
 

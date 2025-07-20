@@ -1,10 +1,12 @@
-const { logInfo, logWarning, logError } = require('../utils/logging.service');
-const axios = require('axios')
 const express = require('express')
-const search = express.Router()
 const { PrismaClient } = require('@prisma/client');
 const { fetchListingsFromDB } = require('../services/fetchRelevantListingsService');
+const { requireAuth } = require('../middleware/authMiddleware');
+const { logInfo, logWarning, logError } = require('../utils/logging.service');
+
 const prisma = new PrismaClient()
+const search = express.Router()
+search.use(requireAuth)
 
 search.get('/makes', async (req, res) => {
   logInfo('Request to get all makes received');

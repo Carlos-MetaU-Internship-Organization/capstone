@@ -31,17 +31,6 @@ function BuyPage() {
 
   // ON BOOT
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/auth/check-auth`, { withCredentials: true });
-        if (!response.data.authenticated) {
-          navigate('/');
-        }
-      } catch {
-        navigate('/');
-      }
-    }
-    checkAuth();
 
     const getAllMakes = async () => {
       try {

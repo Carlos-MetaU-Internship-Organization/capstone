@@ -1,11 +1,11 @@
-const { logInfo, logWarning, logError } = require('../utils/logging.service');
-const express = require('express')
 const axios = require('axios');
-const auth = express.Router()
-const { hashPassword, verifyPassword } = require('./../services/passwordService')
+const express = require('express')
 const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
+const { hashPassword, verifyPassword } = require('./../services/passwordService')
+const { logInfo, logWarning, logError } = require('../utils/logging.service');
 
+const prisma = new PrismaClient()
+const auth = express.Router()
 
 // Signup
 auth.post('/signup', async (req, res) => {

@@ -6,7 +6,6 @@ import Listing from './Listing'
 import SortMenu from './SortMenu'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
 import { fetchListings, getModels } from '../../utils/api'
 import { sortListings } from './../../utils/listings'
@@ -14,8 +13,6 @@ import { PAGE_SIZE } from '../../utils/constants'
 import axios from 'axios'
 
 function ResultsPage() {
-
-  const navigate = useNavigate();
   
   const cachedRecentSearch = JSON.parse(localStorage.getItem('recentSearch'));
   const { filters: cachedFilters, sortOption: cachedSortOption, listings: cachedListings, makes, models: cachedModels } = cachedRecentSearch;
@@ -44,20 +41,6 @@ function ResultsPage() {
   
   const [savedPreferences, setSavedPreferences] = useState([]);
   const [isSearchFavorited, setIsSearchFavorited] = useState(false);
-  
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/auth/check-auth`, { withCredentials: true });
-        if (!response.data.authenticated) {
-          navigate('/');
-        }
-      } catch {
-        navigate('/');
-      }
-    }
-    checkAuth();
-  }, [navigate]);
 
   useEffect(() => {
     const fetchData = async () => {

@@ -1,19 +1,17 @@
-const { logInfo, logWarning, logError } = require('../utils/logging.service');
 const express = require('express')
-const preferences = express.Router()
 const { PrismaClient } = require('@prisma/client');
 const { fetchPastSearches } = require('../services/fetchRelevantListingsService');
+const { requireAuth } = require('../middleware/authMiddleware');
+const { logInfo, logWarning, logError } = require('../utils/logging.service');
+
 const prisma = new PrismaClient()
+const preferences = express.Router()
+preferences.use(requireAuth);
 
 preferences.post('/favorite', async (req, res) => {
   const data = req.body;
   delete data.sortOption;
-  const userId = req.session.user?.id;
-
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
+  const userId = req.session.user.id;
 
   try {
     const existing = await prisma.searchPreference.findFirst({
@@ -55,12 +53,7 @@ preferences.post('/favorite', async (req, res) => {
 })
 
 preferences.get('/favorites', async (req, res) => {
-  const userId = req.session.user?.id;
-
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
+  const userId = req.session.user.id;
 
   try {
     const searchPreferences = await prisma.searchPreference.findMany({
@@ -78,12 +71,7 @@ preferences.get('/favorites', async (req, res) => {
 preferences.post('/view', async (req, res) => {
   const data = req.body;
   delete data.sortOption;
-  const userId = req.session.user?.id;
-
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
+  const userId = req.session.user.id;
 
   try {
       const existing = await prisma.searchPreference.findFirst({
@@ -122,12 +110,7 @@ preferences.post('/view', async (req, res) => {
 })
 
 preferences.get('/viewed', async (req, res) => {
-  const userId = req.session.user?.id;
-
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
+  const userId = req.session.user.id;
 
   const response = await fetchPastSearches(userId, count);
 

@@ -1,19 +1,16 @@
-const { logInfo, logWarning, logError } = require('../utils/logging.service');
-const axios = require('axios')
 const express = require('express')
-const track = express.Router()
 const { PrismaClient } = require('@prisma/client');
 const { fetchRecentlyClickedListings } = require('../services/fetchRelevantListingsService');
+const { requireAuth } = require('../middleware/authMiddleware');
+const { logInfo, logWarning, logError } = require('../utils/logging.service');
+
 const prisma = new PrismaClient()
+const track = express.Router()
+track.use(requireAuth)
 
 track.post('/dwell-and-click', async (req, res) => {
   let { listingId, clickCount, dwellTime } = req.body;
-  const userId = req.session.user?.id;
-
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
+  const userId = req.session.user.id;
 
   if (!listingId) {
     logWarning('Invalid listingId');
@@ -49,12 +46,7 @@ track.post('/dwell-and-click', async (req, res) => {
 })
 
 track.get('/most-dwelled-listings', async (req, res) => {
-  const userId = req.session.user?.id;
-  
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session '});
-  }
+  const userId = req.session.user.id;
 
   try {
     const topVisits = await prisma.listingVisit.findMany({
@@ -76,13 +68,8 @@ track.get('/most-dwelled-listings', async (req, res) => {
 })
 
 track.get('/most-recently-visited-listings/:count', async (req, res) => {
-  const userId = req.session.user?.id;
+  const userId = req.session.user.id;
   const count = parseInt(req.params.count);
-  
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session '});
-  }
 
   const response = await fetchRecentlyClickedListings(userId, count);
 

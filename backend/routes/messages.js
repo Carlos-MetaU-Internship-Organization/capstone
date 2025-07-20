@@ -1,17 +1,15 @@
-const { logInfo, logWarning, logError } = require('../utils/logging.service');
 const express = require('express')
-const messages = express.Router()
 const { PrismaClient } = require('@prisma/client')
+const { requireAuth } = require('../middleware/authMiddleware');
+const { logInfo, logWarning, logError } = require('../utils/logging.service');
+
 const prisma = new PrismaClient()
+const messages = express.Router()
+messages.use(requireAuth);
 
 messages.post('/', async (req, res) => {
-  const senderId = req.session.user?.id;
+  const senderId = req.session.user.id;
   const { receiverId, content, listingId } = req.body;
-
-  if (!senderId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
 
   if (!receiverId || !content || !listingId) {
     logWarning('Invalid parameters');
@@ -39,12 +37,7 @@ messages.post('/', async (req, res) => {
 messages.get('/listing/:listingId/seller/:sellerId', async (req, res) => {
   const listingId = parseInt(req.params.listingId);
   const sellerId = parseInt(req.params.sellerId);
-  const userId = req.session.user?.id;
-
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
+  const userId = req.session.user.id;
 
   try {
 

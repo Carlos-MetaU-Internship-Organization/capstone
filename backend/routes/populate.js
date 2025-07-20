@@ -1,6 +1,9 @@
 const express = require('express')
-const populate = express.Router()
 const { populateDBWithMakesAndModels, populateDBWithUsers, populateDBWithListings } = require('./../services/migrationService');
+const { requireMasterUser } = require('./../middleware/authMiddleware');
+
+const populate = express.Router()
+populate.use(requireMasterUser);
 
 populate.get('/makesAndModels', async (req, res) => {
   const success = await populateDBWithMakesAndModels();

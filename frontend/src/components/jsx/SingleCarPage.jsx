@@ -6,14 +6,14 @@ import pinkHeart from './../../assets/pinkHeart.png'
 import Header from './Header'
 import { baseURL } from '../../globals'
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
 import axios from 'axios'
+import { checkAuth } from '../../utils/api'
 
 function SingleCarPage() {
 
   let { vin } = useParams();
-  const navigate = useNavigate();
   const path = useRef(window.location.href);
   const enterTime = useRef();
   const inactivityTimeout = useRef(null);
@@ -39,18 +39,11 @@ function SingleCarPage() {
   // ON BOOT
   useEffect(() => {
     const boot = async () => {
-      const checkAuth = async () => {
-        try {
-          const response = await axios.get(`${baseURL}/api/auth/check-auth`, { withCredentials: true });
-          if (!response.data.authenticated) {
-            navigate('/');
-          }
-          activeUserIdRef.current = response.data.id;
-        } catch {
-          navigate('/');
-        }
+      const getActiveUserId = async () => {
+        const { id } = await checkAuth();
+        activeUserIdRef.current = id;
       }
-      await checkAuth();
+      await getActiveUserId();
   
       const fetchData = async () => {
         try {
