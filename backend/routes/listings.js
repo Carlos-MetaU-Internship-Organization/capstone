@@ -1,14 +1,16 @@
-const { logInfo, logWarning, logError } = require('../utils/logging.service');
 const axios = require('axios')
 const express = require('express')
-const listings = express.Router()
 const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
-
 const getRecommendations = require('./../services/recommendationService');
 const getPriceRecommendationInfo = require('./../services/priceEstimatorService');
 const { fetchLocalListingFromVIN } = require('../services/fetchRelevantListingsService');
 const { getGlobalViewCount } = require('../services/listingDataService');
+const { requireAuth } = require('../middleware/authMiddleware');
+const { logInfo, logWarning, logError } = require('../utils/logging.service');
+
+const prisma = new PrismaClient()
+const listings = express.Router()
+listings.use(requireAuth);
 
 /**
  * TODO: make sure the user marking a listing as sold, 
@@ -52,7 +54,7 @@ listings.get('/popular', async (req, res) => {
 })
 
 listings.post('/', async (req, res) => {
-  const userId = parseInt(req.session.user?.id)
+  const userId = parseInt(req.session.user.id)
 
   let { condition, make, model, year, color, mileage, vin, description, images, price, zip = '', owner_name = '', owner_number = '', city = '', state = '', latitude = 0, longitude = 0, createdAt = '', views = 0 } = req.body;
   if (!condition || !make || !model || !year || !color || !mileage || !vin || !description || images.length === 0 || !price) {
@@ -63,29 +65,24 @@ listings.post('/', async (req, res) => {
   logInfo(`Request to add a local listing for User: ${userId} received`);
   
   try {
-    let listing = null;
-    if (userId) {
-      const { zip, name: owner_name, phoneNumber: owner_number } = await prisma.user.findFirst({
-        where: { id: userId },
-        select: { name: true, phoneNumber: true, zip: true}
-      })
-  
-      const apiKey = process.env.CAR_API_KEY;
-      const headers = {
-        Authorization: `Bearer ${apiKey}`
-      };
-  
-      const location_info = await axios.get(`https://auto.dev/api/zip/${zip}`, headers);
-      let { city, state, latitude, longitude } = location_info.data.payload;
+    const { zip, name: owner_name, phoneNumber: owner_number } = await prisma.user.findFirst({
+      where: { id: userId },
+      select: { name: true, phoneNumber: true, zip: true}
+    })
 
-      listing = await prisma.listing.create({data: {...req.body, ownerId: userId, zip, owner_name, owner_number, city, state, latitude, longitude }});
-    } else {
-      listing = await prisma.listing.create({data: {...req.body, zip, owner_name, owner_number, city, state, latitude, longitude, createdAt, views }});
-    }
+    const apiKey = process.env.CAR_API_KEY;
+    const headers = {
+      Authorization: `Bearer ${apiKey}`
+    };
+
+    const location_info = await axios.get(`https://auto.dev/api/zip/${zip}`, headers);
+    let { city, state, latitude, longitude } = location_info.data.payload;
+
+    const listing = await prisma.listing.create({data: {...req.body, ownerId: userId, zip, owner_name, owner_number, city, state, latitude, longitude }});
     
     logInfo('Local listing created successfully')
-    res.json(listing);
-    return;
+
+    return res.json(listing);
   } catch (error) {
     logError('An error occured', error);
     res.status(500).json({ message: error.message });
@@ -93,12 +90,7 @@ listings.post('/', async (req, res) => {
 })
 
 listings.get('/user/', async (req, res) => {
-  const userId = parseInt(req.session.user?.id)
-
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
+  const userId = parseInt(req.session.user.id)
 
   logInfo(`Request to get all local listings for User: ${userId} received`);
 
@@ -131,13 +123,7 @@ listings.get('/user/', async (req, res) => {
 })
 
 listings.get('/vin/:vin', async (req, res) => {
-  const userId = parseInt(req.session.user?.id)
   const vin = req.params.vin;
-
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
   
   if (!vin) {
     logWarning('No VIN provided');
@@ -211,7 +197,6 @@ listings.get('/:listingId/viewCount', async (req, res) => {
 })
 
 listings.delete('/:listingId', async (req, res) => {
-  // const userId = parseInt(req.session.user?.id);
   const listingId = parseInt(req.params.listingId);
 
   if (!listingId) {
@@ -234,13 +219,8 @@ listings.delete('/:listingId', async (req, res) => {
 })
 
 listings.patch('/:vin/favorite', async (req, res) => {
-  const userId = parseInt(req.session.user?.id);
+  const userId = parseInt(req.session.user.id);
   const vin = req.params.vin;
-
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
 
   if (!vin) {
     logWarning('No VIN provided');
@@ -376,12 +356,7 @@ listings.get('/:vin/data', async (req, res) => {
 })
 
 listings.get('/user/favorited', async (req, res) => {
-  const userId = parseInt(req.session.user?.id);
-
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
+  const userId = parseInt(req.session.user.id);
 
   logInfo(`Request to get all favorited local listings for User: ${userId} received`);
 
@@ -399,27 +374,17 @@ listings.get('/user/favorited', async (req, res) => {
 })
 
 listings.get('/recommended', async (req, res) => {
-  const userId = req.session.user?.id;
+  const userId = req.session.user.id;
   const userLatitude = req.session.user?.latitude;
   const userLongitude = req.session.user?.longitude;
-
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.status(401).json({ message: 'Invalid session'});
-  }
 
   const recommendedListings = await getRecommendations(userId, userLatitude, userLongitude);
   res.json(recommendedListings);
 })
 
 listings.post('/estimate-price', async (req, res) => {
-  const userId = req.session.user?.id;
+  const userId = req.session.user.id;
   const { condition, make, model, year, mileage } = req.body;
-
-  if (!userId) {
-    logWarning('Invalid session');
-    return res.json({ status: 401, message: 'Invalid session'});
-  }
 
   if (!condition || !make || !model || !year || !mileage) {
     logWarning('Listing price generation failed: Missing fields.');
