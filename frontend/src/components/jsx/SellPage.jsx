@@ -1,12 +1,13 @@
 import './../css/SellPage.css'
+import axios from 'axios'
 import arrow from './../../assets/arrow.png'
+import soldOverlay from './../../assets/soldOverlay.png'
 import Header from './Header'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
-import axios from 'axios'
-import { ELASTICITY_KEYS, CAPITALIZE } from './../../utils/constants'
+import { ELASTICITY_KEYS, CAPITALIZE, LISTINGS_PER_CYCLE } from './../../utils/constants'
 
 function SellPage() {
 
@@ -36,16 +37,16 @@ function SellPage() {
 
   const navigate = useNavigate();
 
-  const fetchUserListings = async () => {
+  const fetchOwnedListings = async () => {
     try {
       const response = await axios.get(`${baseURL}/api/listings/user/`, { withCredentials: true });
       const data = response.data;
-      logInfo('Active listings successfully retrieved');
+      logInfo('Owned listings successfully retrieved');
       if (data.length > 0) {
         setListings(data);
       }
     } catch (error) {
-      logError('Something went wrong when trying to fetch your active listings', error);
+      logError('Something went wrong when trying to fetch your owned listings', error);
     }
   }
 
@@ -95,7 +96,7 @@ function SellPage() {
       setForm(initialFormState)
     }
 
-    fetchUserListings();
+    fetchOwnedListings();
   }, [])
   
   const handleLogout = () => {
@@ -304,12 +305,17 @@ function SellPage() {
                   page > 1 && (<img src={arrow} height='50px' id='flipped-arrow' className='pointer' onClick={handlePageChange}/>) 
                 }
                 {
-                  listings.slice((4 * (page - 1)), (4 * page)).map(listing => {
-                    return <img key={listing.id} src={listing.images[0]} className='listing-image pointer' onClick={() => navigate(`/listing/${listing.vin}`)}/>
-                  })
+                  listings.slice((LISTINGS_PER_CYCLE * (page - 1)), (LISTINGS_PER_CYCLE * page)).map(listing => (
+                    <div key={listing.id} className='listing-wrapper' onClick={() => navigate(`/listing/${listing.vin}`)}>
+                      <img src={listing.images[0]} className='listing-image pointer'/>
+                      {
+                        listing.sold && <img src={soldOverlay} className='sold-overlay-img' />
+                      }
+                    </div>
+                  ))
                 }
                 {
-                  listings.length > page * 4 && (<img src={arrow} height='50px' className='pointer' onClick={handlePageChange}/>)
+                  listings.length > page * LISTINGS_PER_CYCLE && (<img src={arrow} height='50px' className='pointer' onClick={handlePageChange}/>)
                 }
               </div>
             </div>

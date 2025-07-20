@@ -142,3 +142,17 @@ input::file-selector-button {
 #slider:hover {
   cursor: pointer;
 }
+
+.listing-wrapper {
+  position: relative;
+}
+
+.sold-overlay-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}

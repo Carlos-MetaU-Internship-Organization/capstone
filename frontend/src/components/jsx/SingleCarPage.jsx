@@ -235,6 +235,7 @@ function SingleCarPage() {
         <div id='main-content'>
           <div id='listing-container'>
             <div id='listing-info'>
+              {listing.sold && <p id='sold-warning'>THIS LISTING HAS BEEN SOLD</p>}
               <img src={listing.images[imageIndex]} id='single-car-image'/>
               <div id='image-cycler'>
                 <img src={arrow} id='previous-image' className='pointer' onClick={handlePreviousImage}/>

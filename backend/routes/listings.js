@@ -8,6 +8,7 @@ const prisma = new PrismaClient()
 const getRecommendations = require('./../services/recommendationService');
 const getPriceRecommendationInfo = require('./../services/priceEstimatorService');
 const { fetchLocalListingFromVIN } = require('../services/fetchRelevantListingsService');
+const { getGlobalViewCount } = require('../services/listingDataService');
 
 /**
  * TODO: make sure the user marking a listing as sold, 
@@ -116,7 +117,10 @@ listings.get('/user/', async (req, res) => {
           }
         }
       },
-      orderBy: {createdAt: 'desc'}
+      orderBy: [
+        { sold: 'asc'},
+        { createdAt: 'desc' }
+      ]
     })
     logInfo(`All local listings for User: ${userId} retrieved successfully`)
     res.json(listings)
@@ -186,6 +190,23 @@ listings.put('/:listingId', async (req, res) => {
   } catch (error) {
     logError('An error occured', error);
     res.status(500).json({ message: error.message });
+  }
+})
+
+listings.get('/:listingId/viewCount', async (req, res) => {
+  const listingId = parseInt(req.params.listingId);
+
+  if (!listingId) {
+    logWarning('No listingId provided');
+    return res.status(400).json({ message: 'Invalid listingId'});
+  }
+
+  const response = await getGlobalViewCount(listingId);
+
+  if (response.status === 200) {
+    res.json({ viewCount: response.viewCount });
+  } else {
+    res.status(500).end()
   }
 })
 
@@ -303,7 +324,7 @@ listings.patch('/:listingId/sold', async (req, res) => {
   const { new_sold_status } = req.body;
   const listingId = parseInt(req.params.listingId);
   
-  if (!new_sold_status) {
+  if (new_sold_status === undefined) {
     logWarning('No sold status provided');
     return res.status(400).json({ message: 'Invalid sold status'});
   }

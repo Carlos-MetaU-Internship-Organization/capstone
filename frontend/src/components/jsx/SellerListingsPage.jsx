@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
 import axios from 'axios'
+import { PAGE_SIZE } from '../../utils/constants'
 
 function SellerListingsPage() {
 
@@ -30,21 +31,21 @@ function SellerListingsPage() {
 
   }, [navigate]);
 
-  const fetchUserListings = async () => {
+  const fetchOwnedListings = async () => {
     try {
       const response = await axios.get(`${baseURL}/api/listings/user/`, { withCredentials: true });
       const data = response.data;
-      logInfo('Active listings successfully retrieved');
+      logInfo('Owned listings successfully retrieved');
       if (data.length > 0) {
         setListings(data);
       }
     } catch (error) {
-      logError('Something went wrong when trying to fetch your active listings', error);
+      logError('Something went wrong when trying to fetch your owned listings', error);
     }
   }
 
   useEffect(() => {
-    fetchUserListings();
+    fetchOwnedListings();
   }, [])
 
   const handlePageChange = () => {
@@ -55,31 +56,29 @@ function SellerListingsPage() {
     setListings(listings.filter(listing => (listing.id !== listingId)));
   }
 
-  const handleListingSoldStatusUpdate = (listingId) => {
-    // find listing, update sold status, setListings state var
-  }
-
   return (
     <div id='seller-listings-page'>
       <Header />
-      <h2 id='seller-listings-title'>Your Listings</h2>
-      {
-        listings.length > 0 &&
-        (
-          <div id='seller-listings-container'>
-            <div id='seller-listings'>
-              {
-                listings.slice(0, (20 * page)).map(listing => {
-                  return <SellerListing key={listing.id} listingData={listing} onDelete={handleListingDeletion}/>
-                })
-              }
-              {
-              (page * 20 < listings.length.totalListingsCount) && (<button id='load-more-seller-listings-button' className='translucent pointer' onClick={handlePageChange}>Load More</button>)
-              }
+      <div id='seller-listings-page-content'>
+        <h2 id='seller-listings-title'>Your Listings</h2>
+        {
+          listings.length > 0 &&
+          (
+            <div id='seller-listings-container'>
+              <div id='seller-listings'>
+                {
+                  listings.slice(0, (PAGE_SIZE * page)).map(listing => {
+                    return <SellerListing key={listing.id} listingData={listing} onDelete={handleListingDeletion}/>
+                  })
+                }
+              </div>
             </div>
-          </div>
-        )
-      }
+          )
+        }
+        {
+          (page * PAGE_SIZE < listings.length) && (<button id='load-more-seller-listings-button' className='translucent pointer' onClick={handlePageChange}>Load More</button>)
+        }
+      </div>
     </div>
   )
 }
