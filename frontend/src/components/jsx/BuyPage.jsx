@@ -20,7 +20,13 @@ function BuyPage() {
     make: '',
     model: '',
     distance: '50',
-    zip: ''
+    zip: '',
+    color: '',
+    minYear: '',
+    maxYear: '',
+    maxMileage: '',
+    minPrice: '',
+    maxPrice: ''
   })
   const [mostDwelledListing, setMostDwelledListing] = useState(null);
   const [favoritedListings, setFavoritedListings] = useState([]);
@@ -141,12 +147,12 @@ function BuyPage() {
       condition: pref.condition,
       zip: pref.zip,
       distance: pref.distance,
-      color: pref.color,
-      minYear: pref.minYear,
-      maxYear: pref.maxYear,
-      maxMileage: pref.maxMileage,
-      minPrice: pref.minPrice, 
-      maxPrice: pref.maxPrice
+      color: pref.color || '',
+      minYear: pref.minYear || '',
+      maxYear: pref.maxYear || '',
+      maxMileage: pref.maxMileage || '',
+      minPrice: pref.minPrice || '', 
+      maxPrice: pref.maxPrice || ''
     }
 
     const models = await getModels(updatedForm.make);
@@ -212,7 +218,7 @@ function BuyPage() {
                     {
                       savedPreferences.map(pref => (
                         <option key={pref.id} value={pref.id}>
-                          {`${pref.make} ${pref.model}, ${pref.distance}mi from ${pref.zip}, Color: ${pref.color.charAt(0).toUpperCase() + pref.color.slice(1) || 'Any'}`}
+                          {`${pref.make} ${pref.model}, ${pref.distance}mi from ${pref.zip}, Color: ${pref.color ? pref.color.charAt(0).toUpperCase() + pref.color.slice(1) : 'Any'}`}
                         </option>
                       ))
                     }
