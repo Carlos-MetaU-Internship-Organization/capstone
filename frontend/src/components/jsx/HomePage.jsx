@@ -28,17 +28,6 @@ function HomePage() {
 
   // ON BOOT
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/auth/check-auth`, { withCredentials: true });
-        if (!response.data.authenticated) {
-          navigate('/');
-        }
-      } catch {
-        navigate('/');
-      }
-    }
-    checkAuth();
 
     const fetchAllListings = async () => {
       try {

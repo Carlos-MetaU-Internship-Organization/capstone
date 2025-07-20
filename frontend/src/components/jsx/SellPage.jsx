@@ -60,23 +60,7 @@ function SellPage() {
       logError('HTTP request failed when trying to fetch models', error);
     }
   }
-
-  // ON BOOT
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/auth/check-auth`, { withCredentials: true });
-        if (!response.data.authenticated) {
-          navigate('/');
-        }
-      } catch {
-        navigate('/');
-      }
-    }
-    checkAuth();
-
-  }, [navigate]);
-
+  
   useEffect(() => {
     const getAllMakes = async () => {
       try {

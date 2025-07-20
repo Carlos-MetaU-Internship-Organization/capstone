@@ -16,20 +16,6 @@ function LoginPage() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/auth/check-auth`, { withCredentials: true });
-        if (response.data.authenticated) {
-          navigate('/home');
-        }
-      } catch (error) {
-        logError('Something went wrong when trying to check for a valid session', error);
-      }
-    }
-    checkAuth();
-  }, []);
-
   const handleLogin = async (event) => {
     event.preventDefault();
     const result = await loginUser({ login, password });

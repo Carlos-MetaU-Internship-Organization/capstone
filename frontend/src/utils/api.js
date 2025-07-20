@@ -76,3 +76,13 @@ export async function getListingViewCount(listingId) {
     return { success: false }
   }
 }
+
+export async function checkAuth() {
+  try {
+    const response = await axios.get(`${baseURL}/api/auth/check-auth`, { withCredentials: true })
+    const { id, authenticated } = response.data
+    return { id, authenticated }
+  } catch (error) {
+    return { authenticated: false }
+  }
+}

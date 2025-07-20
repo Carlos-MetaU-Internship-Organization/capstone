@@ -8,6 +8,8 @@ import ResultsPage from './components/jsx/ResultsPage'
 import SellerListingsPage from './components/jsx/SellerListingsPage'
 import SingleCarPage from './components/jsx/SingleCarPage'
 import HomePage from './components/jsx/HomePage'
+import ProtectedRoute from './utils/ProtectedRoute'
+import RedirectAuthToHome from './utils/RedirectAuthToHome'
 
 function App() {
 
@@ -15,14 +17,46 @@ function App() {
    <div className='App'>
     <Router>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/signup" element={<SignupPage/>} />
-        <Route path="/buy" element={<BuyPage />} />
-        <Route path="/sell" element={<SellPage />} />
-        <Route path="/results" element={<ResultsPage />} />
-        <Route path='/my-listings' element={<SellerListingsPage />} />
-        <Route path='/listing/:vin' element={<SingleCarPage />} />
+        <Route path="/" element={
+          <RedirectAuthToHome>
+            <LoginPage />
+          </RedirectAuthToHome>
+        } />
+        <Route path="/signup" element={
+          <RedirectAuthToHome>
+            <SignupPage />
+          </RedirectAuthToHome>
+        } />
+        <Route path="/home" element={
+          <ProtectedRoute>
+            <HomePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/buy" element={
+          <ProtectedRoute>
+            <BuyPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/sell" element={
+          <ProtectedRoute>
+            <SellPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/results" element={
+          <ProtectedRoute>
+            <ResultsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-listings" element={
+          <ProtectedRoute>
+            <SellerListingsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/listing/:vin" element={
+          <ProtectedRoute>
+            <SingleCarPage />
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
    </div>

@@ -3,7 +3,6 @@ import Header from './Header'
 import SellerListing from './SellerListing'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from './../../utils/logging.service';
 import axios from 'axios'
 import { PAGE_SIZE } from '../../utils/constants'
@@ -12,24 +11,6 @@ function SellerListingsPage() {
 
   const [listings, setListings] = useState([])
   const [page, setPage] = useState(1);
-
-  const navigate = useNavigate();
-
-  // ON BOOT
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/auth/check-auth`, { withCredentials: true });
-        if (!response.data.authenticated) {
-          navigate('/');
-        }
-      } catch {
-        navigate('/');
-      }
-    }
-    checkAuth();
-
-  }, [navigate]);
 
   const fetchOwnedListings = async () => {
     try {
