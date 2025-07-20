@@ -9,7 +9,15 @@ const getDaysOnMarket = require('../utils/time')
 async function fetchRecentlyClickedListings(userId, count) {
  try {
     const mostRecentVisits = await prisma.listingVisit.findMany({
-      where: { userId },
+      where: {
+        userId,
+        listing: {
+          sold: false,
+          ownerId: {
+            not: userId
+          }
+        }
+      },
       orderBy: { recentVisitAt: 'desc' },
       take: count,
       select: { listing: true }
@@ -42,7 +50,7 @@ async function fetchListingsFromSearchHistory(userId) {
   // Fetch local listings based on user search history
   let searchedListings = []
 
-  const promises = pastSearches.map(search => fetchListingsFromDB(search, PAGE_SIZE));
+  const promises = pastSearches.map(search => fetchListingsFromDB(search, PAGE_SIZE, userId));
   const results = await Promise.all(promises);
   results.forEach(result => {
     if (result.status === 200) {
@@ -72,7 +80,7 @@ async function fetchPastSearches(userId) {
   }  
 }
 
-async function fetchListingsFromDB(filters, count = 0) {
+async function fetchListingsFromDB(filters, count = 0, userId = -1) {
   const { make, model, condition, zip, distance, color = '', minYear = '', maxYear = '', maxMileage = '', minPrice = '', maxPrice = '', sortOption = ''} = filters;
 
   const { latitude, longitude } = zipcodes.lookup(zip);
@@ -110,6 +118,11 @@ async function fetchListingsFromDB(filters, count = 0) {
   const { minLatitude, maxLatitude, minLongitude, maxLongitude } = calculateBounds(latitude, longitude, parseInt(distance));
   whereClause.latitude = { gte: minLatitude, lte: maxLatitude };
   whereClause.longitude = { gte: minLongitude, lte: maxLongitude };
+
+  // exclude own listings
+  if (userId !== -1) {
+    whereClause.ownerId = { not: userId }
+  }
   
   try {
     const listings = await prisma.listing.findMany({
