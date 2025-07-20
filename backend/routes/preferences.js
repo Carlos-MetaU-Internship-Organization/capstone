@@ -2,32 +2,22 @@ const express = require('express')
 const { PrismaClient } = require('@prisma/client');
 const { fetchPastSearches } = require('../services/fetchRelevantListingsService');
 const { requireAuth } = require('../middleware/authMiddleware');
+const { validateRequest } = require('../middleware/validateMiddleware')
 const { logInfo, logWarning, logError } = require('../utils/logging.service');
+const { searchPreferenceSchema } = require('../schemas/searchPreferenceSchema')
 
 const prisma = new PrismaClient()
 const preferences = express.Router()
 preferences.use(requireAuth);
 
-preferences.post('/favorite', async (req, res) => {
-  const data = req.body;
-  delete data.sortOption;
+preferences.post('/favorite', validateRequest({ body: searchPreferenceSchema }), async (req, res) => {
   const userId = req.session.user.id;
 
   try {
     const existing = await prisma.searchPreference.findFirst({
       where: {
         favoriterId: userId,
-        condition: data.condition,
-        make: data.make,
-        model: data.model,
-        distance: data.distance,
-        zip: data.zip,
-        color: data.color,
-        minYear: data.minYear,
-        maxYear: data.maxYear,
-        maxMileage: data.maxMileage,
-        minPrice: data.minPrice,
-        maxPrice: data.maxPrice,
+        ...req.body
       }
     })
 
@@ -40,7 +30,7 @@ preferences.post('/favorite', async (req, res) => {
     } else {
       logInfo('No existing search preference in DB. Time to create it!')
       const newPreference = await prisma.searchPreference.create({
-        data: { favoriterId: userId, ...data}
+        data: { favoriterId: userId, ...req.body}
       })
       return res.json({ preference: newPreference, inDB: true });
     }
@@ -68,14 +58,12 @@ preferences.get('/favorites', async (req, res) => {
   }  
 })
 
-preferences.post('/view', async (req, res) => {
-  const data = req.body;
-  delete data.sortOption;
+preferences.post('/view', validateRequest({ body: searchPreferenceSchema }), async (req, res) => {
   const userId = req.session.user.id;
 
   try {
       const existing = await prisma.searchPreference.findFirst({
-        where: { viewerId: userId, ...data }
+        where: { viewerId: userId, ...req.body }
       })
 
       if (existing) {
@@ -87,7 +75,7 @@ preferences.post('/view', async (req, res) => {
       }
     
       const viewedPreference = await prisma.searchPreference.create({
-        data: { viewerId: userId, ...data}
+        data: { viewerId: userId, ...req.body}
       })
 
       const recentPreferences = await prisma.searchPreference.findMany({

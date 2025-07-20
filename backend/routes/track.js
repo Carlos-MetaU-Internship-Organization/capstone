@@ -2,20 +2,18 @@ const express = require('express')
 const { PrismaClient } = require('@prisma/client');
 const { fetchRecentlyClickedListings } = require('../services/fetchRelevantListingsService');
 const { requireAuth } = require('../middleware/authMiddleware');
+const { validateRequest } = require('../middleware/validateMiddleware')
 const { logInfo, logWarning, logError } = require('../utils/logging.service');
+const { trackDwellAndClickSchema } = require('../schemas/trackSchema')
+
 
 const prisma = new PrismaClient()
 const track = express.Router()
 track.use(requireAuth)
 
-track.post('/dwell-and-click', async (req, res) => {
+track.post('/dwell-and-click', validateRequest({ body: trackDwellAndClickSchema}), async (req, res) => {
   let { listingId, clickCount, dwellTime } = req.body;
   const userId = req.session.user.id;
-
-  if (!listingId) {
-    logWarning('Invalid listingId');
-    return res.status(400).json({ message: 'Invalid listingId'});
-  }
 
   try {
     const prev_visit = await prisma.listingVisit.findFirst({

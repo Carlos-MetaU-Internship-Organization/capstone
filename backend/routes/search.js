@@ -2,7 +2,10 @@ const express = require('express')
 const { PrismaClient } = require('@prisma/client');
 const { fetchListingsFromDB } = require('../services/fetchRelevantListingsService');
 const { requireAuth } = require('../middleware/authMiddleware');
+const { validateRequest } = require('../middleware/validateMiddleware')
 const { logInfo, logWarning, logError } = require('../utils/logging.service');
+const { makeSchema } = require('../schemas/makeModelSchema');
+const { searchPreferenceSchema } = require('../schemas/searchPreferenceSchema');
 
 const prisma = new PrismaClient()
 const search = express.Router()
@@ -24,14 +27,9 @@ search.get('/makes', async (req, res) => {
   }
 })
 
-search.get('/:make/models', async (req, res) => {
-  // TODO: input validation
-  const make = req.params.make;
+search.get('/:make/models', validateRequest({ params: makeSchema }), async (req, res) => {
 
-  if (!make) {
-    logWarning('No make provided');
-    return res.status(400).json({ message: 'Invalid make'});
-  }
+  const make = req.params.make;
 
   logInfo(`Request to get all models for Make: ${make} received`);
 
@@ -50,8 +48,8 @@ search.get('/:make/models', async (req, res) => {
   }
 })
 
-search.get('/', async (req, res) => {
-  const { make, model, condition, zip, distance, color = '', minYear = '', maxYear = '', maxMileage = '', minPrice = '', maxPrice = '', sortOption = ''} = req.query;
+search.get('/', validateRequest({ query: searchPreferenceSchema }), async (req, res) => {
+  const { make, model } = req.query;
 
   logInfo(`Request to get listings for Make: ${make}, Model: ${model} received`);
   

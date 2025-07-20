@@ -2,13 +2,15 @@ const axios = require('axios');
 const express = require('express')
 const { PrismaClient } = require('@prisma/client')
 const { hashPassword, verifyPassword } = require('./../services/passwordService')
+const { validateRequest } = require('../middleware/validateMiddleware')
 const { logInfo, logWarning, logError } = require('../utils/logging.service');
+const { signupSchema, loginSchema } = require('../schemas/authSchema')
 
 const prisma = new PrismaClient()
 const auth = express.Router()
 
 // Signup
-auth.post('/signup', async (req, res) => {
+auth.post('/signup', validateRequest({ body: signupSchema }), async (req, res) => {
   const { name, email, phoneNumber, zip, username, password: plainPassword } = req.body;
   const user = await prisma.user.findFirst({
     where: {
@@ -43,7 +45,7 @@ auth.post('/signup', async (req, res) => {
 })
 
 // Login 
-auth.post('/login', async (req, res) => {
+auth.post('/login', validateRequest({ body: loginSchema }), async (req, res) => {
   const { login, password: plainPassword } = req.body;
 
   logInfo('Login request received', { login })

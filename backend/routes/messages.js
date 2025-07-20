@@ -1,28 +1,22 @@
 const express = require('express')
 const { PrismaClient } = require('@prisma/client')
 const { requireAuth } = require('../middleware/authMiddleware');
+const { validateRequest } = require('../middleware/validateMiddleware')
 const { logInfo, logWarning, logError } = require('../utils/logging.service');
+const { createMessageSchema, getMessagesSchema } = require('../schemas/messageSchema')
 
 const prisma = new PrismaClient()
 const messages = express.Router()
 messages.use(requireAuth);
 
-messages.post('/', async (req, res) => {
+messages.post('/', validateRequest({ body: createMessageSchema }), async (req, res) => {
   const senderId = req.session.user.id;
-  const { receiverId, content, listingId } = req.body;
-
-  if (!receiverId || !content || !listingId) {
-    logWarning('Invalid parameters');
-    return res.status(400).json({ message: 'Invalid parameters'});
-  }
 
   try {
     const message = await prisma.message.create({
       data: {
         senderId,
-        receiverId,
-        content,
-        listingId
+        ...req.body
       }
     })
     
@@ -34,13 +28,11 @@ messages.post('/', async (req, res) => {
   }  
 })
 
-messages.get('/listing/:listingId/seller/:sellerId', async (req, res) => {
-  const listingId = parseInt(req.params.listingId);
-  const sellerId = parseInt(req.params.sellerId);
+messages.get('/listing/:listingId/seller/:sellerId', validateRequest({ params: getMessagesSchema }), async (req, res) => {
   const userId = req.session.user.id;
+  const { listingId, sellerId } = req.params;
 
   try {
-
     const messages = await prisma.message.findMany({
       where: {
         listingId,
