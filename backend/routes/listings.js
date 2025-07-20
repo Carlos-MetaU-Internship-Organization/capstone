@@ -6,7 +6,9 @@ const getPriceRecommendationInfo = require('./../services/priceEstimatorService'
 const { fetchLocalListingFromVIN } = require('../services/fetchRelevantListingsService');
 const { getGlobalViewCount } = require('../services/listingDataService');
 const { requireAuth } = require('../middleware/authMiddleware');
+const { validateRequest } = require('../middleware/validateMiddleware')
 const { logInfo, logWarning, logError } = require('../utils/logging.service');
+const { listingInfoSchema, vinSchema, listingIdSchema, soldStatusSchema, priceEstimateSchema } = require('../schemas/listingSchema')
 
 const prisma = new PrismaClient()
 const listings = express.Router()
@@ -53,14 +55,8 @@ listings.get('/popular', async (req, res) => {
 
 })
 
-listings.post('/', async (req, res) => {
-  const userId = parseInt(req.session.user.id)
-
-  let { condition, make, model, year, color, mileage, vin, description, images, price, zip = '', owner_name = '', owner_number = '', city = '', state = '', latitude = 0, longitude = 0, createdAt = '', views = 0 } = req.body;
-  if (!condition || !make || !model || !year || !color || !mileage || !vin || !description || images.length === 0 || !price) {
-    logWarning('Listing creation failed: Missing fields.');
-    return res.json({ status: 400, message: 'Missing fields'})
-  }
+listings.post('/', validateRequest({ body: listingInfoSchema }), async (req, res) => {
+  const userId = req.session.user.id
 
   logInfo(`Request to add a local listing for User: ${userId} received`);
   
@@ -90,7 +86,7 @@ listings.post('/', async (req, res) => {
 })
 
 listings.get('/user/', async (req, res) => {
-  const userId = parseInt(req.session.user.id)
+  const userId = req.session.user.id
 
   logInfo(`Request to get all local listings for User: ${userId} received`);
 
@@ -122,13 +118,8 @@ listings.get('/user/', async (req, res) => {
   }
 })
 
-listings.get('/vin/:vin', async (req, res) => {
+listings.get('/vin/:vin', validateRequest({ params: vinSchema }), async (req, res) => {
   const vin = req.params.vin;
-  
-  if (!vin) {
-    logWarning('No VIN provided');
-    return res.status(400).json({ message: 'Invalid VIN'});
-  }
 
   logInfo(`Request to get local listing with VIN: ${vin} received`);
 
@@ -143,32 +134,15 @@ listings.get('/vin/:vin', async (req, res) => {
   }
 })
 
-listings.put('/:listingId', async (req, res) => {
-  const { condition, make, model, year, color, mileage, vin, description, price, sold } = req.body;
-
-  const listingId = parseInt(req.params.listingId);
-  if (!listingId) {
-    logWarning('No listingId provided');
-    return res.status(400).json({ message: 'Invalid listingId'});
-  }
+listings.put('/:listingId', validateRequest({ body: listingInfoSchema, params: listingIdSchema }), async (req, res) => {
+  const listingId = req.params.listingId;
 
   logInfo(`Request to update local listing with listingId: ${listingId} received`);
 
   try {
     const listing = await prisma.listing.update({
       where: { id: listingId },
-      data: {
-        condition,
-        make,
-        model,
-        year,
-        color,
-        mileage,
-        vin,
-        description,
-        price,
-        sold
-      }
+      data: req.body
     })
 
     logInfo(`Local listing with listingId: ${listingId} updated successfully`)
@@ -179,13 +153,8 @@ listings.put('/:listingId', async (req, res) => {
   }
 })
 
-listings.get('/:listingId/viewCount', async (req, res) => {
-  const listingId = parseInt(req.params.listingId);
-
-  if (!listingId) {
-    logWarning('No listingId provided');
-    return res.status(400).json({ message: 'Invalid listingId'});
-  }
+listings.get('/:listingId/viewCount', validateRequest({ params: listingIdSchema }), async (req, res) => {
+  const listingId = req.params.listingId;
 
   const response = await getGlobalViewCount(listingId);
 
@@ -196,13 +165,8 @@ listings.get('/:listingId/viewCount', async (req, res) => {
   }
 })
 
-listings.delete('/:listingId', async (req, res) => {
-  const listingId = parseInt(req.params.listingId);
-
-  if (!listingId) {
-    logWarning('No listingId provided');
-    return res.status(400).json({ message: 'Invalid listingId'});
-  }
+listings.delete('/:listingId', validateRequest({ params: listingIdSchema }), async (req, res) => {
+  const listingId = req.params.listingId;
   
   logInfo(`Request to delete local listing with listingId: ${listingId} received`);
 
@@ -218,14 +182,9 @@ listings.delete('/:listingId', async (req, res) => {
   }
 })
 
-listings.patch('/:vin/favorite', async (req, res) => {
-  const userId = parseInt(req.session.user.id);
+listings.patch('/:vin/favorite', validateRequest({ params: vinSchema }), async (req, res) => {
+  const userId = req.session.user.id;
   const vin = req.params.vin;
-
-  if (!vin) {
-    logWarning('No VIN provided');
-    return res.status(400).json({ message: 'Invalid VIN'});
-  }
 
   try {
     const listing_found = await prisma.listing.findFirst({
@@ -300,19 +259,9 @@ listings.patch('/:vin/favorite', async (req, res) => {
   }
 });
 
-listings.patch('/:listingId/sold', async (req, res) => {
-  const { new_sold_status } = req.body;
-  const listingId = parseInt(req.params.listingId);
-  
-  if (new_sold_status === undefined) {
-    logWarning('No sold status provided');
-    return res.status(400).json({ message: 'Invalid sold status'});
-  }
-
-  if (!listingId) {
-    logWarning('No listingId provided');
-    return res.status(400).json({ message: 'Invalid listingId'});
-  }
+listings.patch('/:listingId/sold', validateRequest({ body: soldStatusSchema, params: listingIdSchema }), async (req, res) => {
+  const new_sold_status = req.body.new_sold_status;
+  const listingId = req.params.listingId;
 
   logInfo(`Set sold status of listing with id ${listingId} to ${new_sold_status}`);
 
@@ -331,13 +280,8 @@ listings.patch('/:listingId/sold', async (req, res) => {
   }
 });
 
-listings.get('/:vin/data', async (req, res) => {
+listings.get('/:vin/data', validateRequest({ params: vinSchema }), async (req, res) => {
   const vin = req.params.vin;
-
-  if (!vin) {
-    logWarning('No VIN provided');
-    return res.status(400).json({ message: 'Invalid VIN'});
-  }
 
   logInfo(`Request to get information about listing with VIN: ${vin} received`);
 
@@ -356,7 +300,7 @@ listings.get('/:vin/data', async (req, res) => {
 })
 
 listings.get('/user/favorited', async (req, res) => {
-  const userId = parseInt(req.session.user.id);
+  const userId = req.session.user.id;
 
   logInfo(`Request to get all favorited local listings for User: ${userId} received`);
 
@@ -375,29 +319,19 @@ listings.get('/user/favorited', async (req, res) => {
 
 listings.get('/recommended', async (req, res) => {
   const userId = req.session.user.id;
-  const userLatitude = req.session.user?.latitude;
-  const userLongitude = req.session.user?.longitude;
+  const userLatitude = req.session.user.latitude;
+  const userLongitude = req.session.user.longitude;
 
   const recommendedListings = await getRecommendations(userId, userLatitude, userLongitude);
   res.json(recommendedListings);
 })
 
-listings.post('/estimate-price', async (req, res) => {
-  const userId = req.session.user.id;
-  const { condition, make, model, year, mileage } = req.body;
+listings.post('/estimate-price', validateRequest({ body: priceEstimateSchema }), async (req, res) => {
+  const { id, latitude, longitude } = req.session.user;
 
-  if (!condition || !make || !model || !year || !mileage) {
-    logWarning('Listing price generation failed: Missing fields.');
-    return res.json({ status: 400, message: 'Missing fields'})
-  }
+  const userInfo = { sellerId: id, latitude, longitude }
 
-  const { latitude, longitude } = req.session.user;
-
-  const userInfo = { sellerId: userId, latitude, longitude }
-  
-  const userListingInfo = { condition, make, model, year, mileage }
-
-  const allUserInfo = { ...userInfo, ...userListingInfo }
+  const allUserInfo = { ...userInfo, ...req.body }
 
   const { marketPrice, recommendedPrice, confidenceLevel, elasticity } = await getPriceRecommendationInfo(allUserInfo);
 
