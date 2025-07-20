@@ -102,14 +102,14 @@ model SearchPreference {
   condition                    String
   make                         String
   model                        String
-  distance                     String
+  distance                     Int
   zip                          String
-  color                        String
-  minYear                      String
-  maxYear                      String
-  maxMileage                   String
-  minPrice                     String
-  maxPrice                     String
+  color                        String?
+  minYear                      Int?
+  maxYear                      Int?
+  maxMileage                   Int?
+  minPrice                     Int?
+  maxPrice                     Int?
   createdAt                    DateTime            @default(now())
 }
 

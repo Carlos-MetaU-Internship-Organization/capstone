@@ -81,7 +81,7 @@ async function fetchPastSearches(userId) {
 }
 
 async function fetchListingsFromDB(filters, count = 0, userId = -1) {
-  const { make, model, condition, zip, distance, color = '', minYear = '', maxYear = '', maxMileage = '', minPrice = '', maxPrice = '', sortOption = ''} = filters;
+  const { make, model, condition, distance, zip, color, minYear, maxYear, maxMileage, minPrice, maxPrice } = filters;
 
   const { latitude, longitude } = zipcodes.lookup(zip);
 
@@ -101,18 +101,18 @@ async function fetchListingsFromDB(filters, count = 0, userId = -1) {
 
   if (minYear || maxYear) {
     whereClause.year = {};
-    if (minYear) whereClause.year.gte = minYear;
-    if (maxYear) whereClause.year.lte = maxYear;
+    if (minYear) whereClause.year.gte = parseInt(minYear);
+    if (maxYear) whereClause.year.lte = parseInt(maxYear);
   }
 
   if (maxMileage) {
-    whereClause.mileage = { lte: maxMileage };
+    whereClause.mileage = { lte: parseInt(maxMileage) };
   }
 
   if (minPrice || maxPrice) {
     whereClause.price = {};
-    if (minPrice) whereClause.price.gte = minPrice;
-    if (maxPrice) whereClause.price.lte = maxPrice;
+    if (minPrice) whereClause.price.gte = parseInt(minPrice);
+    if (maxPrice) whereClause.price.lte = parseInt(maxPrice);
   }
 
   const { minLatitude, maxLatitude, minLongitude, maxLongitude } = calculateBounds(latitude, longitude, parseInt(distance));

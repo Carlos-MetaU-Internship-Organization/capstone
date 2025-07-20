@@ -16,19 +16,9 @@ function ResultsPage() {
   
   const cachedRecentSearch = JSON.parse(localStorage.getItem('recentSearch'));
   const { filters: cachedFilters, sortOption: cachedSortOption, listings: cachedListings, makes, models: cachedModels } = cachedRecentSearch;
-
-  const initialFilters = {
-    color: '',
-    minYear: '',
-    maxYear: '',
-    maxMileage: '',
-    minPrice: '',
-    maxPrice: '',
-    ...cachedFilters
-  }
-
-  const [onScreenFilters, setOnScreenFilters] = useState(initialFilters);
-  const [activeFilters, setActiveFilters] = useState(initialFilters);
+  
+  const [onScreenFilters, setOnScreenFilters] = useState(cachedFilters);
+  const [activeFilters, setActiveFilters] = useState(cachedFilters);
 
   const [models, setModels] = useState(cachedModels);
   const [listingsInfo, setListingsInfo] = useState(cachedListings ? { listings: cachedListings, totalListingsCount: cachedListings.length } : {});
@@ -62,20 +52,21 @@ function ResultsPage() {
   }, [])
 
   useEffect(() => {
+    const equivalent = (a, b) => (a ?? '') == (b ?? '')
     if (savedPreferences.length > 0) {
       const isSaved = savedPreferences.some(preference => {
         return (
-          preference.condition == onScreenFilters.condition &&
-          preference.make == onScreenFilters.make &&
-          preference.model == onScreenFilters.model &&
-          preference.distance == onScreenFilters.distance &&
-          preference.zip == onScreenFilters.zip &&
-          preference.color == onScreenFilters.color &&
-          preference.minYear == onScreenFilters.minYear &&
-          preference.maxYear == onScreenFilters.maxYear &&
-          preference.maxMileage == onScreenFilters.maxMileage &&
-          preference.minPrice == onScreenFilters.minPrice &&
-          preference.maxPrice == onScreenFilters.maxPrice
+          equivalent(preference.condition, onScreenFilters.condition) &&
+          equivalent(preference.make, onScreenFilters.make) &&
+          equivalent(preference.model, onScreenFilters.model) &&
+          equivalent(preference.distance, onScreenFilters.distance) &&
+          equivalent(preference.zip, onScreenFilters.zip) &&
+          equivalent(preference.color, onScreenFilters.color) &&
+          equivalent(preference.minYear, onScreenFilters.minYear) &&
+          equivalent(preference.maxYear, onScreenFilters.maxYear) &&
+          equivalent(preference.maxMileage, onScreenFilters.maxMileage) &&
+          equivalent(preference.minPrice, onScreenFilters.minPrice) &&
+          equivalent(preference.maxPrice, onScreenFilters.maxPrice)
         )
       })
       setIsSearchFavorited(isSaved);
@@ -135,7 +126,7 @@ function ResultsPage() {
 
   const updateListings = async (activeFilters) => {
 
-    if (listingsInfo.listings && activeFilters === initialFilters) {
+    if (listingsInfo.listings && activeFilters === cachedFilters) {
       return
     }
 
@@ -193,16 +184,16 @@ function ResultsPage() {
       condition: pref.condition,
       zip: pref.zip,
       distance: pref.distance,
-      color: pref.color,
-      minYear: pref.minYear,
-      maxYear: pref.maxYear,
-      maxMileage: pref.maxMileage,
-      minPrice: pref.minPrice, 
-      maxPrice: pref.maxPrice
+      color: pref.color || '',
+      minYear: pref.minYear || '',
+      maxYear: pref.maxYear || '',
+      maxMileage: pref.maxMileage || '',
+      minPrice: pref.minPrice || '', 
+      maxPrice: pref.maxPrice || ''
     }
 
     const models = await getModels(updatedFilters.make);
-
+    
     localStorage.setItem('recentSearch', JSON.stringify({ filters: updatedFilters, makes, models }))
 
     setModels(models)
@@ -281,7 +272,7 @@ function ResultsPage() {
             <div className='filter'>
               <label>Color</label>
               <select className='filter-input translucent pointer' name='color' value={onScreenFilters.color} onChange={updateForm}>
-                <option value="" disabled></option>
+                <option value="">Any</option>
                 {
                   colors.map(color => {
                     return <option key={color} value={color}>{(color.charAt(0).toUpperCase()).concat(color.slice(1))}</ option>
@@ -322,7 +313,7 @@ function ResultsPage() {
                   {
                     savedPreferences.map(pref => (
                       <option key={pref.id} value={pref.id}>
-                        {`${pref.make} ${pref.model}, ${pref.distance}mi from ${pref.zip}, Color: ${pref.color.charAt(0).toUpperCase() + pref.color.slice(1) || 'Any'}`}
+                        {`${pref.make} ${pref.model}, ${pref.distance}mi from ${pref.zip}, Color: ${pref.color ? pref.color.charAt(0).toUpperCase() + pref.color.slice(1) : 'Any'}`}
                       </option>
                     ))
                   }
