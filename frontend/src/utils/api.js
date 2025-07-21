@@ -2,25 +2,49 @@ import axios from 'axios';
 import { baseURL } from '../globals';
 import { logInfo, logWarning, logError } from '../services/loggingService';
 
-export async function loginUser({ login, password }) {
-  if (!login || !password) {
-    logWarning('Login failed: Missing fields.');
-    return { success: false, message: 'Login and password are required.'};
-  }
-
+export async function signupUser(userInfo) {
   try {
-    const response = await axios.post(`${baseURL}/api/auth/login/`, { login, password }, { withCredentials: true });
-
-    if (response.data.status === 200) {
-      logInfo('Login successful', { login });
-      return { success: true, message: response.data.message };
-    } else {
-      logWarning('Login failed', response.data.message);
-      return { success: false, message: response.data.message };
+    const { data } = await axios.post(`${baseURL}/api/auth/signup`, userInfo, { withCredentials: true })
+    return {
+      success: true,
+      message: data.message
     }
   } catch (error) {
-    logError('HTTP request failed when trying to log in', error);
-    return { success: false, message: 'HTTP Request failed when trying to log in'};
+    return {
+      success: false,
+      status: error.status,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function loginUser(credentials) {
+  try {
+    const { data } = await axios.post(`${baseURL}/api/auth/login`, credentials, { withCredentials: true })
+    return {
+      success: true,
+      message: data.message
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function logoutUser() {
+  try {
+    const { data } = await axios.post(`${baseURL}/api/auth/logout`, {}, { withCredentials: true })
+    return {
+      success: true,
+      message: data.message
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
   }
 }
 
@@ -79,10 +103,15 @@ export async function getListingViewCount(listingId) {
 
 export async function checkAuth() {
   try {
-    const response = await axios.get(`${baseURL}/api/auth/check-auth`, { withCredentials: true })
-    const { id, authenticated } = response.data
-    return { id, authenticated }
+    const { data } = await axios.get(`${baseURL}/api/auth/check-auth`, { withCredentials: true })
+    return {
+      authenticated: true,
+      id: data.id
+    };
   } catch (error) {
-    return { authenticated: false }
+    return {
+      authenticated: false,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
   }
 }

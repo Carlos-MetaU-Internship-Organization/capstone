@@ -6,6 +6,7 @@ function RedirectAuthToHome({ children }) {
 
   const [authChecked, setAuthChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [message, setMessage] = useState('');
 
   const navigate = useNavigate();
 
@@ -13,6 +14,7 @@ function RedirectAuthToHome({ children }) {
     async function verify() {
       const result = await checkAuth();
       setIsAuthenticated(result.authenticated);
+      setMessage(result.message);
       setAuthChecked(true);
     }
     verify();
@@ -20,7 +22,7 @@ function RedirectAuthToHome({ children }) {
 
   if (!authChecked) return null;
   if (isAuthenticated) {
-    return navigate('/home')
+    return navigate('/home', { state: { message }})
   }
   return children;
 }

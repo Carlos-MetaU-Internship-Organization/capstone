@@ -10,7 +10,7 @@ const validateRequest = ({ body, params, query }) => (req, res, next) => {
     const { error, value } = body.validate(req.body, validationOptions);
     if (error) {
       logError(error.details[0].message)
-      return res.status(400).json({ error: error.details[0].message })
+      return res.status(400).json({ message: error.details[0].message })
     }
     req.body = value;
   }
@@ -19,7 +19,7 @@ const validateRequest = ({ body, params, query }) => (req, res, next) => {
     const { error, value } = params.validate(req.params, validationOptions);
     if (error) {
       logError(error.details[0].message)
-      return res.status(400).json({ error: error.details[0].message })
+      return res.status(400).json({ message: error.details[0].message })
     }
     req.params = value;
   }
@@ -28,7 +28,7 @@ const validateRequest = ({ body, params, query }) => (req, res, next) => {
     const { error, value } = query.validate(req.query, validationOptions);
     if (error) {
       logError(error.details[0].message)
-      return res.status(400).json({ error: error.details[0].message })
+      return res.status(400).json({ message: error.details[0].message })
     }
     req.query = value;
   }

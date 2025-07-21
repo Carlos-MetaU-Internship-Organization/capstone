@@ -1,12 +1,9 @@
 import './../css/LoginPage.css'
 import { useState, useEffect } from 'react'
-import { baseURL } from '../../globals'
-import axios from 'axios'
 import tire from './../../assets/tire.png'
 import profile from './../../assets/profile.png'
 import lock from './../../assets/lock.png'
 import { Link, useNavigate } from 'react-router-dom'
-import { logInfo, logWarning, logError } from '../../services/loggingService'
 import { loginUser } from '../../utils/api'
 
 function LoginPage() {
@@ -21,7 +18,6 @@ function LoginPage() {
     const result = await loginUser({ login, password });
     if (result.success) {
       // TODO: send message to buy page.
-      logInfo('Navigating to Buy Page after successful login.');
       navigate('/home');
     } else {
       setMessage(result.message);

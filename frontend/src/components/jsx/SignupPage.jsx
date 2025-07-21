@@ -1,7 +1,5 @@
 import './../css/SignupPage.css'
 import { useState, useEffect } from 'react'
-import { baseURL } from '../../globals'
-import axios from 'axios'
 import tire from './../../assets/tire.png'
 import profile from './../../assets/profile.png'
 import lock from './../../assets/lock.png'
@@ -9,6 +7,7 @@ import phone from './../../assets/phone.png'
 import mail from './../../assets/mail.png'
 import pin from './../../assets/pin.png'
 import { Link, useNavigate } from 'react-router-dom'
+import { signupUser } from '../../utils/api'
 
 function SignupPage() {
   const [firstName, setFirstName] = useState('');
@@ -26,17 +25,14 @@ function SignupPage() {
     event.preventDefault();
 
     const fullName = `${firstName} ${lastName}`;
-    const credentials = { name: fullName, email, phoneNumber, zip, username, password };
+    const userInfo = { name: fullName, email, phoneNumber, zip, username, password };
 
-    try {
-      const response = await axios.post(`${baseURL}/api/auth/signup`, credentials);
-      if (response.data.status === 200) {
-        navigate('/');
-      }
-      setMessage(response.data.message);
-    } catch (error) {
-      console.log(`Error signing up: ${error.response.data}`);
+    const result = await signupUser(userInfo);
+    if (result.success || result.status === 409) {
+      // TODO: send message
+      navigate('/');
     }
+    setMessage(result.message);
   }
 
   return (

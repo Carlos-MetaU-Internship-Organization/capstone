@@ -2,8 +2,7 @@ import './../css/Header.css'
 import tire from './../../assets/tire.png'
 import menu from './../../assets/menu.png'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
-import { baseURL } from '../../globals'
+import { logoutUser } from '../../utils/api'
 
 
 function Header() {
@@ -14,7 +13,8 @@ function Header() {
   }
   
   const handleLogout = async () => {
-    await axios.post(`${baseURL}/api/auth/logout`, {}, { withCredentials: true });
+    await logoutUser()
+    // TODO, send message here...
     navigate('/')
   }
 
