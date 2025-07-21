@@ -35,17 +35,23 @@ function ResultsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const favoritedListingsResponse = await axios.get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true });
+        const [
+          favoritedListingsResponse,
+          searchPreferencesResponse
+        ] = await Promise.all([
+          axios.get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true }),
+          axios.get(`${baseURL}/api/preferences/favorites/`, { withCredentials: true })
+        ])
+
         const vins = favoritedListingsResponse?.data.favoritedListings.map(listing => listing.vin) || [];
         setFavoritedVins(vins);
 
-        const searchPreferences = await axios.get(`${baseURL}/api/preferences/favorites/`, { withCredentials: true });
-        if (searchPreferences) {
-          setSavedPreferences(searchPreferences.data);
+        if (searchPreferencesResponse) {
+          setSavedPreferences(searchPreferencesResponse.data);
         }
 
       } catch (error) {
-        logError('Something went wrong when initializing the page', error);
+        logError('One or more parallel requests went wrong', error);
       }
     }
     fetchData();

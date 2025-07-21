@@ -39,11 +39,9 @@ function SingleCarPage() {
   // ON BOOT
   useEffect(() => {
     const boot = async () => {
-      const getActiveUserId = async () => {
-        const { id } = await checkAuth();
-        activeUserIdRef.current = id;
-      }
-      await getActiveUserId();
+
+      const { id } = await checkAuth();
+      activeUserIdRef.current = id;
   
       const fetchData = async () => {
         try {
@@ -73,6 +71,7 @@ function SingleCarPage() {
           logError(`Something went wrong when trying to fetch chat history between you and seller with id: ${listingOwnerIdRef.current}`, error)
         }
       }
+      
       if (listingOwnerIdRef.current && listingOwnerIdRef.current !== activeUserIdRef.current) {
         await fetchMessages();
       }

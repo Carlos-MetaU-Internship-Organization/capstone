@@ -15,14 +15,14 @@ async function getGlobalMessagesCount(listingId, ownerId) {
 
     if (!messages) {
       logInfo(`No messages were found for listing with listingId: ${listingId}`)
-      return ({ status: 404, count: 0 })
+      return ({ status: 404, messageCount: 0 })
     }
     
     logInfo(`Successfully counted ${messages.length} messages for listing with listingId: ${listingId}`);
-    return ({ status: 200, count: messages.length })
+    return ({ status: 200, messageCount: messages.length })
   } catch (error) {
     logError(`Something bad happened trying to retrieve the global message count on listing with listingId: ${listingId}`, error);
-    return ({ status: 500, count: 0 })
+    return ({ status: 500, messageCount: 0 })
   }
 }
 
@@ -45,7 +45,7 @@ async function getGlobalViewCount(listingId) {
   }
 }
 
-function getGlobalFavorites(listing) {
+function getGlobalFavoriteCount(listing) {
   return listing.favorites;
 }
 
@@ -153,7 +153,7 @@ async function getUserClickCount(listingId, userId) {
 module.exports = {
   getGlobalMessagesCount,
   getGlobalViewCount,
-  getGlobalFavorites,
+  getGlobalFavoriteCount,
   hasUserMessagedSeller,
   hasUserFavoritedListing,
   getUserDwellTime,

@@ -36,19 +36,34 @@ function SellPage() {
   const [sliderIndex, setSliderIndex] = useState(Math.floor(ELASTICITY_KEYS.length / 2));
 
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [
+          makesResponse,
+          ownedListingsResponse
+        ] = await Promise.all([
+          axios.get(`${baseURL}/api/search/makes`, { withCredentials: true }),
+          axios.get(`${baseURL}/api/listings/user/`, { withCredentials: true })
+        ])
 
-  const fetchOwnedListings = async () => {
-    try {
-      const response = await axios.get(`${baseURL}/api/listings/user/`, { withCredentials: true });
-      const data = response.data;
-      logInfo('Owned listings successfully retrieved');
-      if (data.length > 0) {
-        setListings(data);
+        setModels(makesResponse.data)
+        setListings(ownedListingsResponse.data)
+
+      } catch (error) {
+        logError('One or more parallel requests went wrong', error);
       }
-    } catch (error) {
-      logError('Something went wrong when trying to fetch your owned listings', error);
     }
-  }
+
+    fetchData();
+
+    if (info.state) {
+      initialFormState = info.state.data;
+      updateModels(initialFormState.make);
+      setForm(initialFormState)
+    }
+  }, [])
 
   const updateModels = async (selection) => {
     try {
@@ -60,28 +75,6 @@ function SellPage() {
       logError('HTTP request failed when trying to fetch models', error);
     }
   }
-  
-  useEffect(() => {
-    const getAllMakes = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/search/makes`, { withCredentials: true });
-        const makes = response.data;
-        logInfo('Makes successfully retrieved');
-        setMakes(makes);
-      } catch (error) {
-        logError('HTTP request failed when trying to fetch makes', error);
-      }
-    }
-    getAllMakes();
-
-    if (info.state) {
-      initialFormState = info.state.data;
-      updateModels(initialFormState.make);
-      setForm(initialFormState)
-    }
-
-    fetchOwnedListings();
-  }, [])
   
   const updateForm = async (event) => {
     const elem = event.target.name;

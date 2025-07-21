@@ -37,62 +37,38 @@ function BuyPage() {
 
   // ON BOOT
   useEffect(() => {
-
-    const getAllMakes = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(`${baseURL}/api/search/makes`, { withCredentials: true });
-        const makes = response.data;
-        logInfo('Makes successfully retrieved');
-        setMakes(makes);
-      } catch (error) {
-        logError('HTTP request failed when trying to fetch makes', error);
-      }
-    }
-    getAllMakes();
+        const [
+          makesResponse,
+          favoritedListingsResponse,
+          mostDwelledListingsResponse,
+          savedSearchPreferencesResponse,
+          zipResponse
+        ] = await Promise.all([
+          axios.get(`${baseURL}/api/search/makes`, { withCredentials: true }),
+          axios.get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true }),
+          axios.get(`${baseURL}/api/track/most-dwelled-listings`, { withCredentials: true }),
+          axios.get(`${baseURL}/api/preferences/favorites`, { withCredentials: true }),
+          getUserZIP()
+        ])
 
-    const getFavoritedListings = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true });
-        const favoritedListings = response.data.favoritedListings;
-        setFavoritedListings(favoritedListings);
-      } catch (error) {
-        logError('Something bad happened when trying to fetch your favorited listings', error);
-      }
-    }
-    getFavoritedListings();
-
-    const getMostDwelledListing = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/track/most-dwelled-listings`, { withCredentials: true });
-        setMostDwelledListing(response.data[0].listing)
-      } catch (error) {
-        logError('Something bad happened when trying to fetch your 10 most-dwelled listings', error);
-      }
-    }
-    getMostDwelledListing();
-
-    const getSavedSearchPreferences = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/preferences/favorites`, { withCredentials: true });
-        if (response) {
-          setSavedPreferences(response.data);
+        setMakes(makesResponse.data)
+        setFavoritedListings(favoritedListingsResponse.data.favoritedListings)
+        setMostDwelledListing(mostDwelledListingsResponse.data[0]?.listing)
+        setSavedPreferences(savedSearchPreferencesResponse.data)
+        if (result.success) {
+          setFilters(prev => ({ ...prev, zip: zipResponse.zip }))
+        } else {
+          logError(result.message)
+          // TODO: message component error
         }
       } catch (error) {
-        logError('Something bad happened when trying to fetch saved search preferences', error);
+        logError('One or more parallel requests went wrong', error)
       }
     }
-    getSavedSearchPreferences();
 
-    const fetchZip = async () => {
-      const result = await getUserZIP();
-      if (result.success) {
-        setFilters(prev => ({ ...prev, zip: result.zip }))
-      } else {
-        logError(result.message)
-        // TODO: message component error
-      }
-    }
-    fetchZip();
+    fetchData()
   }, []);
   
   const updateFilters = async (event) => {
