@@ -1,16 +1,16 @@
 const { fetchSimilarListings } = require('./fetchRelevantListingsService')
-const { logInfo } = require('../../frontend/src/utils/logging.service')
+const { logInfo } = require('../../frontend/src/services/loggingService')
 const computeSellerDelta = require('../utils/sellerHistory')
 const { calculateMarketPrice } = require('../utils/statistics')
 const buildElasticityCurve = require('../utils/elasticity')
 const { ROUND_TO_NEAREST_HUNDRED, FORMAT_TO_PRICE } = require('../utils/constants')
 
-async function getPriceRecommendationInfo(allUserInfo) {
+async function getPriceRecommendationInfo(userAndListingInfo) {
 
-  allUserInfo.year = parseInt(allUserInfo.year);
-  allUserInfo.mileage = parseInt(allUserInfo.mileage);
+  userAndListingInfo.year = parseInt(userAndListingInfo.year);
+  userAndListingInfo.mileage = parseInt(userAndListingInfo.mileage);
 
-  const similarListingsResponse = await fetchSimilarListings(allUserInfo);
+  const similarListingsResponse = await fetchSimilarListings(userAndListingInfo);
   const listings = similarListingsResponse.listings;
   const depth = similarListingsResponse.depth;
 
@@ -18,9 +18,9 @@ async function getPriceRecommendationInfo(allUserInfo) {
     return { estimatedPrice: 0, message: 'Could not find similar listings' }
   }
 
-  const sellerDelta = await computeSellerDelta(allUserInfo.sellerId);
+  const sellerDelta = await computeSellerDelta(userAndListingInfo.sellerId);
 
-  const { marketPrice, enrichedListings } = calculateMarketPrice(listings, allUserInfo)
+  const { marketPrice, enrichedListings } = calculateMarketPrice(listings, userAndListingInfo)
 
   // round to nearest 100
   const recommendedPrice = ROUND_TO_NEAREST_HUNDRED(marketPrice * (1 + (sellerDelta / depth)));

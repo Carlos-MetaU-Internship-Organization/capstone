@@ -6,7 +6,7 @@ import Header from './Header'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { logInfo, logWarning, logError } from './../../utils/logging.service';
+import { logInfo, logWarning, logError } from '../../services/loggingService';
 import { ELASTICITY_KEYS, CAPITALIZE, LISTINGS_PER_CYCLE } from './../../utils/constants'
 
 function SellPage() {

@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const { logInfo } = require('../../frontend/src/utils/logging.service');
+const { logInfo } = require('../../frontend/src/services/loggingService');
 const getDaysOnMarket = require('./time')
 const { MIN_LISTINGS_TO_FACTOR_IN_SELLER_LISTINGS, SMOOTHING_K, SELLER_FACTOR_MIN, SELLER_FACTOR_MAX, ROUNDING_DIGIT_DELTA, PERCENTAGE_CONVERTER } = require('./constants')
 

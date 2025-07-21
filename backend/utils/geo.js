@@ -1,7 +1,7 @@
 const { EARTH_RADIUS_MILES, RADIANS_PER_DEGREE } = require('./constants')
 
 // Haversine formula - EXTERNAL CODE
-function haversineDistanceMiles(latA, lonA, latB, lonB) {
+function getProximity(latA, lonA, latB, lonB) {
 
   const deltaLatitudeRadians = degreesToRadians(latB - latA);
   const deletaLongitudeRadians = degreesToRadians(lonB - lonA);
@@ -25,4 +25,4 @@ function degreesToRadians(degrees) {
   return degrees * RADIANS_PER_DEGREE;
 }
 
-module.exports = haversineDistanceMiles;
+module.exports = getProximity;

@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const { logInfo, logError } = require('../../frontend/src/utils/logging.service')
+const { logInfo, logError } = require('../../frontend/src/services/loggingService')
 
 async function getGlobalMessagesCount(listingId, ownerId) {
   try {
@@ -100,9 +100,9 @@ async function hasUserFavoritedListing(listingId, userId) {
   }
 }
 
-async function getUserTimeSpentOnListing(listingId, userId) {
+async function getUserDwellTime(listingId, userId) {
   try {
-    const timeSpent = await prisma.listingVisit.findFirst({
+    const dwellTime = await prisma.listingVisit.findFirst({
       where: {
         listingId,
         userId
@@ -112,22 +112,22 @@ async function getUserTimeSpentOnListing(listingId, userId) {
       }
     });
 
-    if (!timeSpent) {
+    if (!dwellTime) {
       logInfo(`User with userId: ${userId} has not visited listing with listingId: ${listingId}`)
-      return ({ status: 404, timeSpent: 0 })
+      return ({ status: 404, dwellTime: 0 })
     }
     
     logInfo(`Successfully found that user with userId: ${userId} has spent ${timeSpent.timeSpent} seconds per day on listing with listingId: ${listingId}`);
-    return ({ status: 200, timeSpent: timeSpent.dwellTime })
+    return ({ status: 200, dwellTime: dwellTime.dwellTime })
   } catch (error) {
     logError(`Something bad happened trying to find out how much time user with userId: ${userId} has spent on listing with listingId: ${listingId}`, error);
-    return ({ status: 500, timeSpent: 0 })
+    return ({ status: 500, dwellTime: 0 })
   }
 }
 
-async function getUserEngagementClicks(listingId, userId) {
+async function getUserClickCount(listingId, userId) {
   try {
-    const engagementClicks = await prisma.listingVisit.findFirst({
+    const clickCount = await prisma.listingVisit.findFirst({
       where: {
         listingId,
         userId
@@ -137,38 +137,17 @@ async function getUserEngagementClicks(listingId, userId) {
       }
     });
 
-    if (!engagementClicks) {
+    if (!clickCount) {
       logInfo(`User with userId: ${userId} has not visited listing with listingId: ${listingId}`)
-      return ({ status: 404, engagementClicks: 0 })
+      return ({ status: 404, clickCount: 0 })
     }
     
     logInfo(`Successfully found that user with userId: ${userId} has clicked ${engagementClicks} times per day on listing with listingId: ${listingId}`);
-    return ({ status: 200, engagementClicks: engagementClicks.clickCount })
+    return ({ status: 200, clickCount: clickCount.clickCount })
   } catch (error) {
     logError(`Something bad happened trying to find out how many clicks user with userId: ${userId} has done on listing with listingId: ${listingId}`, error);
-    return ({ status: 500, engagementClicks: 0 })
+    return ({ status: 500, clickCount: 0 })
   }
-}
-
-// Haversine formula
-function getProximityToUser(listingLatitude, listingLongitude, userLatitude, userLongitude) {
-
-  const earthRadiusInMiles = 3959;
-
-  const toRad = (angle) => (angle * Math.PI) / 180;
-
-  const changeInLatitude = toRad(listingLatitude - userLatitude);
-  const changeInLongitude = toRad(listingLongitude - userLongitude)
-
-  const alg = Math.sin(changeInLatitude / 2) * Math.sin(changeInLatitude / 2) +
-              Math.cos(toRad(userLatitude)) * Math.cos(toRad(listingLatitude)) *
-              Math.sin(changeInLongitude / 2) * Math.sin(changeInLongitude / 2);
-
-  const angularDistance = 2 * Math.atan2(Math.sqrt(alg), Math.sqrt(1 - alg));
-
-  const distanceInMiles = earthRadiusInMiles * angularDistance;
-
-  return distanceInMiles
 }
 
 module.exports = {
@@ -177,7 +156,6 @@ module.exports = {
   getGlobalFavorites,
   hasUserMessagedSeller,
   hasUserFavoritedListing,
-  getUserTimeSpentOnListing,
-  getUserEngagementClicks,
-  getProximityToUser
+  getUserDwellTime,
+  getUserClickCount,
 };

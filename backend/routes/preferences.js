@@ -3,7 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const { fetchPastSearches } = require('../services/fetchRelevantListingsService');
 const { requireAuth } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validateMiddleware')
-const { logInfo, logWarning, logError } = require('../utils/logging.service');
+const { logInfo, logWarning, logError } = require('../services/loggingService');
 const { searchPreferenceSchema } = require('../schemas/searchPreferenceSchema')
 
 const prisma = new PrismaClient()

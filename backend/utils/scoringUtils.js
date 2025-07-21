@@ -8,11 +8,11 @@ function calculateRecommendationScore(normalizedSignals) {
     globalFavorites: 0.08,
     globalFavoritesPerDay: 0.04,
     hasUserFavoritedListing: 0.10,
-    userTimeSpentOnListing: 0.10,
-    userTimeSpentOnListingPerDay: 0.07,
-    userEngagementClicks: 0.08,
-    userEngagementClicksPerDay: 0.06,
-    proximityToUser: 0.10,
+    userDwellTime: 0.10,
+    userDwellTimePerDay: 0.07,
+    userClickCount: 0.08,
+    userClickCountPerDay: 0.06,
+    proximity: 0.10,
     daysOnMarket: 0.05
   }
 

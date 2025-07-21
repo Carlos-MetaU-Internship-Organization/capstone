@@ -5,7 +5,7 @@ import Header from './Header'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { logInfo, logWarning, logError } from './../../utils/logging.service';
+import { logInfo, logWarning, logError } from '../../services/loggingService';
 import { getModels, getUserZIP } from '../../utils/api'
 import axios from 'axios'
 
@@ -15,7 +15,7 @@ function BuyPage() {
 
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
-  const [form, setForm] = useState({
+  const [filters, setFilters] = useState({
     condition: 'new&used',
     make: '',
     model: '',
@@ -73,9 +73,9 @@ function BuyPage() {
 
     const getSavedSearchPreferences = async () => {
       try {
-        const searchPreferences = await axios.get(`${baseURL}/api/preferences/favorites`, { withCredentials: true });
-        if (searchPreferences) {
-          setSavedPreferences(searchPreferences.data);
+        const response = await axios.get(`${baseURL}/api/preferences/favorites`, { withCredentials: true });
+        if (response) {
+          setSavedPreferences(response.data);
         }
       } catch (error) {
         logError('Something bad happened when trying to fetch saved search preferences', error);
@@ -86,7 +86,7 @@ function BuyPage() {
     const fetchZip = async () => {
       const result = await getUserZIP();
       if (result.success) {
-        setForm(prev => ({ ...prev, zip: result.zip }))
+        setFilters(prev => ({ ...prev, zip: result.zip }))
       } else {
         logError(result.message)
         // TODO: message component error
@@ -95,10 +95,10 @@ function BuyPage() {
     fetchZip();
   }, []);
   
-  const updateForm = async (event) => {
+  const updateFilters = async (event) => {
     const elem = event.target.name;
     const value = event.target.value;
-    setForm(prev => ({...prev, [elem]: value}));
+    setFilters(prev => ({...prev, [elem]: value}));
     
     if (elem === 'make') {
       updateModels(value);
@@ -109,7 +109,7 @@ function BuyPage() {
     const models = await getModels(make);
     if (models) {
       setModels(models);
-      setForm(prev => ({...prev, model: models[0].name}))
+      setFilters(prev => ({...prev, model: models[0].name}))
     } else {
       // TODO: message component error
     }
@@ -118,13 +118,13 @@ function BuyPage() {
   const handleSearch = async (event) => {
     event.preventDefault();
 
-    const { make, model, condition, zip, distance } = form;
+    const { make, model, condition, zip, distance } = filters;
     if (!make || !model || !condition || !zip || !distance) {
       logWarning('Search failed: Missing fields.');
       return
     }
 
-    localStorage.setItem('recentSearch', JSON.stringify( { filters: form, makes, models }))
+    localStorage.setItem('recentSearch', JSON.stringify( { filters, makes, models }))
 
     navigate('/results');
   }
@@ -171,13 +171,13 @@ function BuyPage() {
           <form className='translucent' id='filter-search' onSubmit={handleSearch}>
             <div id='filters'>
               <label>Condition</label>
-              <select className='translucent buy-page-user-selection pointer' id="condition-selector" name="condition" onChange={updateForm} required>
+              <select className='translucent buy-page-user-selection pointer' id="condition-selector" name="condition" onChange={updateFilters} required>
                 <option value="new&used">New & Used</option>
                 <option value="new">New</option>
                 <option value="used">Used</option>
               </select>
               <label>Make</label>
-              <select className='translucent buy-page-user-selection pointer' id="make-selector" name="make" onChange={updateForm} required>
+              <select className='translucent buy-page-user-selection pointer' id="make-selector" name="make" onChange={updateFilters} required>
                 <option disabled selected></option>
                 {
                   makes.map(make => {
@@ -186,7 +186,7 @@ function BuyPage() {
                 }
               </select>
               <label>Model</label>
-              <select className='translucent buy-page-user-selection pointer' id="model-selector" name="model" onChange={updateForm} required>
+              <select className='translucent buy-page-user-selection pointer' id="model-selector" name="model" onChange={updateFilters} required>
                 {
                   models.length > 0 && models.map(model => {
                     return <option value={model.name}>{model.name}</option>
@@ -195,14 +195,14 @@ function BuyPage() {
               </select>
               <div id='location-details'>
                 <label>Distance</label>
-                <select className='translucent buy-page-user-selection pointer' name="distance" onChange={updateForm} required>
+                <select className='translucent buy-page-user-selection pointer' name="distance" onChange={updateFilters} required>
                   <option value="50">50 miles</option>
                   <option value="250">250 miles</option>
                   <option value="500">500 miles</option>
                   <option value="3000">Nationwide</option>
                 </select>
                 <label>ZIP</label>
-                <input className='translucent buy-page-user-selection' type="text" name="zip" defaultValue={form.zip} onChange={updateForm} required/>
+                <input className='translucent buy-page-user-selection' type="text" name="zip" defaultValue={filters.zip} onChange={updateFilters} required/>
               </div>
             </div>
             <button className='translucent' id='search-button' type='submit'>Search</button>

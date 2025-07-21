@@ -1,4 +1,4 @@
-const { logInfo } = require('../../frontend/src/utils/logging.service');
+const { logInfo } = require('../../frontend/src/services/loggingService');
 const {
   MILEAGE_SCALE_FACTOR,
   DEPTH_WEIGHT_BY_LEVEL,
@@ -11,7 +11,7 @@ const {
   ROUND_TO_NEAREST_HUNDRED
 } = require('./constants')
 
-const haversineDistanceMiles = require('./geo')
+const getProximity = require('./geo')
 
 function calculateMarketPrice(listings, userInfo) {
   let sum = 0;
@@ -31,8 +31,7 @@ function calculateMarketPrice(listings, userInfo) {
 
     const soldWeight = listing.sold ? SOLD_LISTING_WEIGHT : UNSOLD_LISTING_WEIGHT
     
-    const proximityInMiles = haversineDistanceMiles(userInfo.latitude, userInfo.longitude, listing.latitude, listing.longitude);
-    const proximityWeight = Math.max(PROXIMITY_MIN_WEIGHT, 1 - (proximityInMiles / PROXIMITY_DISTANCE_FADE));
+    const proximityWeight = Math.max(PROXIMITY_MIN_WEIGHT, 1 - (listing.proximity / PROXIMITY_DISTANCE_FADE));
 
     const daysOnMarketWeight = Math.max(DAYS_ON_MARKET_MIN_WEIGHT, 1 / ((1 + listing.daysOnMarket) / DAYS_IN_MONTH));
     

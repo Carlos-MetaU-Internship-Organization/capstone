@@ -1,9 +1,9 @@
 const zipcodes = require('zipcodes')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const { logInfo, logError } = require('../../frontend/src/utils/logging.service')
+const { logInfo, logError } = require('../../frontend/src/services/loggingService')
 const { PAGE_SIZE, SIMILARITY_DEPTHS, MINIMUM_COMPS_REQUIRED } = require('../utils/constants')
-const haversineDistanceMiles = require('../utils/geo')
+const getProximity = require('../utils/geo')
 const getDaysOnMarket = require('../utils/time')
 
 async function fetchRecentlyClickedListings(userId, count) {
@@ -236,7 +236,7 @@ async function fetchSimilarListings(listingInfo) {
         similarListings.forEach(listing => {
           if (!comps.has(listing.id)) {
             listing.depth = depth + 1;
-            listing.distanceFromSeller = haversineDistanceMiles(latitude, longitude, listing.latitude, listing.longitude);
+            listing.proximity = getProximity(listing.latitude, listing.longitude, latitude, longitude);
             listing.daysOnMarket = getDaysOnMarket(listing);
             comps.set(listing.id, listing);
           }

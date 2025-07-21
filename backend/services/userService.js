@@ -1,5 +1,5 @@
 const zipcodes = require('zipcodes')
-const { logInfo, logError } = require('../utils/logging.service')
+const { logInfo, logError } = require('./loggingService')
 const { hashPassword } = require('./passwordService')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()

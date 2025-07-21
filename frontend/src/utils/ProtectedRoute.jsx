@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom'
 import { checkAuth } from './api'
-import { logWarning } from "./logging.service";
+import { logWarning } from "../services/loggingService";
 
 function ProtectedRoute({ children }) {
 
