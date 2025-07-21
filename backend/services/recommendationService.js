@@ -23,43 +23,54 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
 
   const uniqueListings = Array.from(new Map(allListings.map(listing => [listing.vin, listing])).values());
 
-  const uniqueListingsInfo = [];
-
-  for (const listing of uniqueListings) {
+  const uniqueListingsInfo = await Promise.all(uniqueListings.map(async (listing) => {
     const daysOnMarket = Math.round((new Date() - listing.createdAt) / 1000 / 60 / 60 / 24);
 
-    const uniqueListingInfo = { listingId: listing.id, ownerId: listing.ownerId };
+    const [
+      globalMessageCount,
+      hasUserMessagedSeller,
+      globalViewCount,
+      globalFavoriteCount,
+      hasUserFavoritedListing,
+      userDwellTime,
+      userClickCount
+    ] = await Promise.all([
+      listingDataService.getGlobalMessagesCount(listing.id, listing.ownerId),
+      listingDataService.hasUserMessagedSeller(listing.id, userId),
+      listingDataService.getGlobalViewCount(listing.id),
+      listingDataService.getGlobalFavoriteCount(listing),
+      listingDataService.hasUserFavoritedListing(listing.id, userId),
+      listingDataService.getUserDwellTime(listing.id, userId),
+      listingDataService.getUserClickCount(listing.id, userId)
+    ])
 
-    uniqueListingInfo.globalMessageCount = (await listingDataService.getGlobalMessagesCount(listing.id, listing.ownerId)).count;
-    uniqueListingInfo.hasUserMessagedSeller = (await listingDataService.hasUserMessagedSeller(listing.id, userId)).hasMessaged;
+    const info = {
+      listingId: listing.id,
+      ownerId: listing.ownerId,
+      globalMessageCount: globalMessageCount.messageCount,
+      hasUserMessagedSeller: hasUserMessagedSeller.hasMessaged,
+      globalViewCount: globalViewCount.viewCount,
+      globalViewCountPerDay: calculateValuePerDay(globalViewCount.viewCount, daysOnMarket),
+      globalFavoriteCount: globalFavoriteCount,
+      globalFavoriteCountPerDay: calculateValuePerDay(globalFavoriteCount, daysOnMarket),
+      hasUserFavoritedListing: hasUserFavoritedListing.hasFavorited,
+      userDwellTime: userDwellTime.dwellTime,
+      userDwellTimePerDay: calculateValuePerDay(userDwellTime.dwellTime, daysOnMarket),
+      userClickCount: userClickCount.clickCount,
+      userClickCountPerDay: calculateValuePerDay(userClickCount.clickCount, daysOnMarket),
+      proximity: getProximity(listing.latitude, listing.longitude, userLatitude, userLongitude),
+      daysOnMarket: daysOnMarket
+    }
 
-    uniqueListingInfo.globalViewCount = (await listingDataService.getGlobalViewCount(listing.id)).viewCount;
-    uniqueListingInfo.globalViewCountPerDay = calculateValuePerDay(uniqueListingInfo.globalViewCount, daysOnMarket);
-
-    uniqueListingInfo.globalFavorites = listingDataService.getGlobalFavorites(listing);
-    uniqueListingInfo.globalFavoritesPerDay = calculateValuePerDay(uniqueListingInfo.globalFavorites, daysOnMarket)
-
-    uniqueListingInfo.hasUserFavoritedListing = (await listingDataService.hasUserFavoritedListing(listing.id, userId)).hasFavorited;
-
-    uniqueListingInfo.userDwellTime = (await listingDataService.getUserDwellTime(listing.id, userId)).dwellTime;
-    uniqueListingInfo.userDwellTimePerDay = calculateValuePerDay(uniqueListingInfo.userTimeSpentOnListing, daysOnMarket);
-
-    uniqueListingInfo.userClickCount = (await listingDataService.getUserClickCount(listing.id, userId)).clickCount;
-    uniqueListingInfo.userClickCountPerDay = calculateValuePerDay(uniqueListingInfo.clickCount, daysOnMarket);
-
-    uniqueListingInfo.proximity = getProximity(listing.latitude, listing.longitude, userLatitude, userLongitude);
-
-    uniqueListingInfo.daysOnMarket = daysOnMarket
-
-    uniqueListingsInfo.push(uniqueListingInfo);
-  }
+    return info;
+  }));
 
   const maxValues = {
     globalMessageCount: Math.max(...uniqueListingsInfo.map(info => info.globalMessageCount)),
     globalViewCount: Math.max(...uniqueListingsInfo.map(info => info.globalViewCount)),
     globalViewCountPerDay: Math.max(...uniqueListingsInfo.map(info => info.globalViewCountPerDay)),
-    globalFavorites: Math.max(...uniqueListingsInfo.map(info => info.globalFavorites)),
-    globalFavoritesPerDay: Math.max(...uniqueListingsInfo.map(info => info.globalFavoritesPerDay)),
+    globalFavoriteCount: Math.max(...uniqueListingsInfo.map(info => info.globalFavoriteCount)),
+    globalFavoriteCountPerDay: Math.max(...uniqueListingsInfo.map(info => info.globalFavoriteCountPerDay)),
     userDwellTime: Math.max(...uniqueListingsInfo.map(info => info.userDwellTime)),
     userDwellTimePerDay: Math.max(...uniqueListingsInfo.map(info => info.userDwellTimePerDay)),
     userClickCount: Math.max(...uniqueListingsInfo.map(info => info.userClickCount)),
@@ -76,8 +87,8 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
       hasUserMessagedSeller: info.hasUserMessagedSeller === true ? 1 : 0,
       globalViewCount: normalizeValue(info.globalViewCount, maxValues.globalViewCount),
       globalViewCountPerDay: normalizeValue(info.globalViewCountPerDay, maxValues.globalViewCountPerDay),
-      globalFavorites: normalizeValue(info.globalFavorites, maxValues.globalFavorites),
-      globalFavoritesPerDay: normalizeValue(info.globalFavoritesPerDay, maxValues.globalFavoritesPerDay),
+      globalFavoriteCount: normalizeValue(info.globalFavoriteCount, maxValues.globalFavoriteCount),
+      globalFavoriteCountPerDay: normalizeValue(info.globalFavoriteCountPerDay, maxValues.globalFavoriteCountPerDay),
       hasUserFavoritedListing: info.hasUserFavoritedListing === true ? 1 : 0,
       userDwellTime: normalizeValue(info.userDwellTime, maxValues.userDwellTime),
       userDwellTimePerDay: normalizeValue(info.userDwellTimePerDay, maxValues.userDwellTimePerDay),
