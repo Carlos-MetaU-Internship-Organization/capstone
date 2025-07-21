@@ -40,7 +40,7 @@ function HomePage() {
           axios.get(`${baseURL}/api/listings/recommended`, { withCredentials: true }),
           axios.get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true }),
           axios.get(`${baseURL}/api/track/most-recently-visited-listings/20`, { withCredentials: true }),
-          axios.get(`${baseURL}/api/listings/popular`)
+          axios.get(`${baseURL}/api/listings/popular`, { withCredentials: true })
         ]);
   
         setRecommendedListings(recommendedListingsResponse.data);

@@ -83,10 +83,6 @@ function SellPage() {
     fetchOwnedListings();
   }, [])
   
-  const handleLogout = () => {
-    // call axios backend logout endpoint
-  }
-  
   const updateForm = async (event) => {
     const elem = event.target.name;
 

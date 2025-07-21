@@ -33,33 +33,6 @@ function Listing({ listingData, favoritedOnLoad }) {
         const favorited = listing.favoriters.some(favoriter => favoriter.id === userId);
         await axios.patch(`${baseURL}/api/listings/${listingData.vin}/favorite`, {}, { withCredentials: true })
         setIsFavorited(!favorited);
-      } else if (response.data.status === 404) {
-        const listingResponse = await axios.get(`${baseURL}/api/listings/${listingData.vin}/data`);
-        const listingInfo = listingResponse.data;
-        const newListingInfo = {
-          condition: listingInfo.condition || 'N/A',
-          make: listingInfo.make || 'N/A',
-          model: listingInfo.model || 'N/A',
-          year: listingInfo.year?.toString() || 'N/A',
-          color: listingInfo.exteriorColor || 'N/A',
-          mileage: listingInfo.mileage?.toString() || 'N/A',
-          vin: listingInfo.vin,
-          description: listingInfo.description || 'N/A',
-          images: listingInfo.photoUrls,
-          price: listingInfo.price?.toString() || 'N/A',
-          zip: listingInfo.zip || 'N/A',
-          owner_name: listingInfo.dealerName || 'N/A',
-          owner_number: listingInfo.phoneTel || 'N/A',
-          city: listingInfo.city || 'N/A',
-          state: listingInfo.state || 'N/A',
-          latitude: listingInfo.latitude || 0,
-          longitude: listingInfo.longitude || 0,
-          createdAt: listingInfo.createdAt,
-          views: 0
-        }
-        const newListing = await axios.post(`${baseURL}/api/listings`, newListingInfo);
-        await axios.patch(`${baseURL}/api/listings/${listingData.vin}/favorite`, {}, { withCredentials: true })
-        setIsFavorited(true);
       }
     } catch (error) {
       logError(`Something went wrong when trying to favorite listing with VIN: ${listingData.vin}`, error)

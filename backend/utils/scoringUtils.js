@@ -1,6 +1,6 @@
 
 function calculateRecommendationScore(normalizedSignals) {
-  const weightsForUserCreatedListings = {
+  const weights = {
     globalMessageCount: 0.08,
     hasUserMessagedSeller: 0.10,
     globalViewCount: 0.10,
@@ -14,14 +14,7 @@ function calculateRecommendationScore(normalizedSignals) {
     userEngagementClicksPerDay: 0.06,
     proximityToUser: 0.10,
     daysOnMarket: 0.05
-  }  
-
-  const weightsForNonUserCreatedListings = {};
-  for (const key in weightsForUserCreatedListings) {
-    weightsForNonUserCreatedListings[key] = weightsForUserCreatedListings[key] / .82; // 18% is lost because users cannot send messages on non-user-created listings
   }
-
-  const weights = normalizedSignals.ownerId ? weightsForUserCreatedListings : weightsForNonUserCreatedListings;
 
   let score = 0;
   for (const key in weights) {
