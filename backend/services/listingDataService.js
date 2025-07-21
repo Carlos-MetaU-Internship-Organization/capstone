@@ -4,11 +4,6 @@ const { logInfo, logError } = require('../../frontend/src/utils/logging.service'
 
 async function getGlobalMessagesCount(listingId, ownerId) {
   try {
-    if (!ownerId) {
-      logInfo(`Listing with listingId: ${listingId} cannot receive messages`)
-      return ({ status: 404, count: 0 })
-    }
-
     const messages = await prisma.message.findMany({
       where: {
         listingId,
@@ -54,12 +49,8 @@ function getGlobalFavorites(listing) {
   return listing.favorites;
 }
 
-async function hasUserMessagedSeller(listingId, ownerId, userId) {
+async function hasUserMessagedSeller(listingId, userId) {
   try {
-    if (!ownerId) {
-      logInfo(`Listing with listingId: ${listingId} cannot receive messages`)
-      return ({ status: 404, hasMessaged: false })
-    }
 
     const hasMessaged = await prisma.message.findFirst({
       where: {

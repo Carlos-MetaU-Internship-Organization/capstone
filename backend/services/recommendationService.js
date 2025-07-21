@@ -29,8 +29,8 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
 
     const uniqueListingInfo = { listingId: listing.id, ownerId: listing.ownerId };
 
-    uniqueListingInfo.globalMessageCount = listing.ownerId ? (await listingDataService.getGlobalMessagesCount(listing.id, listing.ownerId)).count : 0;
-    uniqueListingInfo.hasUserMessagedSeller = listing.ownerId ? (await listingDataService.hasUserMessagedSeller(listing.id, listing.ownerId, userId)).hasMessaged : 0;
+    uniqueListingInfo.globalMessageCount = (await listingDataService.getGlobalMessagesCount(listing.id, listing.ownerId)).count;
+    uniqueListingInfo.hasUserMessagedSeller = (await listingDataService.hasUserMessagedSeller(listing.id, userId)).hasMessaged;
 
     uniqueListingInfo.globalViewCount = (await listingDataService.getGlobalViewCount(listing.id)).viewCount;
     uniqueListingInfo.globalViewCountPerDay = calculateValuePerDay(uniqueListingInfo.globalViewCount, daysOnMarket);
