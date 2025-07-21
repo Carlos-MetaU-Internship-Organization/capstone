@@ -24,23 +24,21 @@ async function computeSellerDelta(sellerId) {
     return 0.0;
   }
 
-  const soldSellerListingStats = new Map();
-  soldSellerListings.forEach(listing => {
+  const soldSellerListingStats = soldSellerListings.reduce((obj, listing) => {
     const key = `${listing.condition}|${listing.make}|${listing.model}`
     const daysOnMarket = getDaysOnMarket(listing);
-    if (!soldSellerListingStats.has(key)) {
-      soldSellerListingStats.set(key, { count: 0, daysOnMarketSum: 0, condition: listing.condition, make: listing.make, model: listing.model })
+    if (!obj[key]) {
+      obj[key] = { count: 0, daysOnMarketSum: 0, condition: listing.condition, make: listing.make, model: listing.model }
     }
-    const entry = soldSellerListingStats.get(key);
-    entry.count += 1;
-    entry.daysOnMarketSum += daysOnMarket;
-  })
+    obj[key].count++;
+    obj[key].daysOnMarketSum += daysOnMarket;
+    return obj;
+  }, {})
 
   // For each unique condition/make/model listing, fetch market stats
-  let weightedRatioSum = 0;
-  let totalWeights = 0;
+  const weights = { weightedRatioSum: 0, totalWeights: 0 }
   
-  for (const [key, { count, daysOnMarketSum, condition, make, model }] of soldSellerListingStats) {
+  for (const { count, daysOnMarketSum, condition, make, model } of Object.values(soldSellerListingStats)) {
     const soldMarketListings = await prisma.listing.findMany({
       where: {
         ownerId: {
@@ -70,9 +68,11 @@ async function computeSellerDelta(sellerId) {
 
     const timeSoldRatio = marketAvgDaysOnMarket / balancedSellerAvgDaysOnMarket;
 
-    weightedRatioSum += timeSoldRatio * count;
-    totalWeights += count;
+    weights.weightedRatioSum += timeSoldRatio * count;
+    weights.totalWeights += count;
   }
+
+  const { weightedRatioSum, totalWeights } = weights;
 
   if (totalWeights === 0) {
     return 0.0;

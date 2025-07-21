@@ -48,7 +48,7 @@ function SellPage() {
           axios.get(`${baseURL}/api/listings/user/`, { withCredentials: true })
         ])
 
-        setModels(makesResponse.data)
+        setMakes(makesResponse.data)
         setListings(ownedListingsResponse.data)
 
       } catch (error) {

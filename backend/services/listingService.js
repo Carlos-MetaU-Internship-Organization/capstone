@@ -46,11 +46,9 @@ async function fetchListingsForMigration(makeModelCombinationBatch) {
 }
 
 function cleanResultsFromAPI(listings) {
-  cleanedResults = []; 
 
-  for (const listing of listings) {
-    const cleanedListing =  {
-      vin: listing.vin,
+  return listings.map(listing => ({
+    vin: listing.vin,
       condition: listing.condition,
       make: listing.make,
       model: listing.model,
@@ -66,11 +64,7 @@ function cleanResultsFromAPI(listings) {
       city: listing.city,
       state: listing.state,
       createdAt: listing.createdAt
-    }
-    cleanedResults.push(cleanedListing);
-  }
-
-  return cleanedResults;
+  }))
 }
 
 function getClosestColor(inputColor) {
