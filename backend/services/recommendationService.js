@@ -86,7 +86,7 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
       listingId: info.listingId,
       ownerId: info.ownerId,
       globalMessageCount: normalizeValue(info.globalMessageCount, maxValues.globalMessageCount),
-      hasUserMessagedSeller: info.hasUserMessagedSeller === true ? 1 : 0,
+      hasUserMessagedSeller: Number(info.hasUserMessagedSeller),
       globalViewCount: normalizeValue(info.globalViewCount, maxValues.globalViewCount),
       globalViewCountPerDay: normalizeValue(info.globalViewCountPerDay, maxValues.globalViewCountPerDay),
       globalFavoriteCount: normalizeValue(info.globalFavoriteCount, maxValues.globalFavoriteCount),
@@ -104,9 +104,7 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
   const scoredListingsInfo = normalizedListingsInfo.map(listingInfo => {
     const score = calculateRecommendationScore(listingInfo);
     return { listingId: listingInfo.listingId, score }
-  })
-
-  scoredListingsInfo.sort((a, b) => b.score - a.score);
+  }).sort((a, b) => b.score - a.score);
 
   const listingsById = uniqueListings.reduce((map, listing) => {
     map.set(listing.id, listing)
@@ -115,7 +113,7 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
 
   const finalListings = scoredListingsInfo.map(({ listingId }) => listingsById.get(listingId)).slice(0, 20);
 
-  await setCachedRecommendations(userId, finalListings);
+  setCachedRecommendations(userId, finalListings);
   
   return finalListings;
 }

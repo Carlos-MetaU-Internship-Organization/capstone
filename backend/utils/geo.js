@@ -9,11 +9,13 @@ function getProximity(latA, lonA, latB, lonB) {
   const latARadians = degreesToRadians(latA);
   const latBRadians = degreesToRadians(latB);
 
+  // calculates the square of half the chord length between the two points
   const halfChordSq = Math.sin(deltaLatitudeRadians / 2) ** 2 +
                       Math.cos(latARadians) * 
                       Math.cos(latBRadians) *
                       Math.sin(deletaLongitudeRadians / 2) ** 2;
 
+  // calculates the angular distance in radians between the two points
   const centralAngle = 2 * Math.atan2(Math.sqrt(halfChordSq), Math.sqrt(1 - halfChordSq));
 
   const distanceInMiles = EARTH_RADIUS_MILES * centralAngle;
