@@ -1,4 +1,4 @@
-const { logError } = require('../utils/logging.service')
+const { logError } = require('../services/loggingService')
 
 const validateRequest = ({ body, params, query }) => (req, res, next) => {
   const validationOptions = {

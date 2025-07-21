@@ -4,7 +4,7 @@ import pinkHeart from './../../assets/pinkHeart.png'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { baseURL } from '../../globals'
-import { logError } from '../../utils/logging.service'
+import { logError } from '../../services/loggingService'
 import axios from 'axios'
 
 function Listing({ listingData, favoritedOnLoad }) {

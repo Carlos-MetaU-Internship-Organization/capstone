@@ -7,7 +7,7 @@ const { fetchLocalListingFromVIN } = require('../services/fetchRelevantListingsS
 const { getGlobalViewCount } = require('../services/listingDataService');
 const { requireAuth } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validateMiddleware')
-const { logInfo, logWarning, logError } = require('../utils/logging.service');
+const { logInfo, logWarning, logError } = require('../services/loggingService');
 const { listingInfoSchema, vinSchema, listingIdSchema, soldStatusSchema, priceEstimateSchema } = require('../schemas/listingSchema')
 
 const prisma = new PrismaClient()
@@ -331,9 +331,9 @@ listings.post('/estimate-price', validateRequest({ body: priceEstimateSchema }),
 
   const userInfo = { sellerId: id, latitude, longitude }
 
-  const allUserInfo = { ...userInfo, ...req.body }
+  const userAndListingInfo = { ...userInfo, ...req.body }
 
-  const { marketPrice, recommendedPrice, confidenceLevel, elasticity } = await getPriceRecommendationInfo(allUserInfo);
+  const { marketPrice, recommendedPrice, confidenceLevel, elasticity } = await getPriceRecommendationInfo(userAndListingInfo);
 
   res.json({ status: 200, marketPrice, recommendedPrice, confidenceLevel, elasticity });
 })

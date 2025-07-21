@@ -7,7 +7,7 @@ import Header from './Header'
 import { baseURL } from '../../globals'
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import { logInfo, logWarning, logError } from './../../utils/logging.service';
+import { logInfo, logWarning, logError } from '../../services/loggingService';
 import axios from 'axios'
 import { checkAuth } from '../../utils/api'
 

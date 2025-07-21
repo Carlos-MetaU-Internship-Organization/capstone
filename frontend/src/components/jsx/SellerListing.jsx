@@ -8,7 +8,7 @@ import trash from './../../assets/trash.png'
 import { baseURL } from '../../globals'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { logError, logInfo } from '../../utils/logging.service'
+import { logError, logInfo } from '../../services/loggingService'
 import { getListingViewCount } from '../../utils/api'
 import axios from 'axios'
 

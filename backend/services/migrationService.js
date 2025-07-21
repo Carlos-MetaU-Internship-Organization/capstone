@@ -3,8 +3,8 @@ const createRandomUser = require('../utils/fakeUserGenerator')
 const { getMakesAndModels, insertMakesAndModels } = require('./makeModelService')
 const { fetchListingsForMigration, fetchMakeModelCombinations, createListing } = require('./listingService')
 const { signupUser, getAllNeededUserInfo } = require('./userService')
-const { logInfo } = require('./../utils/logging.service')
-const { logError } = require('../../frontend/src/utils/logging.service')
+const { logInfo } = require('./loggingService')
+const { logError } = require('../../frontend/src/services/loggingService')
 const { writeFile } = require('fs').promises
 const { NUMBER_OF_FAKE_USERS, BATCH_SIZE, RATIO_OF_SOLD_LISTINGS } = require('../utils/constants')
 
@@ -60,19 +60,16 @@ async function populateDBWithListings() {
     }
 
     const listings = listingsResponse.listings;
-    const allUserInfo = allNeededUserInfoResponse.allNeededUserInfo;
+    const allNeededUserInfo = allNeededUserInfoResponse.allNeededUserInfo;
   
     for (const listing of listings) {
-      const randomUserIndex = Math.floor(Math.random() * (allUserInfo.length));
+      const randomUserIndex = Math.floor(Math.random() * (allNeededUserInfo.length));
       const soldStatus = Math.random() <= RATIO_OF_SOLD_LISTINGS;
-      if ((await createListing(allUserInfo[randomUserIndex], listing, soldStatus)).listing) {
+      if ((await createListing(allNeededUserInfo[randomUserIndex], listing, soldStatus)).listing) {
         count.numListingsCreated++;
       }
     }
-
-  }
-  
-
+  } 
 
   logInfo(`Successfully created ${count.numListingsCreated} listings in the database`);
   return count.numListingsCreated > 0

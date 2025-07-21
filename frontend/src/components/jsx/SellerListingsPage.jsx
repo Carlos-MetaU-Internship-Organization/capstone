@@ -3,7 +3,7 @@ import Header from './Header'
 import SellerListing from './SellerListing'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
-import { logInfo, logWarning, logError } from './../../utils/logging.service';
+import { logInfo, logWarning, logError } from '../../services/loggingService';
 import axios from 'axios'
 import { PAGE_SIZE } from '../../utils/constants'
 

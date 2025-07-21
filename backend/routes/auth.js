@@ -3,7 +3,7 @@ const express = require('express')
 const { PrismaClient } = require('@prisma/client')
 const { hashPassword, verifyPassword } = require('./../services/passwordService')
 const { validateRequest } = require('../middleware/validateMiddleware')
-const { logInfo, logWarning, logError } = require('../utils/logging.service');
+const { logInfo, logWarning, logError } = require('../services/loggingService');
 const { signupSchema, loginSchema } = require('../schemas/authSchema')
 
 const prisma = new PrismaClient()

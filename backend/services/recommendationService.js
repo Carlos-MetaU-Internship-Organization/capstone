@@ -3,6 +3,7 @@ const { fetchRecentlyClickedListings, fetchListingsFromSearchHistory } = require
 const listingDataService = require('./listingDataService')
 const normalizeValue = require('../utils/normalizationUtils')
 const calculateRecommendationScore = require('../utils/scoringUtils')
+const getProximity = require('../utils/geo')
 
 async function getRecommendations(userId, userLatitude, userLongitude) {
 
@@ -40,13 +41,13 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
 
     uniqueListingInfo.hasUserFavoritedListing = (await listingDataService.hasUserFavoritedListing(listing.id, userId)).hasFavorited;
 
-    uniqueListingInfo.userTimeSpentOnListing = (await listingDataService.getUserTimeSpentOnListing(listing.id, userId)).timeSpent;
-    uniqueListingInfo.userTimeSpentOnListingPerDay = calculateValuePerDay(uniqueListingInfo.userTimeSpentOnListing, daysOnMarket);
+    uniqueListingInfo.userDwellTime = (await listingDataService.getUserDwellTime(listing.id, userId)).dwellTime;
+    uniqueListingInfo.userDwellTimePerDay = calculateValuePerDay(uniqueListingInfo.userTimeSpentOnListing, daysOnMarket);
 
-    uniqueListingInfo.userEngagementClicks = (await listingDataService.getUserEngagementClicks(listing.id, userId)).engagementClicks;
-    uniqueListingInfo.userEngagementClicksPerDay = calculateValuePerDay(uniqueListingInfo.userEngagementClicks, daysOnMarket);
+    uniqueListingInfo.userClickCount = (await listingDataService.getUserClickCount(listing.id, userId)).clickCount;
+    uniqueListingInfo.userClickCountPerDay = calculateValuePerDay(uniqueListingInfo.clickCount, daysOnMarket);
 
-    uniqueListingInfo.proximityToUser = listingDataService.getProximityToUser(listing.latitude, listing.longitude, userLatitude, userLongitude);
+    uniqueListingInfo.proximity = getProximity(listing.latitude, listing.longitude, userLatitude, userLongitude);
 
     uniqueListingInfo.daysOnMarket = daysOnMarket
 
@@ -59,11 +60,11 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
     globalViewCountPerDay: Math.max(...uniqueListingsInfo.map(info => info.globalViewCountPerDay)),
     globalFavorites: Math.max(...uniqueListingsInfo.map(info => info.globalFavorites)),
     globalFavoritesPerDay: Math.max(...uniqueListingsInfo.map(info => info.globalFavoritesPerDay)),
-    userTimeSpentOnListing: Math.max(...uniqueListingsInfo.map(info => info.userTimeSpentOnListing)),
-    userTimeSpentOnListingPerDay: Math.max(...uniqueListingsInfo.map(info => info.userTimeSpentOnListingPerDay)),
-    userEngagementClicks: Math.max(...uniqueListingsInfo.map(info => info.userEngagementClicks)),
-    userEngagementClicksPerDay: Math.max(...uniqueListingsInfo.map(info => info.userEngagementClicksPerDay)),
-    proximityToUser: Math.max(...uniqueListingsInfo.map(info => info.proximityToUser)),
+    userDwellTime: Math.max(...uniqueListingsInfo.map(info => info.userDwellTime)),
+    userDwellTimePerDay: Math.max(...uniqueListingsInfo.map(info => info.userDwellTimePerDay)),
+    userClickCount: Math.max(...uniqueListingsInfo.map(info => info.userClickCount)),
+    userClickCountPerDay: Math.max(...uniqueListingsInfo.map(info => info.userClickCountPerDay)),
+    proximity: Math.max(...uniqueListingsInfo.map(info => info.proximity)),
     daysOnMarket: Math.max(...uniqueListingsInfo.map(info => info.daysOnMarket))
   }
 
@@ -78,11 +79,11 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
       globalFavorites: normalizeValue(info.globalFavorites, maxValues.globalFavorites),
       globalFavoritesPerDay: normalizeValue(info.globalFavoritesPerDay, maxValues.globalFavoritesPerDay),
       hasUserFavoritedListing: info.hasUserFavoritedListing === true ? 1 : 0,
-      userTimeSpentOnListing: normalizeValue(info.userTimeSpentOnListing, maxValues.userTimeSpentOnListing),
-      userTimeSpentOnListingPerDay: normalizeValue(info.userTimeSpentOnListingPerDay, maxValues.userTimeSpentOnListingPerDay),
-      userEngagementClicks: normalizeValue(info.userEngagementClicks, maxValues.userEngagementClicks),
-      userEngagementClicksPerDay: normalizeValue(info.userEngagementClicksPerDay, maxValues.userEngagementClicksPerDay),
-      proximityToUser: normalizeValue(info.proximityToUser, maxValues.proximityToUser, 'inverse'),
+      userDwellTime: normalizeValue(info.userDwellTime, maxValues.userDwellTime),
+      userDwellTimePerDay: normalizeValue(info.userDwellTimePerDay, maxValues.userDwellTimePerDay),
+      userClickCount: normalizeValue(info.userClickCount, maxValues.userClickCount),
+      userClickCountPerDay: normalizeValue(info.userClickCountPerDay, maxValues.userClickCountPerDay),
+      proximity: normalizeValue(info.proximity, maxValues.proximity, 'inverse'),
       daysOnMarket: normalizeValue(info.daysOnMarket, maxValues.daysOnMarket, 'inverse'),
     }
   })

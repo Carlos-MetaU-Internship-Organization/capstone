@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { baseURL } from '../globals';
-import { logInfo, logWarning, logError } from './logging.service';
+import { logInfo, logWarning, logError } from '../services/loggingService';
 
 export async function loginUser({ login, password }) {
   if (!login || !password) {

@@ -6,7 +6,7 @@ import Listing from './Listing'
 import SortMenu from './SortMenu'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
-import { logInfo, logWarning, logError } from './../../utils/logging.service';
+import { logInfo, logWarning, logError } from '../../services/loggingService';
 import { fetchListings, getModels } from '../../utils/api'
 import { sortListings } from './../../utils/listings'
 import { PAGE_SIZE } from '../../utils/constants'
