@@ -16,12 +16,7 @@ function calculateRecommendationScore(normalizedSignals) {
     daysOnMarket: 0.05
   }
 
-  let score = 0;
-  for (const key in weights) {
-    score += normalizedSignals[key] * weights[key];
-  }
-
-  return score;
+  return Object.keys(weights).reduce((score, key) => { return score + (normalizedSignals[key] * weights[key]) }, 0)
 }
 
 module.exports = calculateRecommendationScore;

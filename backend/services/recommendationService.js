@@ -65,19 +65,21 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
     return info;
   }));
 
-  const maxValues = {
-    globalMessageCount: Math.max(...uniqueListingsInfo.map(info => info.globalMessageCount)),
-    globalViewCount: Math.max(...uniqueListingsInfo.map(info => info.globalViewCount)),
-    globalViewCountPerDay: Math.max(...uniqueListingsInfo.map(info => info.globalViewCountPerDay)),
-    globalFavoriteCount: Math.max(...uniqueListingsInfo.map(info => info.globalFavoriteCount)),
-    globalFavoriteCountPerDay: Math.max(...uniqueListingsInfo.map(info => info.globalFavoriteCountPerDay)),
-    userDwellTime: Math.max(...uniqueListingsInfo.map(info => info.userDwellTime)),
-    userDwellTimePerDay: Math.max(...uniqueListingsInfo.map(info => info.userDwellTimePerDay)),
-    userClickCount: Math.max(...uniqueListingsInfo.map(info => info.userClickCount)),
-    userClickCountPerDay: Math.max(...uniqueListingsInfo.map(info => info.userClickCountPerDay)),
-    proximity: Math.max(...uniqueListingsInfo.map(info => info.proximity)),
-    daysOnMarket: Math.max(...uniqueListingsInfo.map(info => info.daysOnMarket))
-  }
+  const maxValues = uniqueListingsInfo.reduce((acc, info) => {
+    acc.globalMessageCount = Math.max(acc.globalMessageCount ?? 0, info.globalMessageCount),
+    acc.globalViewCount = Math.max(acc.globalViewCount ?? 0, info.globalViewCount),
+    acc.globalViewCountPerDay = Math.max(acc.globalViewCountPerDay ?? 0, info.globalViewCountPerDay),
+    acc.globalFavoriteCount = Math.max(acc.globalFavoriteCount ?? 0, info.globalFavoriteCount),
+    acc.globalFavoriteCountPerDay = Math.max(acc.globalFavoriteCountPerDay ?? 0, info.globalFavoriteCountPerDay),
+    acc.userDwellTime = Math.max(acc.userDwellTime ?? 0, info.userDwellTime),
+    acc.userDwellTimePerDay = Math.max(acc.userDwellTimePerDay ?? 0, info.userDwellTimePerDay),
+    acc.userClickCount = Math.max(acc.userClickCount ?? 0, info.userClickCount),
+    acc.userClickCountPerDay = Math.max(acc.userClickCountPerDay ?? 0, info.userClickCountPerDay),
+    acc.proximity = Math.max(acc.proximity ?? 0, info.proximity),
+    acc.daysOnMarket = Math.max(acc.daysOnMarket ?? 0, info.daysOnMarket)
+    return acc;
+  }, {});
+
 
   const normalizedListingsInfo = uniqueListingsInfo.map(info => {
     return {
@@ -106,8 +108,10 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
 
   scoredListingsInfo.sort((a, b) => b.score - a.score);
 
-  const listingsById = new Map();
-  uniqueListings.forEach(listing => listingsById.set(listing.id, listing));
+  const listingsById = uniqueListings.reduce((map, listing) => {
+    map.set(listing.id, listing)
+    return map;
+  }, new Map())
 
   const finalListings = scoredListingsInfo.map(({ listingId }) => listingsById.get(listingId)).slice(0, 20);
 

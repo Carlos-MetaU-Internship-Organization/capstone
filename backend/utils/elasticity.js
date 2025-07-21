@@ -16,30 +16,26 @@ function buildElasticityCurve(enrichedListings, recommendedPrice) {
 }
 
 function getWeightedLinearRegression(soldListings) {
-  let weightSum = 0;
-  let priceWeightSum = 0;
-  let daysOnMarketWeightSum = 0;
 
-  soldListings.forEach(listing => {
+  const { weightSum, priceWeightSum, daysOnMarketWeightSum } = soldListings.reduce((acc, listing) => {
     const weight = listing.depthWeight * getRecencyOfSaleWeight(listing.soldAt)
     listing.similarityAndRecencyWeight = weight;
-    weightSum += weight;
-    priceWeightSum += listing.price * weight;
-    daysOnMarketWeightSum += listing.daysOnMarket * weight;
-  })
+    acc.weightSum += weight;
+    acc.priceWeightSum += listing.price * weight;
+    acc.daysOnMarketWeightSum += listing.daysOnMarket * weight;
+    return acc;
+  }, { weightSum: 0, priceWeightSum: 0, daysOnMarketWeightSum: 0 })
 
   const weightedPriceAvg = priceWeightSum / weightSum;
   const weightedDaysOnMarketAvg = daysOnMarketWeightSum / weightSum;
 
-  let weightedCovariance = 0;
-  let weightedVariance = 0;
-
-  soldListings.forEach(listing => {
+  const { weightedCovariance, weightedVariance } = soldListings.reduce((acc, listing) => {
     const priceDelta = listing.price - weightedPriceAvg;
     const daysOnMarketDelta = listing.daysOnMarket - weightedDaysOnMarketAvg;
-    weightedCovariance += listing.similarityAndRecencyWeight * priceDelta * daysOnMarketDelta;
-    weightedVariance += listing.similarityAndRecencyWeight * (priceDelta ** 2)
-  })
+    acc.weightedCovariance += listing.similarityAndRecencyWeight * priceDelta * daysOnMarketDelta;
+    acc.weightedVariance += listing.similarityAndRecencyWeight * (priceDelta ** 2);
+    return acc;
+  }, { weightedCovariance: 0, weightedVariance: 0 })
 
   const slope = weightedCovariance / weightedVariance;
   const intercept = weightedDaysOnMarketAvg - slope * weightedPriceAvg;

@@ -11,37 +11,35 @@ const {
   ROUND_TO_NEAREST_HUNDRED
 } = require('./constants')
 
-const getProximity = require('./geo')
-
 function calculateMarketPrice(listings, userInfo) {
-  let sum = 0;
-  let weightSum = 0;
-  let listingCountPerDepth = {};
 
-  listings.forEach(listing => {
-    listingCountPerDepth[listing.depth] = (listingCountPerDepth[listing.depth] || 0) + 1;
-  })
+  const listingCountPerDepth = listings.reduce((obj, listing) => {
+    obj[listing.depth] = (obj[listing.depth] ?? 0) + 1;
+    return obj
+  }, {})
 
-  listings.forEach(listing => {
+  const { sum, weightSum } = listings.reduce((acc, listing) => {
     const yearGap = Math.abs(userInfo.year - listing.year)
     const mileageGap = Math.abs((userInfo.mileage - listing.mileage) / MILEAGE_SCALE_FACTOR)
-
+  
     const depthWeight = (DEPTH_WEIGHT_BY_LEVEL[listing.depth] / listingCountPerDepth[listing.depth]);
     listing.depthWeight = depthWeight;
-
+  
     const soldWeight = listing.sold ? SOLD_LISTING_WEIGHT : UNSOLD_LISTING_WEIGHT
     
     const proximityWeight = Math.max(PROXIMITY_MIN_WEIGHT, 1 - (listing.proximity / PROXIMITY_DISTANCE_FADE));
-
+  
     const daysOnMarketWeight = Math.max(DAYS_ON_MARKET_MIN_WEIGHT, 1 / ((1 + listing.daysOnMarket) / DAYS_IN_MONTH));
     
     const similarSpecificationWeight = 1 / (1 + yearGap + mileageGap);
-
+  
     const totalWeight = similarSpecificationWeight * depthWeight * soldWeight * proximityWeight * daysOnMarketWeight;
 
-    sum += parseInt(listing.price) * totalWeight;
-    weightSum += totalWeight;
-  })
+    acc.sum += parseInt(listing.price) * totalWeight;
+    acc.weightSum += totalWeight;
+
+    return acc;
+  }, { sum: 0, weightSum: 0 })
 
   const marketPrice = weightSum ? ROUND_TO_NEAREST_HUNDRED(sum / weightSum) : 0;
   logInfo(`Market price calculated for this lsiting is ${marketPrice}`)
