@@ -97,12 +97,16 @@ function ResultsPage() {
   }
 
   const updateModels = async (make) => {
-    const models = await getModels(make);
-    if (models) {
-      setModels(models);
-      setOnScreenFilters(prev => ({...prev, model: models[0].name}))
-    } else {
-      // TODO: message component error
+    try {
+      const { models, success } = await getModels(make)
+      if (success) {
+        setModels(models);
+        setFilters(prev => ({...prev, model: models[0].name}))
+      } else {
+        // TODO: error message component
+      }
+    } catch (error) {
+      logError('Something went wrong', error);
     }
   }
 
@@ -196,7 +200,7 @@ function ResultsPage() {
       maxPrice: savedSearchFilter.maxPrice || ''
     }
 
-    const models = await getModels(updatedFilters.make);
+    const { models } = await getModels(updatedFilters.make);
     
     localStorage.setItem('recentSearch', JSON.stringify({ filters: updatedFilters, makes, models }))
 

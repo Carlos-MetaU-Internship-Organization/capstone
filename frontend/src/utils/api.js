@@ -161,19 +161,6 @@ export async function fetchListings(params) {
   }
 }
 
-export async function getModels(make) {
-  try {
-    const response = await axios.get(`${baseURL}/api/makeModels/${make}/models`, { withCredentials: true });
-    logInfo('Models successfully retrieved');
-
-    const models = response.data;
-    return models;
-  } catch (error) {
-    logError('HTTP request failed when trying to fetch models', error);
-    return null;
-  }
-}
-
 export async function getUserZIP() {
   try {
     const response = await axios.get(`${baseURL}/api/user/location`, { withCredentials: true });
@@ -249,6 +236,38 @@ export async function viewSearchFilter(searchFilter) {
   } catch (error) {
     return {
       success: false,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function getMakes() {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/makeModels/makes`, { withCredentials: true });
+    return {
+      success: true,
+      makes: data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      makes: [],
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function getModels(make) {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/makeModels/${make}/models`, { withCredentials: true });
+    return {
+      success: true,
+      models: data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      models: [],
       message: error.response?.data?.message || error.message || 'An error occured'
     }
   }

@@ -34,4 +34,19 @@ async function insertMakesAndModels(makesAndModels) {
   }
 }
 
-module.exports = { getMakesAndModels, insertMakesAndModels }
+async function getMakes() {
+  return prisma.make.findMany({
+    select: {name: true},
+    orderBy: {name: 'asc'}
+  })
+}
+
+async function getModels(make) {
+  return prisma.model.findMany({
+    where: { makeName: make },
+    select: { name: true },
+    orderBy: {name: 'asc'}
+  })
+}
+
+module.exports = { getMakesAndModels, insertMakesAndModels, getMakes, getModels }

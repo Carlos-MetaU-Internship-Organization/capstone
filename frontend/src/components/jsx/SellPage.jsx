@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
 import { ELASTICITY_KEYS, CAPITALIZE, LISTINGS_PER_CYCLE } from './../../utils/constants'
-import { getOwnedListings } from '../../utils/api'
+import { getOwnedListings, getMakes, getModels } from '../../utils/api'
 
 function SellPage() {
 
@@ -45,11 +45,11 @@ function SellPage() {
           makesResponse,
           ownedListingsResponse
         ] = await Promise.all([
-          axios.get(`${baseURL}/api/makeModels/makes`, { withCredentials: true }),
+          getMakes(),
           getOwnedListings()
         ])
 
-        setMakes(makesResponse.data)
+        setMakes(makesResponse.makes)
         setOwnedListings(ownedListingsResponse.ownedListings)
 
       } catch (error) {
@@ -66,14 +66,17 @@ function SellPage() {
     }
   }, [])
 
-  const updateModels = async (selection) => {
+  const updateModels = async (make) => {
     try {
-      const response = await axios.get(`${baseURL}/api/makeModels/${selection}/models`, { withCredentials: true });
-      const models = response.data;
-      logInfo('Models successfully retrieved');
-      setModels(models);
+      const { models, success } = await getModels(make)
+      if (success) {
+        setModels(models);
+        setFilters(prev => ({...prev, model: models[0].name}))
+      } else {
+        // TODO: error message component
+      }
     } catch (error) {
-      logError('HTTP request failed when trying to fetch models', error);
+      logError('Something went wrong', error);
     }
   }
   

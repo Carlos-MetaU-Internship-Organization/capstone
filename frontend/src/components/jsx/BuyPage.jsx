@@ -2,12 +2,10 @@ import './../css/BuyPage.css'
 import car from './../../assets/car.jpg'
 import arrow from './../../assets/arrow.png'
 import Header from './Header'
-import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
-import { getFavoritedListings, getMostDwelledListings, getModels, getUserZIP, getSavedSearchFilters } from '../../utils/api'
-import axios from 'axios'
+import { getFavoritedListings, getMostDwelledListings, getModels, getUserZIP, getSavedSearchFilters, getMakes } from '../../utils/api'
 import { PAGE_SIZE } from '../../utils/constants'
 
 function BuyPage() {
@@ -47,14 +45,14 @@ function BuyPage() {
           savedSearchFiltersResponse,
           zipResponse
         ] = await Promise.all([
-          axios.get(`${baseURL}/api/makeModels/makes`, { withCredentials: true }),
+          getMakes(),
           getFavoritedListings(),
           getMostDwelledListings(PAGE_SIZE),
           getSavedSearchFilters(),
           getUserZIP()
         ])
 
-        setMakes(makesResponse.data)
+        setMakes(makesResponse.makes)
         setFavoritedListings(favoritedListingsResponse.favoritedListings);
         setMostDwelledListing(mostDwelledListingsResponse.mostDwelledListings[0])
         setSavedSearchFilters(savedSearchFiltersResponse.savedSearchFilters)
@@ -78,12 +76,16 @@ function BuyPage() {
   }
   
   const updateModels = async (make) => {
-    const models = await getModels(make);
-    if (models) {
-      setModels(models);
-      setFilters(prev => ({...prev, model: models[0].name}))
-    } else {
-      // TODO: message component error
+    try {
+      const { models, success } = await getModels(make)
+      if (success) {
+        setModels(models);
+        setFilters(prev => ({...prev, model: models[0].name}))
+      } else {
+        // TODO: error message component
+      }
+    } catch (error) {
+      logError('Something went wrong', error);
     }
   }
   
@@ -127,7 +129,7 @@ function BuyPage() {
       maxPrice: savedSearchFilter.maxPrice || ''
     }
 
-    const models = await getModels(updatedForm.make);
+    const { models } = await getModels(updatedForm.make);
 
     localStorage.setItem('recentSearch', JSON.stringify( { filters: updatedForm, makes, models }))
 
