@@ -5,12 +5,10 @@ import blackHeart from './../../assets/blackHeart.png'
 import edit from './../../assets/edit.png'
 import money from './../../assets/money.png'
 import trash from './../../assets/trash.png'
-import { baseURL } from '../../globals'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { logError, logInfo } from '../../services/loggingService'
-import { getListingViewCount } from '../../utils/api'
-import axios from 'axios'
+import { deleteListing, getListingViewCount, sellListing } from '../../utils/api'
 
 function SellerListing({ listingData, onDelete }) {
 
@@ -40,10 +38,14 @@ function SellerListing({ listingData, onDelete }) {
   const handleListingDeletion = async () => {
     if (confirm("Are you sure you want to delete this listing?")) {
       try {
-        const response = await axios.delete(`${baseURL}/api/listings/${listingData.id}`, { withCredentials: true });
-        const data = response.data
-        onDelete(listingData.id);
-        logInfo(`Successfully deleted listing with id: ${listingData.id}`)
+        const { deletionStatus } = await deleteListing(listingData.id)
+        if (!deletionStatus) {
+          // Listing did not seem to delete... Something went wrong
+          // TODO: display error message component
+        } else {
+          logInfo(`Successfully deleted listing with id: ${listingData.id}`)
+          onDelete(listingData.id);
+        }
       } catch (error) {
         logError('Something bad happened when deleting a listing', error);
       }
@@ -52,8 +54,13 @@ function SellerListing({ listingData, onDelete }) {
 
   const handleListingMarkedAsSold = async () => {
     try {
-      const response = await axios.patch(`${baseURL}/api/listings/${listingData.id}/sold`, {new_sold_status: !sold}, { withCredentials: true });
-      setSold(prev => !prev);
+      const { soldStatus } = await sellListing(listingData.id, !sold)
+      if (soldStatus === sold) {
+        // SoldStatus did not update... Something went wrong
+        // TODO: display error message component
+      } else {
+        setSold(soldStatus);
+      }
     } catch (error) {
       logError("Something bad happened when updating the 'sold' status ", error);
     }

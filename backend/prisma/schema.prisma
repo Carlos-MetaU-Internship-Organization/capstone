@@ -44,7 +44,7 @@ model Make {
 model Model {
   id                           Int                @id @default(autoincrement())
   name                         String
-  make                         Make               @relation(fields: [makeName], references: [name])
+  make                         Make               @relation(fields: [makeName], references: [name], onDelete: Cascade)
   makeName                     String
 }
 
@@ -65,12 +65,12 @@ model Listing {
   longitude                    Float
   city                         String
   state                        String
-  owner_name                   String
-  owner_number                 String
+  ownerName                    String              @map("owner_name")
+  ownerNumber                  String              @map("owner_number")
   sold                         Boolean             @default(false)
   createdAt                    DateTime            @default(now())
   soldAt                       DateTime?
-  owner                        User?               @relation("owner", fields: [ownerId], references: [id])
+  owner                        User?               @relation("owner", fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId                      Int?
   favorites                    Int                 @default(0)
 
@@ -81,9 +81,9 @@ model Listing {
 
 model ListingVisit {
   id                           Int                 @id @default(autoincrement())
-  user                         User                @relation(fields: [userId], references: [id])
+  user                         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                       Int
-  listing                      Listing             @relation(fields: [listingId], references: [id])
+  listing                      Listing             @relation(fields: [listingId], references: [id], onDelete: Cascade)
   listingId                    Int
   firstVisitAt                 DateTime            @default(now())
   recentVisitAt                DateTime            @default(now())
@@ -95,9 +95,9 @@ model ListingVisit {
 
 model SearchFilter {
   id                           Int                 @id @default(autoincrement())
-  saver                        User?               @relation("saver", fields: [saverId], references: [id])
+  saver                        User?               @relation("saver", fields: [saverId], references: [id], onDelete: Cascade)
   saverId                      Int?
-  viewer                       User?               @relation("viewer", fields: [viewerId], references: [id])
+  viewer                       User?               @relation("viewer", fields: [viewerId], references: [id], onDelete: Cascade)
   viewerId                     Int?
   condition                    String
   make                         String
@@ -115,15 +115,15 @@ model SearchFilter {
 
 model Message {
   id                           Int                 @id @default(autoincrement())
-  sender                       User                @relation("sentMessages", fields: [senderId], references: [id])
+  sender                       User                @relation("sentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   senderId                     Int
   
-  receiver                     User                @relation("receivedMessages", fields: [receiverId], references: [id])
+  receiver                     User                @relation("receivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
   receiverId                   Int
 
   content                      String
   createdAt                    DateTime            @default(now())
 
-  listing                      Listing             @relation(fields: [listingId], references: [id])
+  listing                      Listing             @relation(fields: [listingId], references: [id], onDelete: Cascade)
   listingId                    Int
 }

@@ -21,8 +21,29 @@ function getProximity(latA, lonA, latB, lonB) {
   return distanceInMiles
 }
 
+function calculateBounds(latitude, longitude, radius) {
+  const milesPerDegreeLatitude = 69;
+
+  const changeInLatitude = radius / milesPerDegreeLatitude;
+
+  const milesPerDegreeLongitude = milesPerDegreeLatitude * Math.cos(latitude * (Math.PI / 180))
+  const changeInLongitude = radius / milesPerDegreeLongitude;
+
+  const minLatitude = latitude - changeInLatitude;
+  const maxLatitude = latitude + changeInLatitude;
+  const minLongitude = longitude - changeInLongitude;
+  const maxLongitude = longitude + changeInLongitude;
+
+  return {
+    minLatitude,
+    maxLatitude,
+    minLongitude,
+    maxLongitude
+  }
+}
+
 function degreesToRadians(degrees) {
   return degrees * RADIANS_PER_DEGREE;
 }
 
-module.exports = getProximity;
+module.exports = { getProximity, calculateBounds };

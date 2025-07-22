@@ -173,7 +173,7 @@ export async function getUserZIP() {
 
 export async function getListingViewCount(listingId) {
   try {
-    const response = await axios.get(`${baseURL}/api/listings/${listingId}/viewCount`)
+    const response = await axios.get(`${baseURL}/api/listings/id/${listingId}/viewCount`, { withCredentials: true })
     return { success: true, viewCount: response.data.viewCount }
   } catch (error) {
     return { success: false }
@@ -292,7 +292,6 @@ export async function sendMessage(messageInfo) {
 export async function getConversationHistory(listingId, sellerId) {
   try {
     const { data } = await axios.get(`${baseURL}/api/messages/listing/${listingId}/seller/${sellerId}`, { withCredentials: true });
-    console.log('DATA: ', data)
     return {
       success: true,
       conversationHistory: data
@@ -301,6 +300,129 @@ export async function getConversationHistory(listingId, sellerId) {
     return {
       success: false,
       conversationHistory: [],
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function getListingFromVIN(vin) {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/listings/vin/${vin}`, { withCredentials: true });
+    return {
+      success: true,
+      listing: data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      listing: null,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function favoriteListing(vin, newStatus) {
+  try {
+    await axios.patch(`${baseURL}/api/listings/vin/${vin}/favorite`, { newStatus }, { withCredentials: true });
+    return {
+      favoritedStatus: newStatus
+    };
+  } catch (error) {
+    return {
+      favoritedStatus: !newStatus,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function deleteListing(listingId) {
+  try {
+    await axios.delete(`${baseURL}/api/listings/id/${listingId}`, { withCredentials: true });
+    return {
+      deletionStatus: true
+    };
+  } catch (error) {
+    return {
+      deletionStatus: false,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function sellListing(listingId, newStatus) {
+  try {
+    await axios.patch(`${baseURL}/api/listings/id/${listingId}/sell`, { newStatus }, { withCredentials: true });
+    return {
+      soldStatus: newStatus
+    };
+  } catch (error) {
+    return {
+      soldStatus: !newStatus,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function createListing(listingInfo) {
+  try {
+    const { data } = await axios.post(`${baseURL}/api/listings/`, listingInfo, { withCredentials: true });
+    return {
+      success: true,
+      listing: data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      listing: null,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function checkListingFavoriteStatus(vin) {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/listings/vin/${vin}/isFavorited`, { withCredentials: true });
+    return {
+      success: true,
+      favoriteStatus: data
+    }
+  } catch (error) {
+    return {
+      success: false,
+      favoriteStatus: null,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function getListings(searchFilter) {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/listings/search`, {
+      params: searchFilter,
+      withCredentials: true
+    });
+    return {
+      success: true,
+      listings: data
+    }
+  } catch (error) {
+    return {
+      success: false,
+      listings: [],
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function estimatePrice(listingInfo) {
+  try {
+    const { data } = await axios.post(`${baseURL}/api/listings/estimate-price`, listingInfo, { withCredentials: true })
+    return {
+      priceEstimationInfo: data
+    }
+  } catch (error) {
+    return {
+      priceEstimationInfo: null,
       message: error.response?.data?.message || error.message || 'An error occured'
     }
   }

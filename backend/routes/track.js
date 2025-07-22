@@ -1,6 +1,5 @@
 const express = require('express')
 const { PrismaClient } = require('@prisma/client');
-const { fetchRecentlyClickedListings } = require('../services/fetchRelevantListingsService');
 const { requireAuth } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validateMiddleware')
 const { logInfo, logWarning, logError } = require('../services/loggingService');

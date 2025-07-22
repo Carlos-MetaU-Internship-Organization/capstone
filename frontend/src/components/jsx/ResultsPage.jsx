@@ -4,13 +4,11 @@ import pinkHeart from './../../assets/pinkHeart.png'
 import Header from './Header'
 import Listing from './Listing'
 import SortMenu from './SortMenu'
-import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
-import { fetchListings, getFavoritedListings, getModels, getSavedSearchFilters, saveSearchFilter, viewSearchFilter } from '../../utils/api'
+import { getFavoritedListings, getModels, getSavedSearchFilters, saveSearchFilter, viewSearchFilter, getListings } from '../../utils/api'
 import { sortListings } from './../../utils/listings'
 import { PAGE_SIZE } from '../../utils/constants'
-import axios from 'axios'
 
 function ResultsPage() {
   
@@ -144,34 +142,20 @@ function ResultsPage() {
       return
     }
 
-    const params = {
-      make: activeFilters.make,
-      model: activeFilters.model,
-      condition: activeFilters.condition,
-      zip: activeFilters.zip,
-      distance: activeFilters.distance,
-      color: activeFilters.color,
-      minYear: activeFilters.minYear,
-      maxYear: activeFilters.maxYear,
-      maxMileage: activeFilters.maxMileage,
-      minPrice: activeFilters.minPrice, 
-      maxPrice: activeFilters.maxPrice
-    }
-
     try {
-      const [allListings, _] = await Promise.all([
-        fetchListings(params),
+      const [{ listings }, _] = await Promise.all([
+        getListings(activeFilters),
         viewSearchFilter(onScreenFilters)
       ])
     
-      if (allListings) {
-        localStorage.setItem('recentSearch', JSON.stringify( { filters: activeFilters, sortOption, listings: allListings, makes, models }))
-        const listingCount = allListings.length;
+      if (listings) {
+        localStorage.setItem('recentSearch', JSON.stringify( { filters: activeFilters, sortOption, listings, makes, models }))
+        const listingCount = listings.length;
     
-        setListingsInfo({ listings: allListings, totalListingsCount: listingCount });
+        setListingsInfo({ listings, totalListingsCount: listingCount });
         setListingsUpdated(true);
         if (!sortOption) {
-          setDisplayedListings(allListings.slice(0, PAGE_SIZE))
+          setDisplayedListings(listings.slice(0, PAGE_SIZE))
         }
         setSearchChange(false);
       } else {

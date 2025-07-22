@@ -53,7 +53,7 @@ searchFilters.post('/view', validateRequest({ body: searchFilterSchema }), async
     const existingSearchFilter = await findExistingSearchFilter(userId, req.body, 'viewerId');
 
     if (existingSearchFilter) {
-      logInfo('Record already exists')
+      logInfo('Already viewed. Skipping...')
       return res.status(204).send()
     }
   

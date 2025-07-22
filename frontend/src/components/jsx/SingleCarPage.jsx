@@ -6,9 +6,8 @@ import Header from './Header'
 import { baseURL } from '../../globals'
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import { logInfo, logWarning, logError } from '../../services/loggingService';
-import axios from 'axios'
-import { checkAuth, getConversationHistory, sendMessage } from '../../utils/api'
+import { logError } from '../../services/loggingService';
+import { checkAuth, checkListingFavoriteStatus, favoriteListing, getConversationHistory, getListingFromVIN, sendMessage } from '../../utils/api'
 
 function SingleCarPage() {
 
@@ -44,16 +43,25 @@ function SingleCarPage() {
   
       const fetchData = async () => {
         try {
-          const response = await axios.get(`${baseURL}/api/listings/vin/${vin}`, { withCredentials: true });
-          if (response.data.status === 200) {
-            const listing = response.data.listing;
-            const userId = response.data.userId;
-            const favorited = listing.favoriters.some(favoriter => favoriter.id === userId);
-            setListing(listing);
-            setIsFavorited(favorited);
+          const { listing } = await getListingFromVIN(vin);
+          const { favoriteStatus } = await checkListingFavoriteStatus(vin)
+          
+          if (!listing) {
+            // No listing was found
+            // TODO: display error message component
+          } else {
+            setListing(listing)
             listingIdRef.current = listing.id;
-            listingOwnerIdRef.current = listing.owner?.id;
+            listingOwnerIdRef.current = listing.owner.id;
           }
+
+          if (favoriteStatus === null) {
+            // Something went wrong checking favorite status, likely Prisma error
+            // TODO: display error message component
+          } else {
+            setIsFavorited(favoriteStatus);
+          }
+
         } catch (error) {
           logError(`Something went wrong when trying to fetch listing with VIN: ${vin}`, error)
         }
@@ -148,8 +156,13 @@ function SingleCarPage() {
 
   const handleFavoriteClick = async () => {
     try {
-      const response = await axios.patch(`${baseURL}/api/listings/${vin}/favorite`, {}, { withCredentials: true });
-      setIsFavorited(prev => !prev);
+      const { favoritedStatus } = await favoriteListing(vin, !isFavorited)
+      if (favoritedStatus === isFavorited) {
+        // FavoriteStatus did not update... Something went wrong
+        // TODO: display error message component
+      } else {
+        setIsFavorited(favoritedStatus);
+      }
     } catch (error) {
       logError(`Something went wrong when trying to favorite listing with VIN: ${vin}`, error)
     }
@@ -189,7 +202,7 @@ function SingleCarPage() {
   const formattedPrice = `$${parseInt(listing.price).toLocaleString('en-US')}`;
   const formattedColor = listing.color.charAt(0).toUpperCase() + listing.color.slice(1);
   const formattedDate = new Date(listing.createdAt).toLocaleDateString();
-  const formattedPhoneNumber = `(${listing.owner_number.slice(0, 3)}) ${listing.owner_number.slice(3, 6)}-${listing.owner_number.slice(6, 10)}`;
+  const formattedPhoneNumber = `(${listing.ownerNumber.slice(0, 3)}) ${listing.ownerNumber.slice(3, 6)}-${listing.ownerNumber.slice(6, 10)}`;
   return (
     <div id='single-car-page'>
       <Header />
@@ -212,7 +225,7 @@ function SingleCarPage() {
               <p className='single-car-info'><strong>Color: </strong>{formattedColor}</p>
               <p className='single-car-info'><strong>VIN: </strong>{vin}</p>
               <p className='single-car-info'><strong>Date Listed: </strong>{formattedDate}</p>
-              <p className='single-car-info'><strong>Owner Name: </strong>{listing.owner_name}</p>
+              <p className='single-car-info'><strong>Owner Name: </strong>{listing.ownerName}</p>
               <p className='single-car-info'><strong>Owner Phone Number: </strong>{formattedPhoneNumber}</p>
             </div>
             <img src={isFavorited ? pinkHeart : heart} id='favorite-listing-img' onClick={handleFavoriteClick}/>
@@ -224,7 +237,7 @@ function SingleCarPage() {
                 <div id='messages'>
                   {
                     conversationHistory.map(message => {
-                      return <p key={message.id}><strong>{message.senderId === listing.owner.id ? listing.owner_name : 'You'}:</strong> {message.content}</p>
+                      return <p key={message.id}><strong>{message.senderId === listing.owner.id ? listing.ownerName : 'You'}:</strong> {message.content}</p>
                     })
                   }
                 </div>

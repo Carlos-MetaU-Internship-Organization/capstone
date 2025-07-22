@@ -27,7 +27,7 @@ function SellerListingsPage() {
   }
 
   const handleListingDeletion = (listingId) => {
-    setListings(ownedListings.filter(listing => (listing.id !== listingId)));
+    setOwnedListings(ownedListings.filter(listing => (listing.id !== listingId)));
   }
 
   return (

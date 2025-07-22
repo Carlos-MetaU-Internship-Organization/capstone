@@ -1,16 +1,17 @@
 const axios = require('axios')
 const express = require('express')
 const { PrismaClient } = require('@prisma/client')
+const zipcodes = require('zipcodes')
 const getRecommendations = require('./../services/recommendationService');
 const getPriceRecommendationInfo = require('./../services/priceEstimatorService');
-const { fetchLocalListingFromVIN, fetchListingsFromDB } = require('../services/fetchRelevantListingsService');
+const { fetchListingsFromDB } = require('../services/fetchRelevantListingsService');
 const { getGlobalViewCount } = require('../services/listingDataService');
-const { getFavoritedListings, getPopularListings, getRecentlyVisitedListings, getMostDwelledListings, getOwnedListings } = require('../services/listingService')
+const { getFavoritedListings, getPopularListings, getRecentlyVisitedListings, getMostDwelledListings, getOwnedListings, getListingFromVIN, deleteListing, updateFavoriteCount, updateUserFavoritedList, sellListing, createListing, getListings } = require('../services/listingService')
 const { requireAuth } = require('../middleware/authMiddleware');
 const { logInfo, logWarning, logError } = require('../services/loggingService');
 const { validateRequest } = require('../middleware/validateMiddleware')
 const { searchFilterSchema } = require('../schemas/searchFilterSchema')
-const { listingInfoSchema, vinSchema, listingIdSchema, soldStatusSchema, priceEstimateSchema, countSchema } = require('../schemas/listingSchema');
+const { listingInfoSchema, vinSchema, listingIdSchema, newStatusSchema, priceEstimateSchema, countSchema } = require('../schemas/listingSchema');
 
 const prisma = new PrismaClient()
 const listings = express.Router()
@@ -36,52 +37,51 @@ listings.get('/popular', async (req, res) => {
 })
 
 listings.post('/', validateRequest({ body: listingInfoSchema }), async (req, res) => {
-  const userId = req.session.user.id
+  const { id: ownerId, zip, name: ownerName, phoneNumber: ownerNumber, latitude, longitude } = req.session.user;
 
-  logInfo(`Request to add a local listing for User: ${userId} received`);
+  logInfo(`Request to create a listing for User: ${ownerId} received`);
   
   try {
-    const { zip, name: owner_name, phoneNumber: owner_number } = await prisma.user.findFirst({
-      where: { id: userId },
-      select: { name: true, phoneNumber: true, zip: true}
-    })
+    const { city, state } = zipcodes.lookup(zip)
 
-    const apiKey = process.env.CAR_API_KEY;
-    const headers = {
-      Authorization: `Bearer ${apiKey}`
-    };
+    const userInfo = {
+      ownerId,
+      ownerName,
+      ownerNumber,
+      city,
+      state,
+      zip,
+      latitude,
+      longitude
+    }
 
-    const location_info = await axios.get(`https://auto.dev/api/zip/${zip}`, headers);
-    let { city, state, latitude, longitude } = location_info.data.payload;
-
-    const listing = await prisma.listing.create({data: {...req.body, ownerId: userId, zip, owner_name, owner_number, city, state, latitude, longitude }});
-    
-    logInfo('Local listing created successfully')
-
+    const listing = await createListing(req.body, userInfo);
+    logInfo('Listing created successfully')
     return res.json(listing);
   } catch (error) {
-    logError('An error occured', error);
-    res.status(500).json({ message: error.message });
+    logError('Error creating listing:', )
+    res.status(500).json({ message: 'Error creating listing' })
   }
 })
 
 listings.get('/vin/:vin', validateRequest({ params: vinSchema }), async (req, res) => {
   const vin = req.params.vin;
-
   logInfo(`Request to get listing with VIN: ${vin} received`);
 
-  const response = await fetchLocalListingFromVIN(vin);
-
-  if (response.status === 200) {
-    res.json({ status: 200, listing: response.listing, userId: req.session.user?.id });
-  } else if (response.status === 404) {
-    res.json({ status: 404, message: response.message })
-  } else {
-    res.status(500).json({ message: response.message })
+  try {
+    const listing = await getListingFromVIN(vin);
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing not found'})
+    }
+    res.json(listing)
+  } catch (error) {
+    logError('Error getting listing from VIN:', )
+    res.status(500).json({ message: 'Error getting listing from VIN' })
   }
+
 })
 
-listings.put('/:listingId', validateRequest({ body: listingInfoSchema, params: listingIdSchema }), async (req, res) => {
+listings.put('/id/:listingId', validateRequest({ body: listingInfoSchema, params: listingIdSchema }), async (req, res) => {
   const listingId = req.params.listingId;
 
   logInfo(`Request to update local listing with listingId: ${listingId} received`);
@@ -100,7 +100,7 @@ listings.put('/:listingId', validateRequest({ body: listingInfoSchema, params: l
   }
 })
 
-listings.get('/:listingId/viewCount', validateRequest({ params: listingIdSchema }), async (req, res) => {
+listings.get('/id/:listingId/viewCount', validateRequest({ params: listingIdSchema }), async (req, res) => {
   const listingId = req.params.listingId;
 
   const response = await getGlobalViewCount(listingId);
@@ -112,139 +112,56 @@ listings.get('/:listingId/viewCount', validateRequest({ params: listingIdSchema 
   }
 })
 
-listings.delete('/:listingId', validateRequest({ params: listingIdSchema }), async (req, res) => {
+listings.delete('/id/:listingId', validateRequest({ params: listingIdSchema }), async (req, res) => {
   const listingId = req.params.listingId;
-  
   logInfo(`Request to delete local listing with listingId: ${listingId} received`);
 
   try {
-    const listing = await prisma.listing.delete({
-      where: { id: listingId }
-    })
+    await deleteListing(listingId)
     logInfo(`Local listing with id: ${listingId} deleted successfully`)
-    res.json(listing)
+    res.status(204).send()
   } catch (error) {
-    logError('An error occured', error);
-    res.status(500).json({ message: error.message });
+    logError('Error deleting listing:', error);
+    res.status(500).json({ message: 'Error deleting listing' });
   }
 })
 
-listings.patch('/:vin/favorite', validateRequest({ params: vinSchema }), async (req, res) => {
+listings.patch('/vin/:vin/favorite', validateRequest({ body: newStatusSchema, params: vinSchema }), async (req, res) => {
   const userId = req.session.user.id;
+  const newFavoriteStatus = req.body.newStatus;
   const vin = req.params.vin;
 
   try {
-    const listing_found = await prisma.listing.findFirst({
-      where: {
-        vin,
-        favoriters: {
-          some: {
-            id: userId
-          }
-        }
-      }
-    });
-
-    const already_favorited = listing_found ? true : false;
-    let updated_global_listing = null;
-    let updated_user_listings = null;
-    
-    if (already_favorited) {
-        // Decrement listing's total favorite count
-        updated_global_listing = await prisma.listing.update({
-          where: { vin },
-          data: {
-            favorites: {
-              decrement: 1
-            }
-          },
-          select: { favorites: true }
-        });
-        
-        // Remove listing from user's favorited listings list
-        updated_user_listings = await prisma.user.update({
-          where: { id: userId },
-          data: {
-            favoritedListings: {
-              disconnect: { vin }
-            }
-          },
-          select: { favoritedListings: true }
-        });
-
+    if (newFavoriteStatus) {
+      // Favorite
+      await updateFavoriteCount(vin, 'increment')
+      await updateUserFavoritedList(vin, userId, 'connect')
     } else {
-        // Increment listing's total favorite count
-        updated_global_listing = await prisma.listing.update({
-          where: { vin },
-          data: {
-            favorites: {
-              increment: 1
-            }
-          },
-          select: { favorites: true }
-        });
-
-        // Add listing to user's favorited listings list
-        updated_user_listings = await prisma.user.update({
-          where: { id: userId },
-          data: {
-            favoritedListings: {
-              connect: { vin }
-            }
-          },
-          select: { favoritedListings: true }
-        });
-    }    
-
-    res.status(200).send({
-      updated_global_listing,
-      updated_user_listings
-    });
+      // Unfavorite
+      await updateFavoriteCount(vin, 'decrement')
+      await updateUserFavoritedList(vin, userId, 'disconnect')
+    }
+    res.status(204).send()
   } catch (error) {
-    logError('Something went wrong trying to favorite the listing', error);
-    res.status(404).send('Listing not found')
+    logError('Error favoriting listing:', error);
+    res.status(500).json({ message: 'Error favoriting listing' })
   }
 });
 
-listings.patch('/:listingId/sold', validateRequest({ body: soldStatusSchema, params: listingIdSchema }), async (req, res) => {
-  const new_sold_status = req.body.new_sold_status;
+listings.patch('/id/:listingId/sell', validateRequest({ body: newStatusSchema, params: listingIdSchema }), async (req, res) => {
+  const newSoldStatus = req.body.newStatus;
   const listingId = req.params.listingId;
 
-  logInfo(`Set sold status of listing with id ${listingId} to ${new_sold_status}`);
+  logInfo(`Set sold status of listing with id ${listingId} to ${newSoldStatus}`);
 
   try {
-    const updated_global_listing = await prisma.listing.update({
-      where: { id: listingId },
-      data: {
-        sold: new_sold_status
-      }
-    });
-
-    res.status(200).send(updated_global_listing);
+    await sellListing(listingId, newSoldStatus)
+    res.status(204).send();
   } catch (error) {
-    logError('Something went wrong trying to mark the listing as sold/unsold', error);
-    res.status(404).send('Listing not found')
+    logError('Error selling listing:', error);
+    res.status(500).json({ message: 'Error selling listing' })
   }
 });
-
-listings.get('/:vin/data', validateRequest({ params: vinSchema }), async (req, res) => {
-  const vin = req.params.vin;
-
-  logInfo(`Request to get information about listing with VIN: ${vin} received`);
-
-  try {
-    const apiKey = process.env.CAR_API_KEY;
-    const headers = {
-      Authorization: `Bearer ${apiKey}`
-    };
-    const listingData = await axios.get(`https://auto.dev/api/listings/${vin}`, headers);
-    logInfo(`Successfully fetched data using Autodev API for listing with VIN: ${vin}`);
-    res.json(listingData.data);
-  } catch (error) {
-    logError(`Something went wrong trying to fetch data using AutoDev API for listing with VIN: ${vin}`, error);
-    res.status(500).json({ message: error.message });
-  }
-})
 
 listings.get('/favorited', async (req, res) => {
   const userId = req.session.user.id;
@@ -313,30 +230,46 @@ listings.get('/recommended', async (req, res) => {
 })
 
 listings.post('/estimate-price', validateRequest({ body: priceEstimateSchema }), async (req, res) => {
-  const { id, latitude, longitude } = req.session.user;
-
-  const userInfo = { sellerId: id, latitude, longitude }
+  const { id: sellerId, latitude, longitude } = req.session.user;
+  const userInfo = { sellerId, latitude, longitude }
 
   const userAndListingInfo = { ...userInfo, ...req.body }
 
-  const { marketPrice, recommendedPrice, confidenceLevel, elasticity } = await getPriceRecommendationInfo(userAndListingInfo);
-
-  res.json({ status: 200, marketPrice, recommendedPrice, confidenceLevel, elasticity });
+  try {
+    const priceEsimationInfo = await getPriceRecommendationInfo(userAndListingInfo);
+    res.json(priceEsimationInfo)
+  } catch (error) {
+    logError('Error getting price estimation:', error)
+    res.status(500).json({ message: 'Error getting price estimation' })
+  }
 })
 
 listings.get('/search', validateRequest({ query: searchFilterSchema }), async (req, res) => {
   const { make, model } = req.query;
-
   logInfo(`Request to get listings for Make: ${make}, Model: ${model} received`);
   
-  const response = await fetchListingsFromDB(req.query);
-  
-  if (response.status === 200) {
-    res.json(response.listings);
-  } else if (response.status === 404) {
-    res.status(404).json({ message: response.message })
-  } else {
-    res.status(500).json({ message: response.message })
+  try {
+    const listings = await getListings(req.query);
+    res.json(listings);
+  } catch (error) {
+    logError('Error getting listings:', error)
+    res.status(500).json({ message: 'Error getting listings' })
+  }
+})
+
+listings.get('/vin/:vin/isFavorited', validateRequest({ params: vinSchema }), async (req, res) => {
+  const userId = req.session.user.id;
+  const vin = req.params.vin;
+  logInfo(`Request to check if listing with vin: ${vin} has been favorited by user with id: ${userId} recieved`);
+
+  try {
+    const { favoritedListings } = await getFavoritedListings(userId);
+    const favoritedListing = favoritedListings.find(listing => listing.vin === vin)
+    const favoriteStatus = favoritedListing ? true : false;
+    res.json(favoriteStatus)
+  } catch (error) {
+    logError('Error checking favorite status:', error);
+    res.status(500).json({ message: 'Error checking favorite status' });
   }
 })
 
