@@ -29,8 +29,8 @@ model User {
   ownedListings                Listing[]          @relation("owner")
   favoritedListings            Listing[]          @relation("favoriter")
   listingVisits                ListingVisit[]
-  favoritedSearchPreferences   SearchPreference[] @relation("favoriter")
-  recentSearchPreferences      SearchPreference[] @relation("viewer")
+  savedSearchFilters           SearchFilter[]     @relation("saver")
+  viewedSearchFilters          SearchFilter[]     @relation("viewer")
   sentMessages                 Message[]          @relation("sentMessages")
   receivedMessages             Message[]          @relation("receivedMessages")
 }
@@ -93,10 +93,10 @@ model ListingVisit {
   @@unique([userId, listingId])
 }
 
-model SearchPreference {
+model SearchFilter {
   id                           Int                 @id @default(autoincrement())
-  favoriter                    User?               @relation("favoriter", fields: [favoriterId], references: [id])
-  favoriterId                  Int?
+  saver                        User?               @relation("saver", fields: [saverId], references: [id])
+  saverId                      Int?
   viewer                       User?               @relation("viewer", fields: [viewerId], references: [id])
   viewerId                     Int?
   condition                    String

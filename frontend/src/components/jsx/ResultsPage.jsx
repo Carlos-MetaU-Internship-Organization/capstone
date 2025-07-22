@@ -7,7 +7,7 @@ import SortMenu from './SortMenu'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
-import { fetchListings, getFavoritedListings, getModels } from '../../utils/api'
+import { fetchListings, getFavoritedListings, getModels, getSavedSearchFilters, saveSearchFilter, viewSearchFilter } from '../../utils/api'
 import { sortListings } from './../../utils/listings'
 import { PAGE_SIZE } from '../../utils/constants'
 import axios from 'axios'
@@ -29,7 +29,7 @@ function ResultsPage() {
   const [sortOption, setSortOption] = useState(cachedSortOption || "");
   const [searchChange, setSearchChange] = useState(false);
   
-  const [savedPreferences, setSavedPreferences] = useState([]);
+  const [savedSearchFilters, setSavedSearchFilters] = useState([]);
   const [isSearchFavorited, setIsSearchFavorited] = useState(false);
 
   useEffect(() => {
@@ -37,18 +37,16 @@ function ResultsPage() {
       try {
         const [
           favoritedListingsResponse,
-          searchPreferencesResponse
+          savedSearchFiltersResponse
         ] = await Promise.all([
           getFavoritedListings(),
-          axios.get(`${baseURL}/api/preferences/favorites/`, { withCredentials: true })
+          getSavedSearchFilters()
         ])
 
         const vins = favoritedListingsResponse.favoritedListings.map(listing => listing.vin);
         setFavoritedVins(vins);
 
-        if (searchPreferencesResponse) {
-          setSavedPreferences(searchPreferencesResponse.data);
-        }
+        setSavedSearchFilters(savedSearchFiltersResponse.savedSearchFilters);
 
       } catch (error) {
         logError('One or more parallel requests went wrong', error);
@@ -59,33 +57,33 @@ function ResultsPage() {
 
   useEffect(() => {
     const equivalent = (a, b) => (a ?? '') == (b ?? '')
-    if (savedPreferences.length > 0) {
-      const isSaved = savedPreferences.some(preference => {
+    if (savedSearchFilters.length > 0) {
+      const isSaved = savedSearchFilters.some(savedFilter => {
         return (
-          equivalent(preference.condition, onScreenFilters.condition) &&
-          equivalent(preference.make, onScreenFilters.make) &&
-          equivalent(preference.model, onScreenFilters.model) &&
-          equivalent(preference.distance, onScreenFilters.distance) &&
-          equivalent(preference.zip, onScreenFilters.zip) &&
-          equivalent(preference.color, onScreenFilters.color) &&
-          equivalent(preference.minYear, onScreenFilters.minYear) &&
-          equivalent(preference.maxYear, onScreenFilters.maxYear) &&
-          equivalent(preference.maxMileage, onScreenFilters.maxMileage) &&
-          equivalent(preference.minPrice, onScreenFilters.minPrice) &&
-          equivalent(preference.maxPrice, onScreenFilters.maxPrice)
+          equivalent(savedFilter.condition, onScreenFilters.condition) &&
+          equivalent(savedFilter.make, onScreenFilters.make) &&
+          equivalent(savedFilter.model, onScreenFilters.model) &&
+          equivalent(savedFilter.distance, onScreenFilters.distance) &&
+          equivalent(savedFilter.zip, onScreenFilters.zip) &&
+          equivalent(savedFilter.color, onScreenFilters.color) &&
+          equivalent(savedFilter.minYear, onScreenFilters.minYear) &&
+          equivalent(savedFilter.maxYear, onScreenFilters.maxYear) &&
+          equivalent(savedFilter.maxMileage, onScreenFilters.maxMileage) &&
+          equivalent(savedFilter.minPrice, onScreenFilters.minPrice) &&
+          equivalent(savedFilter.maxPrice, onScreenFilters.maxPrice)
         )
       })
       setIsSearchFavorited(isSaved);
     }
-  }, [onScreenFilters, savedPreferences])
+  }, [onScreenFilters, savedSearchFilters])
 
   const handleSearchFavoriteClick = async () => {
-    const response = await axios.post(`${baseURL}/api/preferences/favorite`, onScreenFilters, { withCredentials: true })
-    const preference = response.data.preference;
-    if (response.data.inDB) {
-      setSavedPreferences(prev => [...prev, preference])
+    const searchFilterResponse = await saveSearchFilter(onScreenFilters);
+    const { inDB, searchFilter } = searchFilterResponse;
+    if (inDB) {
+      setSavedSearchFilters(prev => [...prev, searchFilter])
     } else {
-      setSavedPreferences(prev => prev.filter(pref => pref.id !== preference.id));
+      setSavedSearchFilters(prev => prev.filter(filter => filter.id !== searchFilter.id));
       document.getElementById('saved-search-select-elem').value = "";
     }
     setIsSearchFavorited(prev => !prev);
@@ -159,7 +157,7 @@ function ResultsPage() {
     try {
       const [allListings, _] = await Promise.all([
         fetchListings(params),
-        axios.post(`${baseURL}/api/preferences/view`, onScreenFilters, { withCredentials: true })
+        viewSearchFilter(onScreenFilters)
       ])
     
       if (allListings) {
@@ -180,22 +178,22 @@ function ResultsPage() {
     }
   }
 
-  const handleSavedPrefLoad = async (event) => {
-    const prefId = event.target.value;
-    const pref = savedPreferences.find(pref => pref.id == prefId)
+  const handleSavedSearchFilterLoad = async (event) => {
+    const savedSearchFilterId = event.target.value;
+    const savedSearchFilter = savedSearchFilters.find(searchFilter => searchFilter.id == savedSearchFilterId)
     
     const updatedFilters = {
-      make: pref.make,
-      model: pref.model,
-      condition: pref.condition,
-      zip: pref.zip,
-      distance: pref.distance,
-      color: pref.color || '',
-      minYear: pref.minYear || '',
-      maxYear: pref.maxYear || '',
-      maxMileage: pref.maxMileage || '',
-      minPrice: pref.minPrice || '', 
-      maxPrice: pref.maxPrice || ''
+      make: savedSearchFilter.make,
+      model: savedSearchFilter.model,
+      condition: savedSearchFilter.condition,
+      zip: savedSearchFilter.zip,
+      distance: savedSearchFilter.distance,
+      color: savedSearchFilter.color || '',
+      minYear: savedSearchFilter.minYear || '',
+      maxYear: savedSearchFilter.maxYear || '',
+      maxMileage: savedSearchFilter.maxMileage || '',
+      minPrice: savedSearchFilter.minPrice || '', 
+      maxPrice: savedSearchFilter.maxPrice || ''
     }
 
     const models = await getModels(updatedFilters.make);
@@ -311,15 +309,15 @@ function ResultsPage() {
             }
           </form>
           {
-            savedPreferences.length > 0 && (
+            savedSearchFilters.length > 0 && (
               <div id='saved-search-selection-box'>
                 <label id='saved-search-label'>Load a Saved Search</label>
-                <select name="" id="saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedPrefLoad}>
+                <select name="" id="saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedSearchFilterLoad}>
                   <option value="" disabled selected></option>
                   {
-                    savedPreferences.map(pref => (
-                      <option key={pref.id} value={pref.id}>
-                        {`${pref.make} ${pref.model}, ${pref.distance}mi from ${pref.zip}, Color: ${pref.color ? pref.color.charAt(0).toUpperCase() + pref.color.slice(1) : 'Any'}`}
+                    savedSearchFilters.map(searchFilter => (
+                      <option key={searchFilter.id} value={searchFilter.id}>
+                        {`${searchFilter.make} ${searchFilter.model}, ${searchFilter.distance}mi from ${searchFilter.zip}, Color: ${searchFilter.color ? searchFilter.color.charAt(0).toUpperCase() + searchFilter.color.slice(1) : 'Any'}`}
                       </option>
                     ))
                   }

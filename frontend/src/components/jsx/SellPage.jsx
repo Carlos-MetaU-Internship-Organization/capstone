@@ -45,7 +45,7 @@ function SellPage() {
           makesResponse,
           ownedListingsResponse
         ] = await Promise.all([
-          axios.get(`${baseURL}/api/search/makes`, { withCredentials: true }),
+          axios.get(`${baseURL}/api/makeModels/makes`, { withCredentials: true }),
           getOwnedListings()
         ])
 
@@ -68,7 +68,7 @@ function SellPage() {
 
   const updateModels = async (selection) => {
     try {
-      const response = await axios.get(`${baseURL}/api/search/${selection}/models`, { withCredentials: true });
+      const response = await axios.get(`${baseURL}/api/makeModels/${selection}/models`, { withCredentials: true });
       const models = response.data;
       logInfo('Models successfully retrieved');
       setModels(models);

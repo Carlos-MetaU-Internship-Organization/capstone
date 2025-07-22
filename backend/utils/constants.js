@@ -59,6 +59,8 @@ const MAX_USERNAME_LENGTH = 20;
 const MIN_PASSWORD_LENGTH = 6;
 const MAX_PASSWORD_LENGTH = 64;
 
+const MAX_VIEWED_FILTERS = 5;
+
 const ROUND_TO_NEAREST_HUNDRED = (number) => Math.round(number / 100) * 100;
 const FORMAT_TO_PRICE = (price) => price.toLocaleString('en-US');
 
@@ -101,6 +103,7 @@ module.exports = {
   MAX_USERNAME_LENGTH,
   MIN_PASSWORD_LENGTH,
   MAX_PASSWORD_LENGTH,
+  MAX_VIEWED_FILTERS,
   ROUND_TO_NEAREST_HUNDRED,
   FORMAT_TO_PRICE
 }

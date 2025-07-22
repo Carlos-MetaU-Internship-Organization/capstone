@@ -6,7 +6,7 @@ import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
-import { getFavoritedListings, getMostDwelledListings, getModels, getUserZIP } from '../../utils/api'
+import { getFavoritedListings, getMostDwelledListings, getModels, getUserZIP, getSavedSearchFilters } from '../../utils/api'
 import axios from 'axios'
 import { PAGE_SIZE } from '../../utils/constants'
 
@@ -31,7 +31,7 @@ function BuyPage() {
   })
   const [mostDwelledListing, setMostDwelledListing] = useState(null);
   const [favoritedListings, setFavoritedListings] = useState([]);
-  const [savedPreferences, setSavedPreferences] = useState([]);
+  const [savedSearchFilters, setSavedSearchFilters] = useState([]);
   const [page, setPage] = useState(1);
 
   const navigate = useNavigate();
@@ -44,20 +44,20 @@ function BuyPage() {
           makesResponse,
           favoritedListingsResponse,
           mostDwelledListingsResponse,
-          savedSearchPreferencesResponse,
+          savedSearchFiltersResponse,
           zipResponse
         ] = await Promise.all([
-          axios.get(`${baseURL}/api/search/makes`, { withCredentials: true }),
+          axios.get(`${baseURL}/api/makeModels/makes`, { withCredentials: true }),
           getFavoritedListings(),
           getMostDwelledListings(PAGE_SIZE),
-          axios.get(`${baseURL}/api/preferences/favorites`, { withCredentials: true }),
+          getSavedSearchFilters(),
           getUserZIP()
         ])
 
         setMakes(makesResponse.data)
         setFavoritedListings(favoritedListingsResponse.favoritedListings);
         setMostDwelledListing(mostDwelledListingsResponse.mostDwelledListings[0])
-        setSavedPreferences(savedSearchPreferencesResponse.data)
+        setSavedSearchFilters(savedSearchFiltersResponse.savedSearchFilters)
         setFilters(prev => ({ ...prev, zip: zipResponse.zip }))
       } catch (error) {
         logError('One or more parallel requests went wrong', error)
@@ -109,22 +109,22 @@ function BuyPage() {
     }
   }
 
-  const handleSavedPrefLoad = async (event) => {
-    const prefId = event.target.value;
-    const pref = savedPreferences.find(pref => pref.id == prefId)
+  const handleSavedSearchFilterLoad = async (event) => {
+    const savedSearchFilterId = event.target.value;
+    const savedSearchFilter = savedSearchFilters.find(searchFilter => searchFilter.id == savedSearchFilterId)
     
     const updatedForm = {
-      make: pref.make,
-      model: pref.model,
-      condition: pref.condition,
-      zip: pref.zip,
-      distance: pref.distance,
-      color: pref.color || '',
-      minYear: pref.minYear || '',
-      maxYear: pref.maxYear || '',
-      maxMileage: pref.maxMileage || '',
-      minPrice: pref.minPrice || '', 
-      maxPrice: pref.maxPrice || ''
+      make: savedSearchFilter.make,
+      model: savedSearchFilter.model,
+      condition: savedSearchFilter.condition,
+      zip: savedSearchFilter.zip,
+      distance: savedSearchFilter.distance,
+      color: savedSearchFilter.color || '',
+      minYear: savedSearchFilter.minYear || '',
+      maxYear: savedSearchFilter.maxYear || '',
+      maxMileage: savedSearchFilter.maxMileage || '',
+      minPrice: savedSearchFilter.minPrice || '', 
+      maxPrice: savedSearchFilter.maxPrice || ''
     }
 
     const models = await getModels(updatedForm.make);
@@ -180,17 +180,17 @@ function BuyPage() {
             <button className='translucent' id='search-button' type='submit'>Search</button>
           </form>
           {
-            savedPreferences.length > 0 && (
+            savedSearchFilters.length > 0 && (
               <>
                 <h3>OR</h3>
                 <div id='buy-page-saved-search-selection-box'>
                   <label id='buy-page-saved-search-label'>Load a Saved Search</label>
-                  <select id="buy-page-saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedPrefLoad}>
+                  <select id="buy-page-saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedSearchFilterLoad}>
                     <option value="" disabled></option>
                     {
-                      savedPreferences.map(pref => (
-                        <option key={pref.id} value={pref.id}>
-                          {`${pref.make} ${pref.model}, ${pref.distance}mi from ${pref.zip}, Color: ${pref.color ? pref.color.charAt(0).toUpperCase() + pref.color.slice(1) : 'Any'}`}
+                      savedSearchFilters.map(searchFilter => (
+                        <option key={searchFilter.id} value={searchFilter.id}>
+                          {`${searchFilter.make} ${searchFilter.model}, ${searchFilter.distance}mi from ${searchFilter.zip}, Color: ${searchFilter.color ? searchFilter.color.charAt(0).toUpperCase() + searchFilter.color.slice(1) : 'Any'}`}
                         </option>
                       ))
                     }

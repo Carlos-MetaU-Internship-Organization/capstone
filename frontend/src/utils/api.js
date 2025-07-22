@@ -146,7 +146,7 @@ export async function getOwnedListings() {
 
 export async function fetchListings(params) {
   try {
-    const response = await axios.get(`${baseURL}/api/search/`, {
+    const response = await axios.get(`${baseURL}/api/listings/search`, {
       params,
       withCredentials: true
     });
@@ -163,7 +163,7 @@ export async function fetchListings(params) {
 
 export async function getModels(make) {
   try {
-    const response = await axios.get(`${baseURL}/api/search/${make}/models`, { withCredentials: true });
+    const response = await axios.get(`${baseURL}/api/makeModels/${make}/models`, { withCredentials: true });
     logInfo('Models successfully retrieved');
 
     const models = response.data;
@@ -203,6 +203,52 @@ export async function checkAuth() {
   } catch (error) {
     return {
       authenticated: false,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function getSavedSearchFilters() {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/searchFilters/saved`, { withCredentials: true })
+    return {
+      success: true,
+      savedSearchFilters: data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      savedSearchFilters: [],
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function saveSearchFilter(searchFilter) {
+  try {
+    const { data } = await axios.post(`${baseURL}/api/searchFilters/save`, searchFilter, { withCredentials: true})
+    return {
+      success: true,
+      inDB: data.inDB,
+      searchFilter: data.searchFilter
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function viewSearchFilter(searchFilter) {
+  try {
+    await axios.post(`${baseURL}/api/searchFilters/view`, searchFilter, { withCredentials: true})
+    return {
+      success: true
+    };
+  } catch (error) {
+    return {
+      success: false,
       message: error.response?.data?.message || error.message || 'An error occured'
     }
   }

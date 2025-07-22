@@ -3,14 +3,14 @@ const express = require('express')
 const { PrismaClient } = require('@prisma/client')
 const getRecommendations = require('./../services/recommendationService');
 const getPriceRecommendationInfo = require('./../services/priceEstimatorService');
-const { fetchLocalListingFromVIN } = require('../services/fetchRelevantListingsService');
+const { fetchLocalListingFromVIN, fetchListingsFromDB } = require('../services/fetchRelevantListingsService');
 const { getGlobalViewCount } = require('../services/listingDataService');
 const { getFavoritedListings, getPopularListings, getRecentlyVisitedListings, getMostDwelledListings, getOwnedListings } = require('../services/listingService')
 const { requireAuth } = require('../middleware/authMiddleware');
-const { validateRequest } = require('../middleware/validateMiddleware')
 const { logInfo, logWarning, logError } = require('../services/loggingService');
-const { listingInfoSchema, vinSchema, listingIdSchema, soldStatusSchema, priceEstimateSchema } = require('../schemas/listingSchema');
-const { countSchema } = require('../schemas/listingSchema');
+const { validateRequest } = require('../middleware/validateMiddleware')
+const { searchFilterSchema } = require('../schemas/searchFilterSchema')
+const { listingInfoSchema, vinSchema, listingIdSchema, soldStatusSchema, priceEstimateSchema, countSchema } = require('../schemas/listingSchema');
 
 const prisma = new PrismaClient()
 const listings = express.Router()
@@ -322,6 +322,22 @@ listings.post('/estimate-price', validateRequest({ body: priceEstimateSchema }),
   const { marketPrice, recommendedPrice, confidenceLevel, elasticity } = await getPriceRecommendationInfo(userAndListingInfo);
 
   res.json({ status: 200, marketPrice, recommendedPrice, confidenceLevel, elasticity });
+})
+
+listings.get('/search', validateRequest({ query: searchFilterSchema }), async (req, res) => {
+  const { make, model } = req.query;
+
+  logInfo(`Request to get listings for Make: ${make}, Model: ${model} received`);
+  
+  const response = await fetchListingsFromDB(req.query);
+  
+  if (response.status === 200) {
+    res.json(response.listings);
+  } else if (response.status === 404) {
+    res.status(404).json({ message: response.message })
+  } else {
+    res.status(500).json({ message: response.message })
+  }
 })
 
 module.exports = listings;

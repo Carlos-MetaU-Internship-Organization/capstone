@@ -1,6 +1,6 @@
 const Joi = require('joi')
 
-const searchPreferenceSchema = Joi.object({
+const searchFilterSchema = Joi.object({
   condition: Joi.string().required(),
   make: Joi.string().required(),
   model: Joi.string().required(),
@@ -14,4 +14,4 @@ const searchPreferenceSchema = Joi.object({
   maxPrice: Joi.number().empty('').optional().min(0)
 })
 
-module.exports = { searchPreferenceSchema }
+module.exports = { searchFilterSchema }

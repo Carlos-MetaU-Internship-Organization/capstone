@@ -63,7 +63,7 @@ async function fetchListingsFromSearchHistory(userId) {
 
 async function fetchPastSearches(userId) {
   try {
-    const pastSearches = await prisma.searchPreference.findMany({
+    const pastSearches = await prisma.searchFilter.findMany({
       where: { viewerId: userId },
     })
 
