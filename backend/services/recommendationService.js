@@ -3,7 +3,7 @@ const { fetchRecentlyClickedListings, fetchListingsFromSearchHistory } = require
 const listingDataService = require('./listingDataService')
 const normalizeValue = require('../utils/normalizationUtils')
 const calculateRecommendationScore = require('../utils/scoringUtils')
-const getProximity = require('../utils/geo')
+const { getProximity } = require('../utils/geo')
 
 async function getRecommendations(userId, userLatitude, userLongitude) {
 

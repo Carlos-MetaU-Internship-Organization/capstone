@@ -3,7 +3,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { logInfo, logError } = require('../../frontend/src/services/loggingService')
 const { PAGE_SIZE, SIMILARITY_DEPTHS, MINIMUM_COMPS_REQUIRED } = require('../utils/constants')
-const getProximity = require('../utils/geo')
+const { getProximity } = require('../utils/geo')
 const getDaysOnMarket = require('../utils/time')
 
 async function fetchRecentlyClickedListings(userId, count) {
@@ -63,7 +63,7 @@ async function fetchListingsFromSearchHistory(userId) {
 
 async function fetchPastSearches(userId) {
   try {
-    const pastSearches = await prisma.searchPreference.findMany({
+    const pastSearches = await prisma.searchFilter.findMany({
       where: { viewerId: userId },
     })
 
@@ -164,42 +164,6 @@ function calculateBounds(latitude, longitude, radius) {
   }
 }
 
-async function fetchLocalListingFromVIN(vin) {
-  try {
-    const listing = await prisma.listing.findFirst({
-      where: { vin },
-      include: {
-        favoriters: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            phoneNumber: true,
-            zip: true,
-            email: true
-          }
-        },
-        owner: {
-          select: {
-            id: true
-          }
-        }
-      }
-    })
-
-    if (!listing) {
-      return ({ status: 404, message: `No local listing with VIN: ${vin} found`})
-    }
-
-    logInfo(`Successfully retrieved a local listing with a matching VIN`)
-    return ({ status: 200, listing })
-
-  } catch (error) {
-    logError(`Error during search for local listing with VIN: ${vin}`)
-    return ({ status: 500, message: `Failed to search for local listing with VIN: ${vin}`})
-  }
-}
-
 async function fetchSimilarListings(listingInfo) {
   const { condition, make, model, year, mileage, latitude, longitude } = listingInfo;
 
@@ -266,6 +230,5 @@ module.exports = {
   fetchPastSearches,
   fetchListingsFromSearchHistory,
   fetchListingsFromDB,
-  fetchLocalListingFromVIN,
   fetchSimilarListings
 };

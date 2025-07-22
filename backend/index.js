@@ -11,12 +11,12 @@ const redisClient = require('./cache/redisClient')
 const PORT = process.env.PORT;
 
 const auth = require('./routes/auth');
-const search = require('./routes/search')
 const listings = require('./routes/listings')
-const track = require('./routes/track')
-const preferences = require('./routes/preferences')
+const makeModels = require('./routes/makeModels')
 const messages = require('./routes/messages')
 const populate = require('./routes/populate')
+const searchFilters = require('./routes/searchFilters')
+const track = require('./routes/track')
 const user = require('./routes/user')
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -59,12 +59,12 @@ app.use(session(sessionConfig))
 app.use(express.json({ limit: '50mb' }));
 
 app.use('/api/auth', auth);
-app.use('/api/search', search);
 app.use('/api/listings', listings);
-app.use('/api/track', track);
-app.use('/api/preferences', preferences);
+app.use('/api/makeModels', makeModels);
 app.use('/api/messages', messages);
 app.use('/api/populate', populate);
+app.use('/api/searchFilters', searchFilters);
+app.use('/api/track', track);
 app.use('/api/user', user);
 
 app.listen(PORT, () => {

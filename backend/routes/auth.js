@@ -1,91 +1,75 @@
-const axios = require('axios');
 const express = require('express')
-const { PrismaClient } = require('@prisma/client')
+const zipcodes = require('zipcodes')
 const { hashPassword, verifyPassword } = require('./../services/passwordService')
 const { validateRequest } = require('../middleware/validateMiddleware')
 const { logInfo, logWarning, logError } = require('../services/loggingService');
-const { signupSchema, loginSchema } = require('../schemas/authSchema')
+const { signupSchema, loginSchema } = require('../schemas/authSchema');
+const { findUserByCredentials, createUser } = require('../services/userService');
 
-const prisma = new PrismaClient()
 const auth = express.Router()
 
 // Signup
 auth.post('/signup', validateRequest({ body: signupSchema }), async (req, res) => {
-  const { name, email, phoneNumber, zip, username, password: plainPassword } = req.body;
-  const user = await prisma.user.findFirst({
-    where: {
-      OR: [
-        {username: username},
-        {email: email}
-      ]
-    }
-  })
+  const { name, email, zip, username, password: plainPassword } = req.body;
+  const user = await findUserByCredentials({ username, email })
 
   if (!user) {
-    const hash = await hashPassword(plainPassword);
+    const hashedPassword = await hashPassword(plainPassword);
 
-    let latitude = null;
-    let longitude = null;
-    
-    try {
-      const response = await axios.get(`https://nominatim.openstreetmap.org/search?q=${zip}&format=json&limit=1`, { headers: { 'User-Agent': 'CarPortal' } });
-      const data = response.data;
-      latitude = parseFloat(data[0].lat);
-      longitude = parseFloat(data[0].lon);
-    } catch (error) {
-      res.json({ status: 500, message: 'Failed to turn ZIP into latitude & longitude' })
+    const { latitude, longitude } = zipcodes.lookup(zip);
+
+    const userInfo = {
+      ...req.body,
+      password: hashedPassword,
+      latitude,
+      longitude
     }
 
-    const newUser = {name, username, email, zip, latitude, longitude, phoneNumber, password: hash};
-    await prisma.user.create({data: newUser});
-    res.json({ status: 200, message: `Welcome, ${name}`});
-  } else {
-    res.json({ status: 409, message: 'Account already exists' });
+    await createUser(userInfo);
+
+    return res.json({ message: `Welcome, ${name}`});
   }
+
+  res.status(409).json({ message: 'Account already exists. Please log in below.' });
 })
 
 // Login 
 auth.post('/login', validateRequest({ body: loginSchema }), async (req, res) => {
   const { login, password: plainPassword } = req.body;
 
-  logInfo('Login request received', { login })
-  const user = await prisma.user.findFirst({
-    where: {
-      OR: [
-        {username: login},
-        {email: login}
-      ]
-    }
-  })
+  logInfo('Login request received', login)
+  const user = await findUserByCredentials({ username: login, email: login })
 
   if (user && (await verifyPassword(plainPassword, user.password))) {
     logInfo('User logged in successfully', { userId: user.id });
     req.session.user = user;
-    res.json({ status: 200, message: `Good to see you again, ${user.name}` })
-  } else {
-    logWarning('Invalid login attempt', { login })
-    res.json({ status: 401, message: 'Invalid credentials.' })
+    return res.json({ message: `Good to see you again, ${user.name}` })
   }
+
+  logWarning('Invalid login attempt', { login })
+  res.status(401).json({ message: 'Invalid credentials.' })
 })
 
 // Logout
 auth.post('/logout', (req, res) => {
   req.session.destroy(error => {
     if (!error) {
-      res.json({ status: 200, message: 'Goodbye.' })
-    } else {
-      res.json({ status: 500, message: 'Logout failed.' })
+      return res.json({ message: 'Goodbye.' })
     }
+    
+    res.status(500).json({ message: 'Logout failed.' })
   });
 })
 
 // Check if they are authenticated
 auth.get('/check-auth', (req, res) => {
-  if (req.session && req.session.user) {
-    res.json({ id: req.session.user.id, authenticated: true});
-  } else {
-    res.json({ authenticated: false});
+  const user = req.session?.user;
+
+  if (user) {
+    return res.json({ id: user.id });
   }
+
+  res.status(401).json({ message: 'Please log in below.' });
 })
 
 module.exports = auth;

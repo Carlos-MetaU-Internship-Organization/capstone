@@ -27,8 +27,8 @@ const priceEstimateSchema = Joi.object({
   mileage: Joi.number().integer().default(0).min(0).required(),
 })
 
-const soldStatusSchema = Joi.object({
-  new_sold_status: Joi.boolean().required()
+const newStatusSchema = Joi.object({
+  newStatus: Joi.boolean().required()
 })
 
 
@@ -40,4 +40,15 @@ const listingIdSchema = Joi.object({
   listingId: Joi.number().required()
 })
 
-module.exports = { listingInfoSchema, soldStatusSchema, vinSchema, listingIdSchema, priceEstimateSchema }
+const countSchema = Joi.object({
+  count: Joi.number().required()
+})
+
+module.exports = {
+  listingInfoSchema,
+  newStatusSchema,
+  vinSchema,
+  listingIdSchema,
+  priceEstimateSchema,
+  countSchema
+}

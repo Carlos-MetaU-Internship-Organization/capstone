@@ -3,9 +3,8 @@ import heart from './../../assets/heart.png'
 import pinkHeart from './../../assets/pinkHeart.png'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { baseURL } from '../../globals'
 import { logError } from '../../services/loggingService'
-import axios from 'axios'
+import { favoriteListing } from '../../utils/api'
 
 function Listing({ listingData, favoritedOnLoad }) {
 
@@ -26,13 +25,12 @@ function Listing({ listingData, favoritedOnLoad }) {
 
   const handleListingFavorite = async () => {
     try {
-      const response = await axios.get(`${baseURL}/api/listings/vin/${listingData.vin}`, { withCredentials: true });
-      if (response.data.status === 200) {
-        const listing = response.data.listing;
-        const userId = response.data.userId;
-        const favorited = listing.favoriters.some(favoriter => favoriter.id === userId);
-        await axios.patch(`${baseURL}/api/listings/${listingData.vin}/favorite`, {}, { withCredentials: true })
-        setIsFavorited(!favorited);
+      const { favoritedStatus } = await favoriteListing(listingData.vin, !isFavorited)
+      if (favoritedStatus === isFavorited) {
+        // FavoriteStatus did not update... Something went wrong
+        // TODO: display error message component
+      } else {
+        setIsFavorited(favoritedStatus);
       }
     } catch (error) {
       logError(`Something went wrong when trying to favorite listing with VIN: ${listingData.vin}`, error)

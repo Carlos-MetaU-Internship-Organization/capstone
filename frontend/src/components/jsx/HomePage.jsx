@@ -1,11 +1,11 @@
 import './../css/HomePage.css'
 import arrow from './../../assets/arrow.png'
 import Header from './Header'
-import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
-import axios from 'axios'
+import { getRecommendedListings, getFavoritedListings, getPopularListings, getRecentlyVisitedListings } from '../../utils/api'
+import { PAGE_SIZE } from '../../utils/constants'
 
 function HomePage() {
 
@@ -37,16 +37,16 @@ function HomePage() {
           recentlyVisitedListingsResponse,
           popularListingsResponse
         ] = await Promise.all([
-          axios.get(`${baseURL}/api/listings/recommended`, { withCredentials: true }),
-          axios.get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true }),
-          axios.get(`${baseURL}/api/track/most-recently-visited-listings/20`, { withCredentials: true }),
-          axios.get(`${baseURL}/api/listings/popular`, { withCredentials: true })
+          getRecommendedListings(),
+          getFavoritedListings(),
+          getRecentlyVisitedListings(PAGE_SIZE),
+          getPopularListings()
         ]);
   
-        setRecommendedListings(recommendedListingsResponse.data);
-        setFavoritedListings(favoritedListingsResponse.data.favoritedListings);
-        setRecentlyVisitedListings(recentlyVisitedListingsResponse.data);
-        setPopularListings(popularListingsResponse.data)
+        setRecommendedListings(recommendedListingsResponse.recommendedListings);
+        setFavoritedListings(favoritedListingsResponse.favoritedListings);
+        setRecentlyVisitedListings(recentlyVisitedListingsResponse.recentlyVisitedListings);
+        setPopularListings(popularListingsResponse.popularListings)
       } catch (error) {
         logError('Something bad happened when trying to fetch your listings', error);
       }

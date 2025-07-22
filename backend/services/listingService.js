@@ -1,11 +1,14 @@
 const axios = require('axios')
-const gps = require('gps2zip')
 const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
-const { logInfo, logError, logWarning } = require('../../frontend/src/services/loggingService');
+const zipcodes = require('zipcodes')
+const gps = require('gps2zip')
 const levenshtein = require('js-levenshtein');
 const { PrismaClientKnownRequestError } = require('@prisma/client/runtime/library');
+const { logInfo, logError, logWarning } = require('../services/loggingService');
+const { calculateBounds } = require('../utils/geo')
 const { PAGE_SIZE, MIN_LISTINGS_TO_FETCH, RATIO_OF_TOTAL_LISTINGS_TO_FETCH } = require('../utils/constants')
+
+const prisma = new PrismaClient()
 
 async function fetchListingsForMigration(makeModelCombinationBatch) {
 
@@ -120,57 +123,214 @@ async function fetchPage(make, model, page) {
   }
 }
 
-async function createListing(userInfo, listingInfo, soldStatus) {
-  logInfo(`Request to add a listing for User: ${userInfo.id} received`);
-
-  // TODO: add email
-
-  const listing = {
-    vin: listingInfo.vin,
-    condition: listingInfo.condition,
-    make: listingInfo.make,
-    model: listingInfo.model,
-    year: parseInt(listingInfo.year) || null,
-    color: listingInfo.color,
-    mileage: listingInfo.condition !== 'new' ? (parseInt(listingInfo.mileage) || null) : 0,
-    description: listingInfo.description,
-    images: listingInfo.images || 'https://shnack.com/images/no_photo.jpg',
-    price: parseInt(listingInfo.price) || null,
-    zip: listingInfo.zip.toString(),
-    latitude: listingInfo.latitude,
-    longitude: listingInfo.longitude,
-    city: listingInfo.city,
-    state: listingInfo.state,
-    createdAt: listingInfo.createdAt,
-    soldAt: soldStatus ? new Date() : null,
-    owner_name: userInfo.name,
-    owner_number: userInfo.phoneNumber,
-    ownerId: userInfo.id,
-    sold: soldStatus
-  }
-  
-  for (const key in listing) {
-    if (key !== 'soldAt' && (listing[key] === null || listing[key] === undefined || listing[key] === '')) {
-      logError(`Missing fields. ${key} is missing.`);
-      return { status: 422, message: `Missing fields. ${key} is missing.` }
-    }
-  }
-
-  try {
-    const createdListing = await prisma.listing.create({
-      data: listing
-    })
-    
-    logInfo('Listing created successfully')
-    return { status: 200, listing: createdListing }
-  } catch (error) {
-    if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
-      logError('Duplicate VIN detected');
-      return { status: 400, message: 'VIN already exists' }
-    }
-    logError('An error occured', error);
-    return { status: 500 }
-  }
+async function getFavoritedListings(userId) {
+  return prisma.user.findFirst({
+    where: { id: userId },
+    select: { favoritedListings: true }
+  })
 }
 
-module.exports = { fetchListingsForMigration, fetchMakeModelCombinations, createListing }
+async function getPopularListings() {
+  return prisma.listing.findMany({
+    orderBy: {
+      visits: {
+        _count: 'desc'
+      }
+    },
+    take: 20
+  });
+}
+
+async function getRecentlyVisitedListings(userId, count) {
+  return prisma.listingVisit.findMany({
+    where: {
+      userId,
+      listing: {
+        sold: false,
+        ownerId: {
+          not: userId
+        }
+      }
+    },
+    orderBy: { recentVisitAt: 'desc' },
+    take: count,
+    select: { listing: true }
+  })
+}
+
+async function getMostDwelledListings(userId, count) {
+  return prisma.listingVisit.findMany({
+    where: { userId },
+    orderBy: { dwellTime: 'desc' },
+    take: count,
+    include: { listing: true }
+  })
+}
+
+async function getOwnedListings(userId) {
+  return prisma.listing.findMany({
+    where: { ownerId: userId },
+    include: {
+      owner: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          phoneNumber: true,
+          zip: true,
+          email: true
+        }
+      }
+    },
+    orderBy: [
+      { sold: 'asc'},
+      { createdAt: 'desc' }
+    ]
+  })
+}
+
+async function getListingFromVIN(vin) {
+  return prisma.listing.findFirst({
+    where: { vin },
+    include: {
+      favoriters: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          phoneNumber: true,
+          zip: true,
+          email: true
+        }
+      },
+      owner: {
+        select: {
+          id: true
+        }
+      }
+    }
+  })
+}
+
+async function updateFavoriteCount(vin, operation) {
+  return prisma.listing.update({
+    where: { vin },
+    data: {
+      favorites: {
+        [operation]: 1
+      }
+    },
+    select: { favorites: true }
+  })
+}
+
+async function updateUserFavoritedList(vin, userId, operation) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      favoritedListings: {
+        [operation]: { vin }
+      }
+    },
+    select: { favoritedListings: true }
+  })
+}
+
+async function deleteListing(listingId) {
+  return prisma.listing.delete({
+    where: { id: listingId }
+  })
+}
+
+async function sellListing(listingId, newSoldStatus) {
+  return prisma.listing.update({
+    where: { id: listingId },
+    data: {
+      sold: newSoldStatus
+    }
+  })
+}
+
+async function createListing(listingInfo, userInfo) {
+  return prisma.listing.create({
+    data: {
+      ...listingInfo,
+      ...userInfo
+    }
+  })
+}
+
+async function getListings(searchFilter, count = 0, userId = -1) {
+  const searchWhereClause = createSearchWhereClause(searchFilter, userId);
+
+  return prisma.listing.findMany({
+    where: searchWhereClause,
+    ...(count && { take: count })
+  })
+}
+
+// Helper function for `getListings()`
+function createSearchWhereClause(searchFilter, userId) {
+  const { make, model, condition, distance, zip, color, minYear, maxYear, maxMileage, minPrice, maxPrice } = searchFilter;
+  
+  const { latitude, longitude } = zipcodes.lookup(zip);
+
+  const searchWhereClause = {
+    make,
+    model,
+    sold: false
+  }
+
+  if (condition != 'new&used') {
+    searchWhereClause.condition = condition;
+  }
+
+  if (color) {
+    searchWhereClause.color = color;
+  }
+
+  if (minYear || maxYear) {
+    searchWhereClause.year = {};
+    if (minYear) searchWhereClause.year.gte = parseInt(minYear);
+    if (maxYear) searchWhereClause.year.lte = parseInt(maxYear);
+  }
+
+  if (maxMileage) {
+    searchWhereClause.mileage = { lte: parseInt(maxMileage) };
+  }
+
+  if (minPrice || maxPrice) {
+    searchWhereClause.price = {};
+    if (minPrice) searchWhereClause.price.gte = parseInt(minPrice);
+    if (maxPrice) searchWhereClause.price.lte = parseInt(maxPrice);
+  }
+
+  const { minLatitude, maxLatitude, minLongitude, maxLongitude } = calculateBounds(latitude, longitude, parseInt(distance));
+  searchWhereClause.latitude = { gte: minLatitude, lte: maxLatitude };
+  searchWhereClause.longitude = { gte: minLongitude, lte: maxLongitude };
+
+  // exclude own listings
+  if (userId !== -1) {
+    searchWhereClause.ownerId = { not: userId }
+  }
+
+  return searchWhereClause
+}
+
+module.exports = {
+  fetchListingsForMigration,
+  fetchMakeModelCombinations,
+  createListing,
+  getFavoritedListings,
+  getPopularListings,
+  getRecentlyVisitedListings,
+  getMostDwelledListings,
+  getOwnedListings,
+  getListingFromVIN,
+  updateFavoriteCount,
+  updateUserFavoritedList,
+  deleteListing,
+  sellListing,
+  createListing,
+  getListings
+}

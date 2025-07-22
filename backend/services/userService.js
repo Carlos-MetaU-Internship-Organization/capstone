@@ -4,6 +4,7 @@ const { hashPassword } = require('./passwordService')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
+// TODO: delete, instead call axios backend endpoint, which helps with input validation (USED IN MIGRATION)
 async function signupUser(userInfo) {
   const { name, email, phoneNumber, zip, username, password: plainPassword } = userInfo;
   const user = await prisma.user.findFirst({
@@ -33,6 +34,23 @@ async function signupUser(userInfo) {
   } else {
     return { status: 409 };
   }
+}
+
+async function findUserByCredentials({ username, email }) {
+  return prisma.user.findFirst({
+    where: {
+      OR: [
+        {username},
+        {email}
+      ]
+    }
+  })
+}
+
+async function createUser(userInfo) {
+  return prisma.user.create({
+    data: userInfo
+  })
 }
 
 /**
@@ -76,4 +94,4 @@ async function getUserLocation(userId) {
   }
 }
 
-module.exports = { signupUser, getAllNeededUserInfo, getUserLocation }
+module.exports = { signupUser, findUserByCredentials, createUser, getAllNeededUserInfo, getUserLocation }

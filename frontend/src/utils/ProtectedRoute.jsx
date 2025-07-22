@@ -7,6 +7,7 @@ function ProtectedRoute({ children }) {
 
   const [authChecked, setAuthChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [message, setMessage] = useState('');
 
   const navigate = useNavigate();
 
@@ -14,6 +15,7 @@ function ProtectedRoute({ children }) {
     async function verify() {
       const result = await checkAuth();
       setIsAuthenticated(result.authenticated);
+      setMessage(result.message);
       setAuthChecked(true);
     }
     verify();
@@ -22,7 +24,7 @@ function ProtectedRoute({ children }) {
   if (!authChecked) return null;
   if (!isAuthenticated) {
     logWarning('User cannot access this page until they have logged in')
-    return navigate('/')
+    return navigate('/', { state: { message } })
   }
   return children;
 }

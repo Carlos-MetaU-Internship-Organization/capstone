@@ -117,7 +117,7 @@ async function getUserDwellTime(listingId, userId) {
       return ({ status: 404, dwellTime: 0 })
     }
     
-    logInfo(`Successfully found that user with userId: ${userId} has spent ${timeSpent.timeSpent} seconds per day on listing with listingId: ${listingId}`);
+    logInfo(`Successfully found that user with userId: ${userId} has spent ${dwellTime.dwellTime} seconds per day on listing with listingId: ${listingId}`);
     return ({ status: 200, dwellTime: dwellTime.dwellTime })
   } catch (error) {
     logError(`Something bad happened trying to find out how much time user with userId: ${userId} has spent on listing with listingId: ${listingId}`, error);
@@ -142,7 +142,7 @@ async function getUserClickCount(listingId, userId) {
       return ({ status: 404, clickCount: 0 })
     }
     
-    logInfo(`Successfully found that user with userId: ${userId} has clicked ${engagementClicks} times per day on listing with listingId: ${listingId}`);
+    logInfo(`Successfully found that user with userId: ${userId} has clicked ${clickCount.clickCount} times per day on listing with listingId: ${listingId}`);
     return ({ status: 200, clickCount: clickCount.clickCount })
   } catch (error) {
     logError(`Something bad happened trying to find out how many clicks user with userId: ${userId} has done on listing with listingId: ${listingId}`, error);
