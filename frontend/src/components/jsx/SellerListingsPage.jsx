@@ -1,32 +1,25 @@
 import './../css/SellerListingsPage.css'
 import Header from './Header'
 import SellerListing from './SellerListing'
-import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
-import { logInfo, logWarning, logError } from '../../services/loggingService';
-import axios from 'axios'
 import { PAGE_SIZE } from '../../utils/constants'
+import { getOwnedListings } from '../../utils/api'
 
 function SellerListingsPage() {
 
-  const [listings, setListings] = useState([])
+  const [ownedListings, setOwnedListings] = useState([])
   const [page, setPage] = useState(1);
 
-  const fetchOwnedListings = async () => {
-    try {
-      const response = await axios.get(`${baseURL}/api/listings/user/`, { withCredentials: true });
-      const data = response.data;
-      logInfo('Owned listings successfully retrieved');
-      if (data.length > 0) {
-        setListings(data);
-      }
-    } catch (error) {
-      logError('Something went wrong when trying to fetch your owned listings', error);
-    }
-  }
-
   useEffect(() => {
-    fetchOwnedListings();
+    const fetchData = async () => {
+      try {
+        const ownedListingsResponse = await getOwnedListings();
+        setOwnedListings(ownedListingsResponse.ownedListings);
+      } catch (error) {
+        
+      }
+    }
+    fetchData();
   }, [])
 
   const handlePageChange = () => {
@@ -34,7 +27,7 @@ function SellerListingsPage() {
   }
 
   const handleListingDeletion = (listingId) => {
-    setListings(listings.filter(listing => (listing.id !== listingId)));
+    setListings(ownedListings.filter(listing => (listing.id !== listingId)));
   }
 
   return (
@@ -43,21 +36,22 @@ function SellerListingsPage() {
       <div id='seller-listings-page-content'>
         <h2 id='seller-listings-title'>Your Listings</h2>
         {
-          listings.length > 0 &&
-          (
-            <div id='seller-listings-container'>
-              <div id='seller-listings'>
-                {
-                  listings.slice(0, (PAGE_SIZE * page)).map(listing => {
-                    return <SellerListing key={listing.id} listingData={listing} onDelete={handleListingDeletion}/>
-                  })
-                }
+          ownedListings?.length > 0 && (
+            <>
+              <div id='seller-listings-container'>
+                <div id='seller-listings'>
+                  {
+                    ownedListings.slice(0, (PAGE_SIZE * page)).map(listing => {
+                      return <SellerListing key={listing.id} listingData={listing} onDelete={handleListingDeletion}/>
+                    })
+                  }
+                </div>
               </div>
-            </div>
+              {
+                (page * PAGE_SIZE < ownedListings?.length) && (<button id='load-more-seller-listings-button' className='translucent pointer' onClick={handlePageChange}>Load More</button>)
+              }
+            </>
           )
-        }
-        {
-          (page * PAGE_SIZE < listings.length) && (<button id='load-more-seller-listings-button' className='translucent pointer' onClick={handlePageChange}>Load More</button>)
         }
       </div>
     </div>

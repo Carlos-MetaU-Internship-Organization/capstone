@@ -4,7 +4,7 @@ const { hashPassword, verifyPassword } = require('./../services/passwordService'
 const { validateRequest } = require('../middleware/validateMiddleware')
 const { logInfo, logWarning, logError } = require('../services/loggingService');
 const { signupSchema, loginSchema } = require('../schemas/authSchema');
-const { findUserByCredentials } = require('../services/userService');
+const { findUserByCredentials, createUser } = require('../services/userService');
 
 const auth = express.Router()
 
@@ -26,7 +26,7 @@ auth.post('/signup', validateRequest({ body: signupSchema }), async (req, res) =
     }
 
     await createUser(userInfo);
-    
+
     return res.json({ message: `Welcome, ${name}`});
   }
 

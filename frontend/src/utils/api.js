@@ -48,6 +48,102 @@ export async function logoutUser() {
   }
 }
 
+export async function getRecommendedListings() {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/listings/recommended`, { withCredentials: true })
+    return {
+      success: true,
+      recommendedListings: data
+    }
+  } catch (error) {
+    return {
+      success: false,
+      recommendedListings: [],
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function getFavoritedListings() {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/listings/favorited`, { withCredentials: true })
+    return {
+      success: true,
+      favoritedListings: data
+    }
+  } catch (error) {
+    return {
+      success: false,
+      favoritedListings: [],
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function getPopularListings() {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/listings/popular`, { withCredentials: true })
+    return {
+      success: true,
+      popularListings: data
+    }
+  } catch (error) {
+    return {
+      success: false,
+      popularListings: [],
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function getRecentlyVisitedListings(count) {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/listings/recently-visited/${count}`, { withCredentials: true })
+    return {
+      success: true,
+      recentlyVisitedListings: data
+    }
+  } catch (error) {
+    return {
+      success: false,
+      recentlyVisitedListings: [],
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function getMostDwelledListings(count) {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/listings/most-dwelled/${count}`, { withCredentials: true })
+    return {
+      success: true,
+      mostDwelledListings: data
+    }
+  } catch (error) {
+    return {
+      success: false,
+      mostDwelledListings: [],
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function getOwnedListings() {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/listings/owned`, { withCredentials: true })
+    return {
+      success: true,
+      ownedListings: data
+    }
+  } catch (error) {
+    return {
+      success: false,
+      ownedListings: [],
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
 export async function fetchListings(params) {
   try {
     const response = await axios.get(`${baseURL}/api/search/`, {
@@ -78,17 +174,13 @@ export async function getModels(make) {
   }
 }
 
-export async function fetchRecommendations(userId) {
-
-}
-
 export async function getUserZIP() {
   try {
     const response = await axios.get(`${baseURL}/api/user/location`, { withCredentials: true });
     const { zip } = response.data;
     return { success: true, zip }
   } catch (error) {
-    return { success: false, message: error?.response?.data?.message || 'An error occured while retrieving user location' }
+    return { success: false, zip: '', message: error?.response?.data?.message || 'An error occured while retrieving user location' }
   }
 }
 

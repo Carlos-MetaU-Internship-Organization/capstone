@@ -7,7 +7,7 @@ import SortMenu from './SortMenu'
 import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
-import { fetchListings, getModels } from '../../utils/api'
+import { fetchListings, getFavoritedListings, getModels } from '../../utils/api'
 import { sortListings } from './../../utils/listings'
 import { PAGE_SIZE } from '../../utils/constants'
 import axios from 'axios'
@@ -39,11 +39,11 @@ function ResultsPage() {
           favoritedListingsResponse,
           searchPreferencesResponse
         ] = await Promise.all([
-          axios.get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true }),
+          getFavoritedListings(),
           axios.get(`${baseURL}/api/preferences/favorites/`, { withCredentials: true })
         ])
 
-        const vins = favoritedListingsResponse?.data.favoritedListings.map(listing => listing.vin) || [];
+        const vins = favoritedListingsResponse.favoritedListings.map(listing => listing.vin);
         setFavoritedVins(vins);
 
         if (searchPreferencesResponse) {

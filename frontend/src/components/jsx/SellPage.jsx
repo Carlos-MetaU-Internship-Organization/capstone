@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
 import { ELASTICITY_KEYS, CAPITALIZE, LISTINGS_PER_CYCLE } from './../../utils/constants'
+import { getOwnedListings } from '../../utils/api'
 
 function SellPage() {
 
@@ -29,7 +30,7 @@ function SellPage() {
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
   const [form, setForm] = useState(initialFormState);
-  const [listings, setListings] = useState([]);
+  const [ownedListings, setOwnedListings] = useState([]);
   const [page, setPage] = useState(1);
   const [priceEstimation, setPriceEstimation] = useState();
   const [showPriceEstimation, setShowPriceEstimation] = useState(false);
@@ -45,11 +46,11 @@ function SellPage() {
           ownedListingsResponse
         ] = await Promise.all([
           axios.get(`${baseURL}/api/search/makes`, { withCredentials: true }),
-          axios.get(`${baseURL}/api/listings/user/`, { withCredentials: true })
+          getOwnedListings()
         ])
 
         setMakes(makesResponse.data)
-        setListings(ownedListingsResponse.data)
+        setOwnedListings(ownedListingsResponse.ownedListings)
 
       } catch (error) {
         logError('One or more parallel requests went wrong', error);
@@ -269,7 +270,7 @@ function SellPage() {
           </div>
         </div>
         {
-          listings.length > 0 &&
+          ownedListings?.length > 0 &&
           (
             <div id='listings-container'>
               <label id='listings-label' className='pointer' onClick={redirectToListingsPage}>Your Listings</label>
@@ -278,7 +279,7 @@ function SellPage() {
                   page > 1 && (<img src={arrow} height='50px' id='flipped-arrow' className='pointer' onClick={handlePageChange}/>) 
                 }
                 {
-                  listings.slice((LISTINGS_PER_CYCLE * (page - 1)), (LISTINGS_PER_CYCLE * page)).map(listing => (
+                  ownedListings.slice((LISTINGS_PER_CYCLE * (page - 1)), (LISTINGS_PER_CYCLE * page)).map(listing => (
                     <div key={listing.id} className='listing-wrapper' onClick={() => navigate(`/listing/${listing.vin}`)}>
                       <img src={listing.images[0]} className='listing-image pointer'/>
                       {
@@ -288,7 +289,7 @@ function SellPage() {
                   ))
                 }
                 {
-                  listings.length > page * LISTINGS_PER_CYCLE && (<img src={arrow} height='50px' className='pointer' onClick={handlePageChange}/>)
+                  ownedListings.length > page * LISTINGS_PER_CYCLE && (<img src={arrow} height='50px' className='pointer' onClick={handlePageChange}/>)
                 }
               </div>
             </div>

@@ -173,4 +173,79 @@ async function createListing(userInfo, listingInfo, soldStatus) {
   }
 }
 
-module.exports = { fetchListingsForMigration, fetchMakeModelCombinations, createListing }
+async function getFavoritedListings(userId) {
+  return prisma.user.findFirst({
+    where: { id: userId },
+    select: { favoritedListings: true }
+  })
+}
+
+async function getPopularListings() {
+  return prisma.listing.findMany({
+    orderBy: {
+      visits: {
+        _count: 'desc'
+      }
+    },
+    take: 20
+  });
+}
+
+async function getRecentlyVisitedListings(userId, count) {
+  return prisma.listingVisit.findMany({
+    where: {
+      userId,
+      listing: {
+        sold: false,
+        ownerId: {
+          not: userId
+        }
+      }
+    },
+    orderBy: { recentVisitAt: 'desc' },
+    take: count,
+    select: { listing: true }
+  })
+}
+
+async function getMostDwelledListings(userId, count) {
+  return prisma.listingVisit.findMany({
+    where: { userId },
+    orderBy: { dwellTime: 'desc' },
+    take: count,
+    include: { listing: true }
+  })
+}
+
+async function getOwnedListings(userId) {
+  return prisma.listing.findMany({
+    where: { ownerId: userId },
+    include: {
+      owner: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          phoneNumber: true,
+          zip: true,
+          email: true
+        }
+      }
+    },
+    orderBy: [
+      { sold: 'asc'},
+      { createdAt: 'desc' }
+    ]
+  })
+}
+
+module.exports = {
+  fetchListingsForMigration,
+  fetchMakeModelCombinations,
+  createListing,
+  getFavoritedListings,
+  getPopularListings,
+  getRecentlyVisitedListings,
+  getMostDwelledListings,
+  getOwnedListings
+}

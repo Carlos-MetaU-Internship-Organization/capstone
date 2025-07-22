@@ -40,4 +40,15 @@ const listingIdSchema = Joi.object({
   listingId: Joi.number().required()
 })
 
-module.exports = { listingInfoSchema, soldStatusSchema, vinSchema, listingIdSchema, priceEstimateSchema }
+const countSchema = Joi.object({
+  count: Joi.number().required()
+})
+
+module.exports = {
+  listingInfoSchema,
+  soldStatusSchema,
+  vinSchema,
+  listingIdSchema,
+  priceEstimateSchema,
+  countSchema
+}

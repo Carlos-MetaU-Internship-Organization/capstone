@@ -5,10 +5,12 @@ const getRecommendations = require('./../services/recommendationService');
 const getPriceRecommendationInfo = require('./../services/priceEstimatorService');
 const { fetchLocalListingFromVIN } = require('../services/fetchRelevantListingsService');
 const { getGlobalViewCount } = require('../services/listingDataService');
+const { getFavoritedListings, getPopularListings, getRecentlyVisitedListings, getMostDwelledListings, getOwnedListings } = require('../services/listingService')
 const { requireAuth } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validateMiddleware')
 const { logInfo, logWarning, logError } = require('../services/loggingService');
-const { listingInfoSchema, vinSchema, listingIdSchema, soldStatusSchema, priceEstimateSchema } = require('../schemas/listingSchema')
+const { listingInfoSchema, vinSchema, listingIdSchema, soldStatusSchema, priceEstimateSchema } = require('../schemas/listingSchema');
+const { countSchema } = require('../schemas/listingSchema');
 
 const prisma = new PrismaClient()
 const listings = express.Router()
@@ -21,38 +23,16 @@ listings.use(requireAuth);
  * FINAL TODO: hide encrypted password on a get request for a listing?
  */
 
-listings.get('/', async (req, res) => {
-  logInfo(`Request to get all local listings received`);
-
-  try {
-    const listings = await prisma.listing.findMany();
-    logInfo('All local listings retrieved successfully')
-    res.json(listings)
-  } catch (error) {
-    logError('An error occured', error);
-    res.status(500).json({ message: error.message });
-  }
-})
-
 listings.get('/popular', async (req, res) => {
-  logInfo(`Request to get the 20 most viewed local listings received`);
+  logInfo(`Request to get the 20 most popular local listings received`);
 
   try {
-    const listings = await prisma.listing.findMany({
-      orderBy: {
-        visits: {
-          _count: 'desc'
-        }
-      },
-      take: 20
-    });
-    logInfo('The 20 most viewed local listings retrieved successfully')
-    res.json(listings)
+    const popularListings = await getPopularListings();
+    res.json(popularListings)
   } catch (error) {
-    logError('An error occured', error);
-    res.status(500).json({ message: error.message });
+    logError('Error getting popular listings:', error)
+    res.status(500).json({ message: 'Error getting popular listings' })
   }
-
 })
 
 listings.post('/', validateRequest({ body: listingInfoSchema }), async (req, res) => {
@@ -85,43 +65,10 @@ listings.post('/', validateRequest({ body: listingInfoSchema }), async (req, res
   }
 })
 
-listings.get('/user/', async (req, res) => {
-  const userId = req.session.user.id
-
-  logInfo(`Request to get all local listings for User: ${userId} received`);
-
-  try {
-    const listings = await prisma.listing.findMany({
-      where: { ownerId: userId },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            phoneNumber: true,
-            zip: true,
-            email: true
-          }
-        }
-      },
-      orderBy: [
-        { sold: 'asc'},
-        { createdAt: 'desc' }
-      ]
-    })
-    logInfo(`All local listings for User: ${userId} retrieved successfully`)
-    res.json(listings)
-  } catch (error) {
-    logError('An error occured', error);
-    res.status(500).json({ message: error.message });
-  }
-})
-
 listings.get('/vin/:vin', validateRequest({ params: vinSchema }), async (req, res) => {
   const vin = req.params.vin;
 
-  logInfo(`Request to get local listing with VIN: ${vin} received`);
+  logInfo(`Request to get listing with VIN: ${vin} received`);
 
   const response = await fetchLocalListingFromVIN(vin);
 
@@ -299,31 +246,70 @@ listings.get('/:vin/data', validateRequest({ params: vinSchema }), async (req, r
   }
 })
 
-listings.get('/user/favorited', async (req, res) => {
+listings.get('/favorited', async (req, res) => {
   const userId = req.session.user.id;
 
   logInfo(`Request to get all favorited local listings for User: ${userId} received`);
-
+  
   try {
-    const favoritedListings = await prisma.user.findFirst({
-      where: { id: userId },
-      select: { favoritedListings: true }
-    })
-    logInfo(`All favorited local listings for User: ${userId} retrieved successfully`)
+    const { favoritedListings } = await getFavoritedListings(userId);
     res.json(favoritedListings)
   } catch (error) {
-    logError('An error occured', error);
-    res.status(500).json({ message: error.message });
+    logError('Error getting favorited listings:', error)
+    res.status(500).json({ message: 'Error getting favorited listings' })
+  }
+})
+
+listings.get('/most-dwelled/:count', validateRequest( {params: countSchema }), async (req, res) => {
+  const userId = req.session.user.id;
+  const count = req.params.count;
+
+  try {
+    const mostDwelledListingsObjArr = await getMostDwelledListings(userId, count);
+    const mostDwelledListings = mostDwelledListingsObjArr.map(item => item.listing);
+    res.json(mostDwelledListings)
+  } catch (error) {
+    logError('Error getting most dwelled listings:', error);
+    res.status(500).json({ message: 'Error getting most dwelled listings' })
+  }
+})
+
+listings.get('/recently-visited/:count', validateRequest( { params: countSchema }), async (req, res) => {
+  const userId = req.session.user.id;
+  const count = req.params.count;
+
+  try {
+    const recentlyVisitedListingsObjArr = await getRecentlyVisitedListings(userId, count);
+    const recentlyVisitedListings = recentlyVisitedListingsObjArr.map(item => item.listing);
+    res.json(recentlyVisitedListings)
+  } catch (error) {
+    logError('Error getting recently visited listings:', )
+    res.status(500).json({ message: 'Error getting recently visited listings' })
+  }
+})
+
+listings.get('/owned', async (req, res) => {
+  const userId = req.session.user.id
+
+  try {
+    const ownedListings = await getOwnedListings(userId);
+    res.json(ownedListings);
+  } catch (error) {
+    logError('Error getting owned listings:', error)
+    res.status(500).json({ message: 'Error getting owned listings' })
   }
 })
 
 listings.get('/recommended', async (req, res) => {
-  const userId = req.session.user.id;
-  const userLatitude = req.session.user.latitude;
-  const userLongitude = req.session.user.longitude;
+  const { id: userId, latitude: userLatitude, longitude: userLongitude } = req.session.user;
 
-  const recommendedListings = await getRecommendations(userId, userLatitude, userLongitude);
-  res.json(recommendedListings);
+  try {
+    const recommendedListings = await getRecommendations(userId, userLatitude, userLongitude);
+    res.json(recommendedListings);
+  } catch (error) {
+    logError('Error getting recommended listings:', error)
+    res.status(500).json({ message: 'Error getting recommended listings' })
+  }
 })
 
 listings.post('/estimate-price', validateRequest({ body: priceEstimateSchema }), async (req, res) => {

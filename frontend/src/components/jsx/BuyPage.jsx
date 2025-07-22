@@ -6,8 +6,9 @@ import { baseURL } from '../../globals'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
-import { getModels, getUserZIP } from '../../utils/api'
+import { getFavoritedListings, getMostDwelledListings, getModels, getUserZIP } from '../../utils/api'
 import axios from 'axios'
+import { PAGE_SIZE } from '../../utils/constants'
 
 function BuyPage() {
 
@@ -47,22 +48,17 @@ function BuyPage() {
           zipResponse
         ] = await Promise.all([
           axios.get(`${baseURL}/api/search/makes`, { withCredentials: true }),
-          axios.get(`${baseURL}/api/listings/user/favorited`, { withCredentials: true }),
-          axios.get(`${baseURL}/api/track/most-dwelled-listings`, { withCredentials: true }),
+          getFavoritedListings(),
+          getMostDwelledListings(PAGE_SIZE),
           axios.get(`${baseURL}/api/preferences/favorites`, { withCredentials: true }),
           getUserZIP()
         ])
 
         setMakes(makesResponse.data)
-        setFavoritedListings(favoritedListingsResponse.data.favoritedListings)
-        setMostDwelledListing(mostDwelledListingsResponse.data[0]?.listing)
+        setFavoritedListings(favoritedListingsResponse.favoritedListings);
+        setMostDwelledListing(mostDwelledListingsResponse.mostDwelledListings[0])
         setSavedPreferences(savedSearchPreferencesResponse.data)
-        if (result.success) {
-          setFilters(prev => ({ ...prev, zip: zipResponse.zip }))
-        } else {
-          logError(result.message)
-          // TODO: message component error
-        }
+        setFilters(prev => ({ ...prev, zip: zipResponse.zip }))
       } catch (error) {
         logError('One or more parallel requests went wrong', error)
       }
