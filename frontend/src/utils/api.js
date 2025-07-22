@@ -272,3 +272,36 @@ export async function getModels(make) {
     }
   }
 }
+
+export async function sendMessage(messageInfo) {
+  try {
+    const { data } = await axios.post(`${baseURL}/api/messages/`, messageInfo, { withCredentials: true });
+    return {
+      success: true,
+      msg: data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      msg: '',
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function getConversationHistory(listingId, sellerId) {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/messages/listing/${listingId}/seller/${sellerId}`, { withCredentials: true });
+    console.log('DATA: ', data)
+    return {
+      success: true,
+      conversationHistory: data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      conversationHistory: [],
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}

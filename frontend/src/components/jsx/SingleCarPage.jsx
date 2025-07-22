@@ -1,5 +1,4 @@
 import './../css/SingleCarPage.css'
-import car from './../../assets/car.jpg'
 import arrow from './../../assets/arrow.png'
 import heart from './../../assets/heart.png'
 import pinkHeart from './../../assets/pinkHeart.png'
@@ -9,7 +8,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
 import axios from 'axios'
-import { checkAuth } from '../../utils/api'
+import { checkAuth, getConversationHistory, sendMessage } from '../../utils/api'
 
 function SingleCarPage() {
 
@@ -27,7 +26,7 @@ function SingleCarPage() {
 
   const [imageIndex, setImageIndex] = useState(0);
 
-  const [chatHistory, setChatHistory] = useState([]);
+  const [conversationHistory, setConversationHistory] = useState([]);
   const [messageToSend, setMessageToSend] = useState('');
 
   const numClicks = useRef(0);
@@ -63,12 +62,10 @@ function SingleCarPage() {
 
       const fetchMessages = async () => {
         try {
-          const response = await axios.get(`${baseURL}/api/messages/listing/${listingIdRef.current}/seller/${listingOwnerIdRef.current}`, { withCredentials: true })
-          if (response.data.length > 0) {
-            setChatHistory(response.data);
-          }
+          const { conversationHistory } = await getConversationHistory(listingIdRef.current, listingOwnerIdRef.current);
+          setConversationHistory(conversationHistory);
         } catch (error) {
-          logError(`Something went wrong when trying to fetch chat history between you and seller with id: ${listingOwnerIdRef.current}`, error)
+          logError(`Something went wrong when trying to fetch conversation history between you and seller with id: ${listingOwnerIdRef.current}`, error)
         }
       }
       
@@ -169,15 +166,15 @@ function SingleCarPage() {
   const handleMessageSend = async () => {
     if (!messageToSend) return;
 
-    const bodyToSend = {
+    const messageInfo = {
       receiverId: listing.owner.id,
       content: messageToSend,
       listingId: listing.id
     }
 
     try {
-      const response = await axios.post(`${baseURL}/api/messages/`, bodyToSend, { withCredentials: true });
-      setChatHistory(prev => [...prev, response.data]);
+      const { msg } = await sendMessage(messageInfo);
+      setConversationHistory(prev => [...prev, msg]);
       setMessageToSend('');
     } catch (error) {
       logError(`Something went wrong when trying to send a message to seller with id: ${listing.owner.id}`, error);
@@ -226,7 +223,7 @@ function SingleCarPage() {
                 <h3>Contact Seller</h3>
                 <div id='messages'>
                   {
-                    chatHistory.map(message => {
+                    conversationHistory.map(message => {
                       return <p key={message.id}><strong>{message.senderId === listing.owner.id ? listing.owner_name : 'You'}:</strong> {message.content}</p>
                     })
                   }
