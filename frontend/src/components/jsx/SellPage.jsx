@@ -71,7 +71,7 @@ function SellPage() {
       const { models, success } = await getModels(make)
       if (success) {
         setModels(models);
-        setFilters(prev => ({...prev, model: models[0].name}))
+        setListingInfo(prev => ({...prev, model: models[0].name}))
       } else {
         // TODO: error message component
       }
