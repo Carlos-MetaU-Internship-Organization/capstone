@@ -127,3 +127,13 @@ model Message {
   listing                      Listing             @relation(fields: [listingId], references: [id], onDelete: Cascade)
   listingId                    Int
 }
+
+model CompetitorGraph {
+  id                           Int                 @id @default(autoincrement())
+  make                         String
+  model                        String
+  competitorMake               String
+  competitorModel              String
+  count                        Int
+  @@unique([make, model, competitorMake, competitorModel])
+}

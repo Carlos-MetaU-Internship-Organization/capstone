@@ -10,7 +10,9 @@ const SIMILARITY_DEPTHS = [
   { YEAR_RANGE: 1, MILEAGE_FACTOR: 0.10 },
   { YEAR_RANGE: 3, MILEAGE_FACTOR: 0.30 },
   { YEAR_RANGE: 5, MILEAGE_FACTOR: 0.50 },
-  { YEAR_RANGE: 5, MILEAGE_FACTOR: 0.00 } // no limit on mileage, but still around same generation of make/model
+  { YEAR_RANGE: 5, MILEAGE_FACTOR: 0.00 }, // no limit on mileage, but still around same generation of make/model
+  { SAME_MAKE: true },
+  { COMPETITOR: true }
 ]
 const MINIMUM_COMPS_REQUIRED = 10;
 
@@ -30,8 +32,11 @@ const DEPTH_WEIGHT_BY_LEVEL = {
   2: 1.5,
   3: 0.375,
   4: 0.125,
-  5: 0.025
+  5: 0.025,
+  6: 0.0125,
+  7: 0.008
 };
+const MAX_COMPETITORS = 3;
 const SOLD_LISTING_WEIGHT = .7;
 const UNSOLD_LISTING_WEIGHT = .3;
 const PROXIMITY_MIN_WEIGHT = .25;
@@ -82,6 +87,7 @@ module.exports = {
   SELLER_FACTOR_MAX,
   MILEAGE_SCALE_FACTOR,
   DEPTH_WEIGHT_BY_LEVEL,
+  MAX_COMPETITORS,
   SOLD_LISTING_WEIGHT,
   UNSOLD_LISTING_WEIGHT,
   PROXIMITY_MIN_WEIGHT,
