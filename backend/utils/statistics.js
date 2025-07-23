@@ -13,10 +13,16 @@ const {
 
 function calculateMarketPrice(listings, userInfo) {
 
-  const listingCountPerDepth = listings.reduce((obj, listing) => {
-    obj[listing.depth] = (obj[listing.depth] ?? 0) + 1;
+  const { listingCountPerDepth, listingsSoldStatus } = listings.reduce((obj, listing) => {
+    obj.listingCountPerDepth[listing.depth] = (obj.listingCountPerDepth[listing.depth] ?? 0) + 1;
+    obj.listingsSoldStatus[listing.sold ? 'numSold' : 'numUnsold']++;
     return obj
-  }, {})
+  },
+  {
+    listingCountPerDepth: {},
+    listingsSoldStatus: { numSold: 0, numUnsold: 0 }
+  }
+  )
 
   const { sum, weightSum } = listings.reduce((acc, listing) => {
     const yearGap = Math.abs(userInfo.year - listing.year)
@@ -25,12 +31,12 @@ function calculateMarketPrice(listings, userInfo) {
     const depthWeight = (DEPTH_WEIGHT_BY_LEVEL[listing.depth] / listingCountPerDepth[listing.depth]);
     listing.depthWeight = depthWeight;
   
-    const soldWeight = listing.sold ? SOLD_LISTING_WEIGHT : UNSOLD_LISTING_WEIGHT
+    const soldWeight = listing.sold ? SOLD_LISTING_WEIGHT / listingsSoldStatus.numSold : UNSOLD_LISTING_WEIGHT / listingsSoldStatus.numUnsold;
     
     const proximityWeight = Math.max(PROXIMITY_MIN_WEIGHT, 1 - (listing.proximity / PROXIMITY_DISTANCE_FADE));
   
     const daysOnMarketWeight = Math.max(DAYS_ON_MARKET_MIN_WEIGHT, 1 / ((1 + listing.daysOnMarket) / DAYS_IN_MONTH));
-    
+
     const similarSpecificationWeight = 1 / (1 + yearGap + mileageGap);
   
     const totalWeight = similarSpecificationWeight * depthWeight * soldWeight * proximityWeight * daysOnMarketWeight;
