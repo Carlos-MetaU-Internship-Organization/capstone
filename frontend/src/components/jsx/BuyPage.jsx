@@ -31,6 +31,7 @@ function BuyPage() {
   const [favoritedListings, setFavoritedListings] = useState([]);
   const [savedSearchFilters, setSavedSearchFilters] = useState([]);
   const [page, setPage] = useState(1);
+  const [loaded, setLoaded] = useState(false);
 
   const navigate = useNavigate();
 
@@ -57,6 +58,7 @@ function BuyPage() {
         setMostDwelledListing(mostDwelledListingsResponse.mostDwelledListings[0])
         setSavedSearchFilters(savedSearchFiltersResponse.savedSearchFilters)
         setFilters(prev => ({ ...prev, zip: zipResponse.zip }))
+        setLoaded(true);
       } catch (error) {
         logError('One or more parallel requests went wrong', error)
       }
@@ -140,106 +142,116 @@ function BuyPage() {
   return (
     <div id='buy-page'>
       <Header />
-      <div id='buy-content'>
-        <div id='buy-search'>
-          <form className='translucent' id='filter-search' onSubmit={handleSearch}>
-            <div id='filters'>
-              <label>Condition</label>
-              <select className='translucent buy-page-user-selection pointer' id="condition-selector" name="condition" onChange={updateFilters} required>
-                <option value="new&used">New & Used</option>
-                <option value="new">New</option>
-                <option value="used">Used</option>
-              </select>
-              <label>Make</label>
-              <select className='translucent buy-page-user-selection pointer' id="make-selector" name="make" onChange={updateFilters} required>
-                <option disabled selected></option>
-                {
-                  makes.map(make => {
-                    return <option value={make.name}>{make.name}</option>
-                  })
-                }
-              </select>
-              <label>Model</label>
-              <select className='translucent buy-page-user-selection pointer' id="model-selector" name="model" onChange={updateFilters} required>
-                {
-                  models.length > 0 && models.map(model => {
-                    return <option value={model.name}>{model.name}</option>
-                  })
-                }
-              </select>
-              <div id='location-details'>
-                <label>Distance</label>
-                <select className='translucent buy-page-user-selection pointer' name="distance" onChange={updateFilters} required>
-                  <option value="50">50 miles</option>
-                  <option value="250">250 miles</option>
-                  <option value="500">500 miles</option>
-                  <option value="3000">Nationwide</option>
-                </select>
-                <label>ZIP</label>
-                <input className='translucent buy-page-user-selection' type="text" name="zip" defaultValue={filters.zip} onChange={updateFilters} required/>
-              </div>
-            </div>
-            <button className='translucent' id='search-button' type='submit'>Search</button>
-          </form>
-          {
-            savedSearchFilters.length > 0 && (
-              <>
-                <h3>OR</h3>
-                <div id='buy-page-saved-search-selection-box'>
-                  <label id='buy-page-saved-search-label'>Load a Saved Search</label>
-                  <select id="buy-page-saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedSearchFilterLoad}>
-                    <option value="" disabled></option>
+      {loaded ? (
+        <>
+          <div id='buy-content' className='fade'>
+            <div id='buy-search'>
+              <form className='translucent' id='filter-search' onSubmit={handleSearch}>
+                <div id='filters'>
+                  <label>Condition</label>
+                  <select className='translucent buy-page-user-selection pointer' id="condition-selector" name="condition" onChange={updateFilters} required>
+                    <option value="new&used">New & Used</option>
+                    <option value="new">New</option>
+                    <option value="used">Used</option>
+                  </select>
+                  <label>Make</label>
+                  <select className='translucent buy-page-user-selection pointer' id="make-selector" name="make" onChange={updateFilters} required>
+                    <option disabled selected></option>
                     {
-                      savedSearchFilters.map(searchFilter => (
-                        <option key={searchFilter.id} value={searchFilter.id}>
-                          {`${searchFilter.make} ${searchFilter.model}, ${searchFilter.distance}mi from ${searchFilter.zip}, Color: ${searchFilter.color ? searchFilter.color.charAt(0).toUpperCase() + searchFilter.color.slice(1) : 'Any'}`}
-                        </option>
-                      ))
+                      makes.map(make => {
+                        return <option value={make.name}>{make.name}</option>
+                      })
                     }
                   </select>
+                  <label>Model</label>
+                  <select className='translucent buy-page-user-selection pointer' id="model-selector" name="model" onChange={updateFilters} required>
+                    {
+                      models.length > 0 && models.map(model => {
+                        return <option value={model.name}>{model.name}</option>
+                      })
+                    }
+                  </select>
+                  <div id='location-details'>
+                    <label>Distance</label>
+                    <select className='translucent buy-page-user-selection pointer' name="distance" onChange={updateFilters} required>
+                      <option value="50">50 miles</option>
+                      <option value="250">250 miles</option>
+                      <option value="500">500 miles</option>
+                      <option value="3000">Nationwide</option>
+                    </select>
+                    <label>ZIP</label>
+                    <input className='translucent buy-page-user-selection' type="text" name="zip" defaultValue={filters.zip} onChange={updateFilters} required/>
+                  </div>
                 </div>
-              </>
+                <button className='translucent' id='search-button' type='submit'>Search</button>
+              </form>
+              {
+                savedSearchFilters.length > 0 && (
+                  <>
+                    <h3>OR</h3>
+                    <div id='buy-page-saved-search-selection-box'>
+                      <label id='buy-page-saved-search-label'>Load a Saved Search</label>
+                      <select id="buy-page-saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedSearchFilterLoad}>
+                        <option value="" disabled></option>
+                        {
+                          savedSearchFilters.map(searchFilter => (
+                            <option key={searchFilter.id} value={searchFilter.id}>
+                              {`${searchFilter.make} ${searchFilter.model}, ${searchFilter.distance}mi from ${searchFilter.zip}, Color: ${searchFilter.color ? searchFilter.color.charAt(0).toUpperCase() + searchFilter.color.slice(1) : 'Any'}`}
+                            </option>
+                          ))
+                        }
+                      </select>
+                    </div>
+                  </>
+                )
+              }
+            </div>
+            {
+              mostDwelledListing &&
+              <div id='most-viewed-container' className='grow'>
+                <h2>Still Interested?</h2>
+                <div className='translucent most-viewed-listing pointer'>
+                  <img src={mostDwelledListing.images[0]} id='most-viewed-car-img' className='car-image' onClick={() => navigate(`/listing/${mostDwelledListing.vin}`)}/>
+                  <div id='most-viewed-car-info'>
+                    <p>Make: {mostDwelledListing.make}</p>
+                    <p>Model: {mostDwelledListing.model}</p>
+                    <p>Year: {mostDwelledListing.year}</p>
+                    <p>Location: {mostDwelledListing.city}, {mostDwelledListing.state}</p>
+                    <p>Price: ${parseInt(mostDwelledListing.price).toLocaleString('en-US')}</p>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+          {
+            favoritedListings.length > 0 &&
+            (
+              <div id='favorites-container' className='fade'>
+                <label id='favorites-label' className='pointer'>Your Favorites</label>
+                <div id='favorite-cars'>
+                  {
+                    page > 1 && (<img src={arrow} height='50px' id='flipped-arrow' className='pointer' onClick={handlePageChange}/>) 
+                  }
+                  {
+                    favoritedListings.slice((4 * (page - 1)), (4 * page)).map(listing => {
+                      return <img key={listing.id} src={listing.images[0]} className='listing-image pointer grow' onClick={() => navigate(`/listing/${listing.vin}`)}/>
+                    })
+                  }
+                  {
+                    favoritedListings.length > page * 4 && (<img src={arrow} height='50px' className='pointer' onClick={handlePageChange}/>)
+                  }
+                </div>
+              </div>
             )
           }
+        </>
+      ) : (
+        <div className='loader-container'>
+          <div className='loading-text'>
+            Loading<span className='dots'></span>
+          </div>
         </div>
-        {
-          mostDwelledListing &&
-          <div id='most-viewed-container'>
-            <h2>Still Interested?</h2>
-            <div className='translucent most-viewed-listing pointer'>
-              <img src={mostDwelledListing.images[0]} id='most-viewed-car-img' className='car-image' onClick={() => navigate(`/listing/${mostDwelledListing.vin}`)}/>
-              <div id='most-viewed-car-info'>
-                <p>Make: {mostDwelledListing.make}</p>
-                <p>Model: {mostDwelledListing.model}</p>
-                <p>Year: {mostDwelledListing.year}</p>
-                <p>Location: {mostDwelledListing.city}, {mostDwelledListing.state}</p>
-                <p>Price: ${parseInt(mostDwelledListing.price).toLocaleString('en-US')}</p>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-      {
-        favoritedListings.length > 0 &&
-        (
-          <div id='favorites-container'>
-            <label id='favorites-label' className='pointer'>Your Favorites</label>
-            <div id='favorite-cars'>
-              {
-                page > 1 && (<img src={arrow} height='50px' id='flipped-arrow' className='pointer' onClick={handlePageChange}/>) 
-              }
-              {
-                favoritedListings.slice((4 * (page - 1)), (4 * page)).map(listing => {
-                  return <img key={listing.id} src={listing.images[0]} className='listing-image pointer' onClick={() => navigate(`/listing/${listing.vin}`)}/>
-                })
-              }
-              {
-                favoritedListings.length > page * 4 && (<img src={arrow} height='50px' className='pointer' onClick={handlePageChange}/>)
-              }
-            </div>
-          </div>
-        )
-      }
+      )}
     </div>
   )
 }

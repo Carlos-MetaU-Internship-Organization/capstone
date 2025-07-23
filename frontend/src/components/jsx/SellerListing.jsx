@@ -71,12 +71,12 @@ function SellerListing({ listingData, onDelete }) {
   }
   
   return (
-    <div className='seller-listing translucent'>
+    <div className='seller-listing translucent grow'>
       <div className='seller-listing-content'>
         <div className='seller-listing-image-wrapper'>
           <img src={listingData.images[0]} className='seller-listing-image translucent'/>
           {
-            sold && <img src={soldOverlay} className='seller-listing-sold-overlay-img' />
+          sold && <img src={soldOverlay} className='seller-listing-sold-overlay-img' />
           }
         </div>
         <div className='seller-listing-info-container'>

@@ -38,7 +38,7 @@ function Listing({ listingData, favoritedOnLoad }) {
   }
   
   return (
-    <div className='car-listing translucent'>
+    <div className='car-listing translucent grow'>
       <img className='car-listing-image pointer' src={listingData.images[0]} onClick={handleListingClick}/>
       <div className='car-listing-info'>
           <img id='favorite-listing-button' className='pointer' height={25}src={isFavorited ? pinkHeart : heart} onClick={handleListingFavorite}/>

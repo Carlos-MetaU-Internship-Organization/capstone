@@ -21,6 +21,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  justify-self: center;
+  animation: fadeIn 1.5s ease-in-out;
 }
 
 #recommended-info {
@@ -33,17 +35,30 @@
   min-width: 350px;
   min-height: 200px;
   object-fit: cover;
-  animation: fadeIn 1s ease-in-out;
   border-radius: 25px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.98);
+#home-loading-screen {
+  position: relative;
+  width: 100vw;
+  height: 92vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#welcome-text {
+  position: absolute;
+  white-space: nowrap;
+  animation: fadeIn 2.5s ease-in-out, slide 25s linear infinite;
+}
+
+@keyframes slide {
+  0% {
+    left: 0%;
   }
-  to {
-    opacity: 1;
-    transform: scale(1);
+  100% {
+    left: 100%;
   }
 }
