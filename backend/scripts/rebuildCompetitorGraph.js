@@ -3,7 +3,7 @@ const { MAX_COMPETITORS } = require('../utils/constants')
 
 const prisma = new PrismaClient();
 
-export async function rebuildCompetitorGraph() {
+async function rebuildCompetitorGraph() {
   await prisma.competitorGraph.deleteMany();
 
   const listingVisits = await prisma.listingVisit.findMany({
@@ -17,15 +17,16 @@ export async function rebuildCompetitorGraph() {
       }
     }
   })
-
+  
   const distinctMakeModelCombinationsVisited = [...new Set
-    (listingVisits.map(listingVisit => `${listingVisit.listing.model}:${listingVisit.listing.model}`)
+    (listingVisits.map(listingVisit => `${listingVisit.listing.make}:${listingVisit.listing.model}`)
   )].map(makeModelCombination => {
     const [make, model] = makeModelCombination.split(':');
     return { make, model }
   })
-  
+
   for (const { make, model } of distinctMakeModelCombinationsVisited) {
+
     const users = await prisma.listingVisit.findMany({
       where: {
         listing: {
@@ -36,7 +37,6 @@ export async function rebuildCompetitorGraph() {
     })
 
     const userIds = users.map(user => user.userId);
-
     const userVisits = await prisma.listingVisit.findMany({
       where: {
         userId: {
@@ -52,10 +52,10 @@ export async function rebuildCompetitorGraph() {
         }
       }
     })
-
+  
     const counts = new Map()
     for (const userVisit of userVisits) {
-      const { competitorMake, competitorModel } = userVisit.listing
+      const { make: competitorMake, model: competitorModel } = userVisit.listing
       // Cannot be a competitor to itself
       if (competitorMake === make && competitorModel === model) {
         continue;
@@ -63,7 +63,7 @@ export async function rebuildCompetitorGraph() {
       const key = `${competitorMake}:${competitorModel}`
       counts.set(key, (counts.get(key) ?? 0) + 1)
     }
-
+    
     const topCompetitors = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, MAX_COMPETITORS)
 
     if (topCompetitors.length !== 0) {
@@ -75,4 +75,8 @@ export async function rebuildCompetitorGraph() {
       })
     }
   }
+}
+
+module.exports = {
+  rebuildCompetitorGraph
 }

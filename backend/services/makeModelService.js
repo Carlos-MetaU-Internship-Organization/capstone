@@ -49,4 +49,19 @@ async function getModels(make) {
   })
 }
 
-module.exports = { getMakesAndModels, insertMakesAndModels, getMakes, getModels }
+async function getCompetitors(make, model, limit) {
+  return prisma.competitorGraph.findMany({
+    where: {
+      make,
+      model
+    },
+    orderBy: { count: 'desc' },
+    take: limit,
+    select: {
+      competitorMake: true,
+      competitorModel: true
+    }
+  })
+}
+
+module.exports = { getMakesAndModels, insertMakesAndModels, getMakes, getModels, getCompetitors }

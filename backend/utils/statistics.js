@@ -52,4 +52,18 @@ function calculateMarketPrice(listings, userInfo) {
   return { marketPrice, enrichedListings: listings };
 }
 
-module.exports = { calculateMarketPrice }
+function harmonicMean(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) {
+    return 0;
+  }
+
+  const sumOfReciprocals = { sum: 0 }
+
+  for (const num of arr) {
+    sumOfReciprocals.sum += 1 / num;
+  }
+
+  return arr.length / sumOfReciprocals.sum;
+}
+
+module.exports = { calculateMarketPrice, harmonicMean }

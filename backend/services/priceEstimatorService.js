@@ -1,26 +1,26 @@
 const { fetchSimilarListings } = require('./fetchRelevantListingsService')
 const { logInfo } = require('../../frontend/src/services/loggingService')
 const computeSellerDelta = require('../utils/sellerHistory')
-const { calculateMarketPrice } = require('../utils/statistics')
+const { calculateMarketPrice, harmonicMean } = require('../utils/statistics')
 const buildElasticityCurve = require('../utils/elasticity')
-const { ROUND_TO_NEAREST_HUNDRED, FORMAT_TO_PRICE, MINIMUM_COMPS_REQUIRED } = require('../utils/constants')
+const { ROUND_TO_NEAREST_HUNDRED, FORMAT_TO_PRICE, MINIMUM_COMPS_REQUIRED, DEPTH_CONFIDENCE_PENALTIES } = require('../utils/constants')
 
 async function getPriceRecommendationInfo(userAndListingInfo) {
 
   userAndListingInfo.year = parseInt(userAndListingInfo.year);
   userAndListingInfo.mileage = parseInt(userAndListingInfo.mileage);
 
-  const { listings, status } = await fetchSimilarListings(userAndListingInfo);
+  const similarListings = await fetchSimilarListings(userAndListingInfo);
 
-  if (status !== 200) {
+  if (similarListings.length === 0) {
     return { estimatedPrice: 0, message: 'Could not find similar listings' }
   }
 
-  const { confidenceLevel, confidenceScore } = getConfidence(listings);
+  const { confidenceLevel, confidenceScore } = getConfidence(similarListings);
 
   const sellerDelta = await computeSellerDelta(userAndListingInfo.sellerId);
 
-  const { marketPrice, enrichedListings } = calculateMarketPrice(listings, userAndListingInfo)
+  const { marketPrice, enrichedListings } = calculateMarketPrice(similarListings, userAndListingInfo)
 
   // round to nearest 100
   const recommendedPrice = ROUND_TO_NEAREST_HUNDRED(marketPrice * (1 + (sellerDelta * confidenceScore)));
@@ -39,13 +39,12 @@ function getConfidence(comps) {
   const variance = prices.reduce((sum, price) => sum + (price - averagePrice) ** 2, 0) / prices.length
   const stdDeviation = Math.sqrt(variance)
 
-  const scatteredWeight = 1 / (1 + (stdDeviation / averagePrice))
+  const priceSpread = stdDeviation / averagePrice;
+  const scatteredWeight = 1 / (10 ** priceSpread)
 
-  const averageDepthWeight = comps.reduce((sum, comp) => sum + comp.depth, 0) / comps.length
+  const depthQualityWeight = harmonicMean(comps.map(comp => DEPTH_CONFIDENCE_PENALTIES[comp.depth])) ** 2
 
-  const depthQualityWeight = 1 / averageDepthWeight
-
-  const confidenceScore = 3 / ((1 / quantityWeight) + (1 / scatteredWeight) + (1 / depthQualityWeight))
+  const confidenceScore = harmonicMean([quantityWeight, scatteredWeight, depthQualityWeight])
 
   const confidenceLevel = confidenceScore > 0.85 ? "very high"
                           : confidenceScore > 0.65 ? "high"
