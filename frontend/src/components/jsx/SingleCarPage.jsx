@@ -3,6 +3,7 @@ import arrow from './../../assets/arrow.png'
 import heart from './../../assets/heart.png'
 import pinkHeart from './../../assets/pinkHeart.png'
 import Header from './Header'
+import SellerInbox from './SellerInbox'
 import { baseURL } from '../../globals'
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
@@ -246,6 +247,11 @@ function SingleCarPage() {
                   <button id='reply-send-button' className='translucent' onClick={handleMessageSend}>Send</button>
                 </div>
               </div>
+            )
+          }
+          {
+            listing.owner.id === activeUserIdRef.current && (
+              <SellerInbox listingId={listing.id} />
             )
           }
         </div>

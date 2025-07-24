@@ -1,0 +1,97 @@
+#seller-inbox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 2;
+  margin: 100px;
+  padding: 25px;
+  gap: 30px;
+  height: fit-content;
+  border-radius: 25px;
+  max-width: 25vw;
+  min-width: 300px;
+}
+
+#buyers {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.buyer-data {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+}
+
+.buyer-name-button {
+  width: 30%;
+}
+
+.preview {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+#modal-overlay {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px) brightness(0.9);
+}
+
+#modal-content {
+  background-color: rgba(135, 206, 250, 1);
+  filter: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 50vw;
+  max-height: 50vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 25px black;
+  align-items: center;
+  border-radius: 25px;
+  padding: 3vh 3vw;
+  gap: calc(max(2vh, 25px));
+}
+
+#buyer-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#close-button {
+  align-self: flex-end;
+}
+
+#conversation-label {
+  font-weight: 300;
+}
+
+.message-date {
+  margin-left: 18px;
+  text-wrap: nowrap;
+}
+
+.message {
+  display: flex;
+  justify-content: space-between;
+  text-wrap: wrap;
+}

@@ -3,7 +3,8 @@ const { requireAuth } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validateMiddleware')
 const { logInfo, logWarning, logError } = require('../services/loggingService');
 const { createMessageSchema, getMessagesSchema } = require('../schemas/messageSchema');
-const { createMessage, getConversationHistory } = require('../services/messageService');
+const { createMessage, getConversationHistory, getBuyersAndInfo } = require('../services/messageService');
+const { listingIdSchema } = require('../schemas/listingSchema');
 
 const messages = express.Router()
 messages.use(requireAuth);
@@ -21,18 +22,31 @@ messages.post('/', validateRequest({ body: createMessageSchema }), async (req, r
   }  
 })
 
-messages.get('/listing/:listingId/seller/:sellerId', validateRequest({ params: getMessagesSchema }), async (req, res) => {
+messages.get('/listing/:listingId/otherUser/:otherUserId', validateRequest({ params: getMessagesSchema }), async (req, res) => {
   const userId = req.session.user.id;
-  const { listingId, sellerId } = req.params;
+  const { listingId, otherUserId } = req.params;
 
   try {
-    const messages = await getConversationHistory(listingId, sellerId, userId);
+    const conversationHistory = await getConversationHistory(listingId, userId, otherUserId);
     logInfo('Successfully retrieved conversation history')
-    res.json(messages)
+    res.json(conversationHistory)
   } catch (error) {
     logError('Error getting conversation history:', error);
     res.status(500).json({ message: 'Error getting conversation history' })
   }  
+})
+
+messages.get('/listing/:listingId/buyers', validateRequest({ params: listingIdSchema}), async (req, res) => {
+  const sellerId = req.session.user.id;
+  const listingId = req.params.listingId;
+  
+  try {
+    const buyersAndInfo = await getBuyersAndInfo(listingId, sellerId)
+    res.json(buyersAndInfo)
+  } catch (error) {
+    logError('Error getting buyers:', error);
+    res.status(500).json({ message: 'Error getting buyers' })
+  }
 })
 
 module.exports = messages;

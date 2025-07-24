@@ -8,7 +8,7 @@ const createMessageSchema = Joi.object({
 
 const getMessagesSchema = Joi.object({
   listingId: Joi.number().integer().required(),
-  sellerId: Joi.number().integer().required()
+  otherUserId: Joi.number().integer().required()
 })
 
 module.exports = { createMessageSchema, getMessagesSchema }
