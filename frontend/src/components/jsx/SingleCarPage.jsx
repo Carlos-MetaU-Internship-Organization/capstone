@@ -233,9 +233,9 @@ function SingleCarPage() {
           </div>
           {
             listing.owner && listing.owner.id !== activeUserIdRef.current && (
-              <div id='contact-seller-container' className='translucent'>
+              <div className='seller-inbox translucent'>
                 <h3>Contact Seller</h3>
-                <div id='messages'>
+                <div className='messages'>
                   {
                     conversationHistory.map(message => {
                       return <p key={message.id}><strong>{message.senderId === listing.owner.id ? listing.ownerName : 'You'}:</strong> {message.content}</p>

@@ -1,7 +1,6 @@
 import './../css/SellerInbox.css'
 import close from './../../assets/close.png'
 import { useState, useEffect } from 'react'
-import { logError } from '../../services/loggingService'
 import { getBuyersAndInfo, getConversationHistory, sendMessage } from '../../utils/api'
 
 function SellerInbox({ listingId }) {
@@ -10,11 +9,15 @@ function SellerInbox({ listingId }) {
   const [selectedBuyer, setSelectedBuyer] = useState(null)
   const [conversationHistory, setConversationHistory] = useState(null)
   const [showModal, setShowModal] = useState(false)
+  const [inboxDisplay, setInboxDisplay] = useState('flex')
   const [messageToSend, setMessageToSend] = useState('')
 
   useEffect(() => {  
     const fetchBuyers = async () => {
       const { buyersAndInfo } = await getBuyersAndInfo(listingId)
+      if (buyersAndInfo.length === 0) {
+        setInboxDisplay('none')
+      }
       setBuyersAndInfo(buyersAndInfo);
     }
     fetchBuyers();
@@ -78,7 +81,7 @@ function SellerInbox({ listingId }) {
   }
 
   return (
-    <div id='seller-inbox' className='translucent'>
+    <div className='seller-inbox translucent' style={{ display: inboxDisplay }}>
       <h3>Inbox</h3>
       <div id='buyers'>
         {
@@ -98,7 +101,7 @@ function SellerInbox({ listingId }) {
             <div id='modal-content'>
               <img src={close} alt="Close Button" height='15px' id='close-button' className='pointer' onClick={handleClickClose}/>
               <h3 id='conversation-label'>Conversation with {selectedBuyer.name}</h3>
-              <div id='buyer-messages'>
+              <div className='messages'>
                 {
                   conversationHistory.map(message => (
                     <div className='message'>

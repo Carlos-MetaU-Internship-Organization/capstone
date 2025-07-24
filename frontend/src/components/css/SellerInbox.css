@@ -1,11 +1,11 @@
-#seller-inbox {
+.seller-inbox {
   display: flex;
   flex-direction: column;
   align-items: center;
   flex: 2;
   margin: 100px;
   padding: 25px;
-  gap: 30px;
+  gap: 15px;
   height: fit-content;
   border-radius: 25px;
   max-width: 25vw;
@@ -29,6 +29,8 @@
 
 .buyer-name-button {
   width: 30%;
+  text-overflow: clip;
+  overflow: hidden;
 }
 
 .preview {
@@ -37,7 +39,7 @@
   -webkit-line-clamp: 2;
   text-overflow: ellipsis;
   overflow: hidden;
-  flex-grow: 1;
+  width: 70%;
 }
 
 #modal-overlay {
@@ -71,10 +73,12 @@
   gap: calc(max(2vh, 25px));
 }
 
-#buyer-messages {
+.messages {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
 }
 
 #close-button {
