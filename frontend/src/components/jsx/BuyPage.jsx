@@ -1,5 +1,4 @@
 import './../css/BuyPage.css'
-import car from './../../assets/car.jpg'
 import arrow from './../../assets/arrow.png'
 import Header from './Header'
 import { useState, useEffect } from 'react'
