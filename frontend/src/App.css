@@ -27,6 +27,7 @@ select:focus {
 
 .grow:hover {
   transform: scale(1.05);
+  box-shadow: 0 0 25px lightskyblue;
 }
 
 .listings-container {
@@ -64,6 +65,53 @@ select:focus {
 
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.fade {
+  animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* EXTERNAL CODE BELOW */
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 92vh;
+}
+
+.loading-text {
+  font-size: 48px;
+  font-weight: bold;
+}
+
+.dots::after {
+  content: '';
+  text-align: left;
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0% {
+    content: ''
+  }
+  25% {
+    content: '.'
+  }
+  50% {
+    content: '..'
+  }
+  75% {
+    content: '...'
+  }
 }

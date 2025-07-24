@@ -1,5 +1,5 @@
 #buy-page {
-  width: 100vw;
+  min-width: 99vw;
   min-height: 100vh;
   background-image: url('./../../assets/gradient.jpeg');
 }
@@ -44,6 +44,7 @@
 
 #most-viewed-container {
   text-align: center;
+  border-radius: 25px;
 }
 
 .most-viewed-listing {

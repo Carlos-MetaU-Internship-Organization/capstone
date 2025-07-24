@@ -28,7 +28,8 @@
 
 .seller-listing-image {
   width: 240px;
-  padding: 10px;
+  height: 180px;
+  object-fit: contain;
   border-radius: 10px;
 }
 

@@ -94,6 +94,10 @@
   width: 50%
 }
 
+#price-loading-gif {
+  width: 50%;
+}
+
 #finalize-listing {
   display: flex;
   flex-direction: column;
