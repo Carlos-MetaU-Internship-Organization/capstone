@@ -14,7 +14,6 @@ function HomePage() {
 
 
   const [recommendedListings, setRecommendedListings] = useState([]);
-  const [listingIndex, setListingIndex] = useState(0);
 
   const [favoritedListings, setFavoritedListings] = useState([]);
   const [favoritesPage, setFavoritesPage] = useState(1);
@@ -113,19 +112,23 @@ function HomePage() {
             <div id='recommended-container'>
               <h2 id='recommended-label'>Recommended For You</h2>
               {recommendedListings.length > 0 ? (
-                <div className='recommended-listing'>
-                  <img src={arrow} height='50px' className='flipped-arrow pointer' onClick={handleRecommendedPageChange}/>
-                  <img key={listingIndex} src={recommendedListings[listingIndex].images[0]} id='recommended-car-image' className='pointer grow' onClick={() => navigate(`/listing/${recommendedListings[listingIndex].vin}`)}/>
-                  <img src={arrow} height='50px' className='pointer' onClick={handleRecommendedPageChange}/>
+                <div className='slider' style={{ '--count': recommendedListings.length }}>
+                  <div className='recommended-listings'>
+                    {
+                      recommendedListings.map((listing, index) => {
+                        return (
+                          <div className='recommended-listing' key={index} style={{ '--index': index }}>
+                            <img src={listing.images[0]} id='recommended-car-image' className='pointer grow' onClick={() => navigate(`/listing/${recommendedListings[index].vin}`)}/>
+                            <h3 id='recommended-info'>{listing.year} {listing.make} {listing.model}</h3>
+                          </div>
+                        )
+                      })
+                    }
+                  </div>
                 </div>
-                ) : (
-                  <img src={loadingGIF}/>
-                )}
-              {
-                recommendedListings?.length > 0 && (
-                  <h3 id='recommended-info'>{recommendedListings[listingIndex].year} {recommendedListings[listingIndex].make} {recommendedListings[listingIndex].model}</h3>
-                )
-              }
+              ) : (
+                <img src={loadingGIF}/>
+              )}
             </div>
           }
           {
