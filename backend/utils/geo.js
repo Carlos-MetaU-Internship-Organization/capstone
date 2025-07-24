@@ -26,15 +26,15 @@ function getProximity(latA, lonA, latB, lonB) {
 function calculateBounds(latitude, longitude, radius) {
   const milesPerDegreeLatitude = 69;
 
-  const changeInLatitude = radius / milesPerDegreeLatitude;
+  const deltaLatitude = radius / milesPerDegreeLatitude;
 
   const milesPerDegreeLongitude = milesPerDegreeLatitude * Math.cos(latitude * (Math.PI / 180))
-  const changeInLongitude = radius / milesPerDegreeLongitude;
+  const deltaLongitude = radius / milesPerDegreeLongitude;
 
-  const minLatitude = latitude - changeInLatitude;
-  const maxLatitude = latitude + changeInLatitude;
-  const minLongitude = longitude - changeInLongitude;
-  const maxLongitude = longitude + changeInLongitude;
+  const minLatitude = latitude - deltaLatitude;
+  const maxLatitude = latitude + deltaLatitude;
+  const minLongitude = longitude - deltaLongitude;
+  const maxLongitude = longitude + deltaLongitude;
 
   return {
     minLatitude,

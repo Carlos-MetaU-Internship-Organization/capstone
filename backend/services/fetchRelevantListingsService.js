@@ -52,11 +52,6 @@ async function fetchListingsFromSearchHistory(userId) {
 
   const promises = pastSearches.map(search => fetchListingsFromDB(search, PAGE_SIZE, userId));
   const results = (await Promise.all(promises)).filter(result => result.status === 200 && result.listings);
-  results.forEach(result => {
-    if (result.status === 200) {
-      searchedListings.push(...result.listings);
-    }
-  })
 
   searchedListings.push(...results.flatMap(result => result.listings))
 

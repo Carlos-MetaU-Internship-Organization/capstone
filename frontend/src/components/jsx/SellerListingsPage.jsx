@@ -38,14 +38,12 @@ function SellerListingsPage() {
         {
           ownedListings?.length > 0 && (
             <>
-              <div id='seller-listings-container'>
-                <div id='seller-listings'>
-                  {
-                    ownedListings.slice(0, (PAGE_SIZE * page)).map(listing => {
-                      return <SellerListing key={listing.id} listingData={listing} onDelete={handleListingDeletion}/>
-                    })
-                  }
-                </div>
+              <div id='seller-listings'>
+                {
+                  ownedListings.slice(0, (PAGE_SIZE * page)).map(listing => {
+                    return <SellerListing key={listing.id} listingData={listing} onDelete={handleListingDeletion}/>
+                  })
+                }
               </div>
               {
                 (page * PAGE_SIZE < ownedListings?.length) && (<button id='load-more-seller-listings-button' className='translucent pointer' onClick={handlePageChange}>Load More</button>)

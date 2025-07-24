@@ -101,7 +101,7 @@ function ResultsPage() {
       const { models, success } = await getModels(make)
       if (success) {
         setModels(models);
-        setFilters(prev => ({...prev, model: models[0].name}))
+        setOnScreenFilters(prev => ({...prev, model: models[0].name}))
       } else {
         // TODO: error message component
       }
@@ -325,9 +325,15 @@ function ResultsPage() {
             <SortMenu sortOption={sortOption} onChange={setSortOption} />
             <div id='car-listing-list'>
               {
-                displayedListings.length > 0 && displayedListings.map(listing => {
-                  return <Listing key={listing.vin} listingData={listing} favoritedOnLoad={favoritedVins.includes(listing.vin)}/>
-                })
+                displayedListings.length > 0 ? (
+                  displayedListings.map(listing => {
+                    return <Listing key={listing.vin} listingData={listing} favoritedOnLoad={favoritedVins.includes(listing.vin)}/>
+                  })
+                ) : (
+                  <div id='no-results-label'>
+                    <h2>No Results Found</h2>
+                  </div>
+                )
               }
               {
                 listingsInfo && (page * PAGE_SIZE < listingsInfo.totalListingsCount) && (<button id='load-more-button' className='translucent pointer' onClick={handlePageChange}>Load More</button>)
