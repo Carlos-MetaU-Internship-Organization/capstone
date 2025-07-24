@@ -12,7 +12,6 @@
 
 #main-content {
   display: flex;
-  gap: 15vw;
   justify-content: space-around;
 }
 
@@ -63,29 +62,12 @@
   height: 72px;
 }
 
-#contact-seller-container {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  height: fit-content;
-  flex: 2;
-  margin: 100px;
-  padding: 25px;
-  border-radius: 25px;
-  
-}
-
-#messages {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
 #reply-box {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  width: 100%;
 }
 
 #reply-input {
@@ -93,6 +75,7 @@
   border-radius: 10px;
   padding: 10px;
   width: 100%;
+  min-height: 72px;
 }
 
 #reply-input::placeholder {

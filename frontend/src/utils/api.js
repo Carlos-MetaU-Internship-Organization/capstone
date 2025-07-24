@@ -289,9 +289,9 @@ export async function sendMessage(messageInfo) {
   }
 }
 
-export async function getConversationHistory(listingId, sellerId) {
+export async function getConversationHistory(listingId, otherUserId) {
   try {
-    const { data } = await axios.get(`${baseURL}/api/messages/listing/${listingId}/seller/${sellerId}`, { withCredentials: true });
+    const { data } = await axios.get(`${baseURL}/api/messages/listing/${listingId}/otherUser/${otherUserId}`, { withCredentials: true });
     return {
       success: true,
       conversationHistory: data
@@ -300,6 +300,22 @@ export async function getConversationHistory(listingId, sellerId) {
     return {
       success: false,
       conversationHistory: [],
+      message: error.response?.data?.message || error.message || 'An error occured'
+    }
+  }
+}
+
+export async function getBuyersAndInfo(listingId) {
+  try {
+    const { data } = await axios.get(`${baseURL}/api/messages/listing/${listingId}/buyers`, { withCredentials: true });
+    return {
+      success: true,
+      buyersAndInfo: data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      buyersAndInfo: [],
       message: error.response?.data?.message || error.message || 'An error occured'
     }
   }

@@ -3,6 +3,7 @@ import arrow from './../../assets/arrow.png'
 import heart from './../../assets/heart.png'
 import pinkHeart from './../../assets/pinkHeart.png'
 import Header from './Header'
+import SellerInbox from './SellerInbox'
 import { baseURL } from '../../globals'
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
@@ -232,9 +233,9 @@ function SingleCarPage() {
           </div>
           {
             listing.owner && listing.owner.id !== activeUserIdRef.current && (
-              <div id='contact-seller-container' className='translucent'>
+              <div className='seller-inbox translucent'>
                 <h3>Contact Seller</h3>
-                <div id='messages'>
+                <div className='messages'>
                   {
                     conversationHistory.map(message => {
                       return <p key={message.id}><strong>{message.senderId === listing.owner.id ? listing.ownerName : 'You'}:</strong> {message.content}</p>
@@ -246,6 +247,11 @@ function SingleCarPage() {
                   <button id='reply-send-button' className='translucent' onClick={handleMessageSend}>Send</button>
                 </div>
               </div>
+            )
+          }
+          {
+            listing.owner.id === activeUserIdRef.current && (
+              <SellerInbox listingId={listing.id} />
             )
           }
         </div>
