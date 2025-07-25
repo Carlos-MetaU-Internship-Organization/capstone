@@ -1,0 +1,16 @@
+.filter-user-selection {
+  border: none;
+  border-radius: 10px;
+}
+
+.filter-location-details {
+  display: flex;
+  gap: .5vw;
+}
+
+.filter-location-details > select,
+.filter-location-details > input {
+  width: 50%;
+  border: none;
+  border-radius: 10px;
+}

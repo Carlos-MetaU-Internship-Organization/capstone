@@ -1,4 +1,3 @@
-
 function calculateRecommendationScore(normalizedSignals) {
   const weights = {
     globalMessageCount: 0.08,

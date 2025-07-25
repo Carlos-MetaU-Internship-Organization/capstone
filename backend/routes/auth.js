@@ -2,7 +2,7 @@ const express = require('express')
 const zipcodes = require('zipcodes')
 const { hashPassword, verifyPassword } = require('./../services/passwordService')
 const { validateRequest } = require('../middleware/validateMiddleware')
-const { logInfo, logWarning, logError } = require('../services/loggingService');
+const { logInfo, logWarning } = require('../services/loggingService');
 const { signupSchema, loginSchema } = require('../schemas/authSchema');
 const { findUserByCredentials, createUser } = require('../services/userService');
 

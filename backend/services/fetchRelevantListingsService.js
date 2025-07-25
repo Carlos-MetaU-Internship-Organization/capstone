@@ -164,7 +164,7 @@ function calculateBounds(latitude, longitude, radius) {
 }
 
 async function fetchSimilarListings(listingInfo) {
-  await rebuildCompetitorGraph(); // TODO: precompute (maybe run script daily)
+  await rebuildCompetitorGraph();
   const { condition, make, model, year, mileage, latitude, longitude } = listingInfo;
 
   const comps = new Map()
