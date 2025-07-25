@@ -227,8 +227,8 @@ function ResultsPage() {
       { loaded ? (
         <div id='result-page-content' className='fade'>
           <div id='result-page-form-content' className='translucent'>
-            <img id='favorite-search-button' className='pointer' height={25} src={isSearchFavorited ? pinkHeart : heart} onClick={handleSearchFavoriteClick}/>
             <form id='advanced-filters' onSubmit={handleSearch}>
+              <img id='favorite-search-button' className='pointer' height={25} src={isSearchFavorited ? pinkHeart : heart} onClick={handleSearchFavoriteClick}/>
               <div className='filter'>
                 <label>Condition</label>
                 <select className='translucent buy-page-user-selection pointer' id="condition-selector" value={onScreenFilters.condition} name="condition" onChange={updateForm} required>
@@ -303,6 +303,7 @@ function ResultsPage() {
                 searchChange && (<button id='result-page-search-button' type='submit'>Search</button>)
               }
             </form>
+            <h3>OR</h3>
             {
               savedSearchFilters.length > 0 && (
                 <div id='saved-search-selection-box'>

@@ -1,5 +1,4 @@
 import './../css/BuyPage.css'
-import car from './../../assets/car.jpg'
 import arrow from './../../assets/arrow.png'
 import Header from './Header'
 import { useState, useEffect } from 'react'
@@ -145,8 +144,8 @@ function BuyPage() {
       {loaded ? (
         <>
           <div id='buy-content' className='fade'>
-            <div id='buy-search'>
-              <form className='translucent' id='filter-search' onSubmit={handleSearch}>
+            <div id='buy-search' className='translucent'>
+              <form id='filter-search' onSubmit={handleSearch}>
                 <div id='filters'>
                   <label>Condition</label>
                   <select className='translucent buy-page-user-selection pointer' id="condition-selector" name="condition" onChange={updateFilters} required>
@@ -208,9 +207,9 @@ function BuyPage() {
             </div>
             {
               mostDwelledListing &&
-              <div id='most-viewed-container' className='grow'>
+              <div id='most-viewed-container' className='translucent grow'>
                 <h2>Still Interested?</h2>
-                <div className='translucent most-viewed-listing pointer'>
+                <div className='most-viewed-listing pointer'>
                   <img src={mostDwelledListing.images[0]} id='most-viewed-car-img' className='car-image' onClick={() => navigate(`/listing/${mostDwelledListing.vin}`)}/>
                   <div id='most-viewed-car-info'>
                     <p>Make: {mostDwelledListing.make}</p>
@@ -227,7 +226,7 @@ function BuyPage() {
             favoritedListings.length > 0 &&
             (
               <div id='favorites-container' className='fade'>
-                <label id='favorites-label' className='pointer'>Your Favorites</label>
+                <label id='favorites-label'>Your Favorites</label>
                 <div id='favorite-cars'>
                   {
                     page > 1 && (<img src={arrow} height='50px' id='flipped-arrow' className='pointer' onClick={handlePageChange}/>) 

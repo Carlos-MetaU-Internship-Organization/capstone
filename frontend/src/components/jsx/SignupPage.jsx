@@ -42,7 +42,7 @@ function SignupPage() {
         <h2>CarPortal</h2>
       </header>
       <div id='signup-page-overlay'>
-        <form id='signup-page-content' onSubmit={handleSignup} autoComplete='off'>
+        <form id='signup-page-content' className='translucent' onSubmit={handleSignup} autoComplete='off'>
           <h2>Create an Account</h2>
           <h3>{message}</h3>
           {/* TODO: make signup-info's into a component */}

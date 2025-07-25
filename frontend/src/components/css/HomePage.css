@@ -10,7 +10,7 @@
   flex-direction: column;
   align-items: center;
   padding: 1vh 10vw;
-  gap: 100px;
+  gap: calc(min(40px, 3vh))
 }
 
 #recommended-label {
@@ -31,13 +31,13 @@
   );
 }
 
-.slider:hover .recommended-listing {
+.slider.hover-pause:hover .recommended-listing {
   animation-play-state: paused;
   transition: 0.5s filter;
   filter: blur(3px) brightness(0.5)
 }
 
-.slider .recommended-listing:hover {
+.slider.hover-pause .recommended-listing:hover {
   filter: none;
 }
 
@@ -52,8 +52,8 @@
   width: var(--listing-width);
   position: absolute;
   left: 100%;
-  animation: slide-listings 60s linear infinite;
-  animation-delay: calc((60s / var(--count) * var(--index)));
+  animation: slide-listings calc(var(--count) * 4s) linear infinite;
+  animation-delay: calc(4s * var(--index));
 }
 
 #recommended-car-image {
@@ -94,7 +94,7 @@
 
 @keyframes slide-listings {
   from {
-    left: -550px;
+    left: calc(-1 * var(--listing-width))
   }
   to {
     left: 100%;
