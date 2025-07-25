@@ -27,7 +27,7 @@ select:focus {
 
 .grow:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 25px lightskyblue;
+  box-shadow: 0 0 20px lightskyblue;
 }
 
 .listings-container {
@@ -84,6 +84,7 @@ input::-webkit-inner-spin-button {
 
 /* EXTERNAL CODE BELOW */
 .loader-container {
+  background-image: url('./assets/gradient.jpeg');
   display: flex;
   justify-content: center;
   align-items: center;

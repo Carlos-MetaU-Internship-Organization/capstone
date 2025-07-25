@@ -2,6 +2,9 @@
   min-width: 99vw;
   min-height: 100vh;
   background-image: url('./../../assets/gradient.jpeg');
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
 }
 
 .translucent {
@@ -19,8 +22,6 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  height: 62vh;
-  padding-top: 100px;
 }
 
 #buy-search {
@@ -28,6 +29,9 @@
   flex-direction: column;
   align-items: center;
   gap: 25px;
+  padding: 25px;
+  border-radius: 25px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
 #filter-search {
@@ -43,8 +47,13 @@
 }
 
 #most-viewed-container {
+  display: flex;
+  flex-direction: column;
   text-align: center;
+  gap: 5px;
   border-radius: 25px;
+  padding: 25px 0;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
 .most-viewed-listing {
@@ -68,11 +77,6 @@
   font-size: xx-large;
 }
 
-#favorites-label:hover {
-  color: #42b6ff;
-  text-decoration: underline;
-}
-
 #favorites-container {
   display: flex;
   flex-direction: column;
@@ -94,6 +98,11 @@
 .buy-page-user-selection {
   border: none;
   border-radius: 10px;
+}
+
+#search-button {
+  width: 75%;
+  align-self: center;
 }
 
 #search-button:hover {

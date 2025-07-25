@@ -16,9 +16,11 @@
   flex-direction: column;
   padding: 2vw;
   border-radius: 15px;
-  height: 75vh;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  height: fit-content;
+  box-shadow: 0 0px 15px rgba(0, 0, 0, 0.5);
   width: 50%;
+  gap: 40px;
+  align-items: center;
 }
 
 #favorite-search-button {
@@ -31,8 +33,8 @@
   display: flex;
   flex-direction: column;
   padding: 1vh 1vw;
-  height: 100%;
   justify-content: space-between;
+  gap: 10px;
 }
 
 #result-page-location-details {
@@ -73,6 +75,14 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  max-height: 142vh;
+  overflow-y: scroll;
+  overflow-x: visible;
+  padding: 2vw;
+}
+
+#car-listing-list::-webkit-scrollbar {
+  display: none;
 }
 
 #load-more-button:hover {
@@ -80,7 +90,6 @@
 }
 
 #saved-search-selection-box {
-  margin-top: 75px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -95,4 +104,11 @@
   border: none;
   border-radius: 25px;
   height: 40px;
+}
+
+#no-results-label {
+  align-self: center;
+  margin-top: auto;
+  margin-bottom: auto;
+  font-size: xx-large;
 }

@@ -101,7 +101,7 @@ function ResultsPage() {
       const { models, success } = await getModels(make)
       if (success) {
         setModels(models);
-        setFilters(prev => ({...prev, model: models[0].name}))
+        setOnScreenFilters(prev => ({...prev, model: models[0].name}))
       } else {
         // TODO: error message component
       }
@@ -227,8 +227,8 @@ function ResultsPage() {
       { loaded ? (
         <div id='result-page-content' className='fade'>
           <div id='result-page-form-content' className='translucent'>
-            <img id='favorite-search-button' className='pointer' height={25} src={isSearchFavorited ? pinkHeart : heart} onClick={handleSearchFavoriteClick}/>
             <form id='advanced-filters' onSubmit={handleSearch}>
+              <img id='favorite-search-button' className='pointer' height={25} src={isSearchFavorited ? pinkHeart : heart} onClick={handleSearchFavoriteClick}/>
               <div className='filter'>
                 <label>Condition</label>
                 <select className='translucent buy-page-user-selection pointer' id="condition-selector" value={onScreenFilters.condition} name="condition" onChange={updateForm} required>
@@ -303,6 +303,7 @@ function ResultsPage() {
                 searchChange && (<button id='result-page-search-button' type='submit'>Search</button>)
               }
             </form>
+            <h3>OR</h3>
             {
               savedSearchFilters.length > 0 && (
                 <div id='saved-search-selection-box'>
@@ -325,9 +326,15 @@ function ResultsPage() {
             <SortMenu sortOption={sortOption} onChange={setSortOption} />
             <div id='car-listing-list'>
               {
-                displayedListings.length > 0 && displayedListings.map(listing => {
-                  return <Listing key={listing.vin} listingData={listing} favoritedOnLoad={favoritedVins.includes(listing.vin)}/>
-                })
+                displayedListings.length > 0 ? (
+                  displayedListings.map(listing => {
+                    return <Listing key={listing.vin} listingData={listing} favoritedOnLoad={favoritedVins.includes(listing.vin)}/>
+                  })
+                ) : (
+                  <div id='no-results-label'>
+                    <h2>No Results Found</h2>
+                  </div>
+                )
               }
               {
                 listingsInfo && (page * PAGE_SIZE < listingsInfo.totalListingsCount) && (<button id='load-more-button' className='translucent pointer' onClick={handlePageChange}>Load More</button>)

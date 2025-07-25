@@ -2,9 +2,11 @@ const zipcodes = require('zipcodes')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { logInfo, logError } = require('../../frontend/src/services/loggingService')
-const { PAGE_SIZE, SIMILARITY_DEPTHS, MINIMUM_COMPS_REQUIRED } = require('../utils/constants')
+const { PAGE_SIZE, SIMILARITY_DEPTHS, MINIMUM_COMPS_REQUIRED, MAX_COMPETITORS } = require('../utils/constants')
 const { getProximity } = require('../utils/geo')
 const getDaysOnMarket = require('../utils/time')
+const { getModels, getCompetitors } = require('./makeModelService')
+const { rebuildCompetitorGraph } = require('../scripts/rebuildCompetitorGraph')
 
 async function fetchRecentlyClickedListings(userId, count) {
  try {
@@ -51,12 +53,9 @@ async function fetchListingsFromSearchHistory(userId) {
   let searchedListings = []
 
   const promises = pastSearches.map(search => fetchListingsFromDB(search, PAGE_SIZE, userId));
-  const results = await Promise.all(promises);
-  results.forEach(result => {
-    if (result.status === 200) {
-      searchedListings.push(...result.listings);
-    }
-  })
+  const results = (await Promise.all(promises)).filter(result => result.status === 200 && result.listings);
+
+  searchedListings.push(...results.flatMap(result => result.listings))
 
   return searchedListings;
 }
@@ -146,15 +145,15 @@ async function fetchListingsFromDB(filters, count = 0, userId = -1) {
 function calculateBounds(latitude, longitude, radius) {
   const milesPerDegreeLatitude = 69;
 
-  const changeInLatitude = radius / milesPerDegreeLatitude;
+  const deltaLatitde = radius / milesPerDegreeLatitude;
 
   const milesPerDegreeLongitude = milesPerDegreeLatitude * Math.cos(latitude * (Math.PI / 180))
-  const changeInLongitude = radius / milesPerDegreeLongitude;
+  const deltaLongitude = radius / milesPerDegreeLongitude;
 
-  const minLatitude = latitude - changeInLatitude;
-  const maxLatitude = latitude + changeInLatitude;
-  const minLongitude = longitude - changeInLongitude;
-  const maxLongitude = longitude + changeInLongitude;
+  const minLatitude = latitude - deltaLatitde;
+  const maxLatitude = latitude + deltaLatitde;
+  const minLongitude = longitude - deltaLongitude;
+  const maxLongitude = longitude + deltaLongitude;
 
   return {
     minLatitude,
@@ -165,64 +164,66 @@ function calculateBounds(latitude, longitude, radius) {
 }
 
 async function fetchSimilarListings(listingInfo) {
+  await rebuildCompetitorGraph(); // TODO: precompute (maybe run script daily)
   const { condition, make, model, year, mileage, latitude, longitude } = listingInfo;
 
-  let maxDepthReached = null;
-  const comps = new Map();
+  const comps = new Map()
+  const globalDepth = { depth: 1 };
 
-  for (let depth = 0; depth < SIMILARITY_DEPTHS.length; depth++) {
-    const { YEAR_RANGE, MILEAGE_FACTOR } = SIMILARITY_DEPTHS[depth];
+  const scopeSameModel = [{ make, model }]
 
-    let whereClause = {
-      condition,
-      make,
-      model
-    }
-
-    whereClause.year = {
-      gte: year - YEAR_RANGE,
-      lte: year + YEAR_RANGE
-    }
-
-    if (depth < SIMILARITY_DEPTHS.length - 1) {
-      whereClause.mileage = {
-        gte: Math.floor(mileage * (1 - MILEAGE_FACTOR)),
-        lte: Math.ceil(mileage * (1 + MILEAGE_FACTOR))
-      }
-    }
-
-    try {
-      const similarListings = await prisma.listing.findMany({
-        where: whereClause
-      });
+  const sameMakeModels = (await getModels(make)).filter(otherModel => otherModel !== model);
+  const scopeSameMake = sameMakeModels.map(model => ({ make, model: model.name }))
   
-      if (Array.isArray(similarListings)) {
-        similarListings.forEach(listing => {
-          if (!comps.has(listing.id)) {
-            listing.depth = depth + 1;
-            listing.proximity = getProximity(listing.latitude, listing.longitude, latitude, longitude);
-            listing.daysOnMarket = getDaysOnMarket(listing);
-            comps.set(listing.id, listing);
-          }
-        })
+  const scopeCompetitors = (await getCompetitors(make, model, MAX_COMPETITORS)).map(competitor => ({ make: competitor.competitorMake, model: competitor.competitorModel }))
 
-        if (similarListings.length >= MINIMUM_COMPS_REQUIRED) {
-          maxDepthReached = depth + 1;
-          break;
+  const scopes = [scopeSameModel, scopeSameMake, scopeCompetitors]
+
+  for (const scope of scopes) {
+    for (const { YEAR_RANGE, MILEAGE_FACTOR } of SIMILARITY_DEPTHS) {
+
+      let whereClause = {
+        condition,
+        OR: scope,
+        year: {
+          gte: year - YEAR_RANGE,
+          lte: year + YEAR_RANGE
         }
       }
-    } catch (error) {
-      logError('Something bad happened trying to retrieve similar listings', error);
-      return ({ status: 500, message: 'Failed to retrieve similar listings' })
+
+      if (MILEAGE_FACTOR > 0) {
+        whereClause.mileage = {
+          gte: Math.floor(mileage * (1 - MILEAGE_FACTOR)),
+          lte: Math.ceil(mileage * (1 + MILEAGE_FACTOR))
+        }
+      }
+
+      const similarListings = await prisma.listing.findMany({
+        where: whereClause
+      })
+
+      similarListings.forEach(listing => {
+        if (!comps.has(listing.id)) {
+          logInfo(`Found a similar listing: ${listing.year} ${listing.make} ${listing.model} with ${listing.mileage}mi priced at ${listing.price} at depth ${globalDepth.depth}`)
+          listing.depth = toDepthBucket(globalDepth.depth);
+          listing.proximity = getProximity(listing.latitude, listing.longitude, latitude, longitude);
+          listing.daysOnMarket = getDaysOnMarket(listing);
+          comps.set(listing.id, listing);
+        }
+      })
+
+      if (comps.size >= MINIMUM_COMPS_REQUIRED) {
+        return Array.from(comps.values())
+      }
+
+      globalDepth.depth += 1
     }
   }
-  const numberOfListingsFound = comps.size;
-  if (numberOfListingsFound !== 0) {
-    logInfo(`Successfully retrieved ${numberOfListingsFound} similar listings`);
-    return ({ status: 200, depth: maxDepthReached ?? SIMILARITY_DEPTHS.length, listings: [...comps.values()] })
-  }
-  logInfo('No similar listings were found')
-  return ({ status: 404, message: 'No similar listings were found' })
+  return Array.from(comps.values())
+}
+
+function toDepthBucket(depth) {
+  return depth > 10 ? 7 : depth > 5 ? 6 : depth;
 }
 
 module.exports = {
