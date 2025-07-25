@@ -6,12 +6,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
 import { getRecommendedListings, getFavoritedListings, getPopularListings, getRecentlyVisitedListings } from '../../utils/api'
-import { PAGE_SIZE } from '../../utils/constants'
+import { PAGE_SIZE, ALLOWED_PAUSE_DELAY } from '../../utils/constants'
 
 function HomePage() {
 
   // TODO: display error/warning messages to users
-
 
   const [recommendedListings, setRecommendedListings] = useState([]);
 
@@ -51,6 +50,13 @@ function HomePage() {
         
         const recommendedListingsResponse = await getRecommendedListings()
         setRecommendedListings(recommendedListingsResponse.recommendedListings);
+
+        const timer = setTimeout(() => {
+          document.querySelector('.slider').classList.add('hover-pause')
+        }, ALLOWED_PAUSE_DELAY)
+
+        return () => clearTimeout(timer)
+
       } catch (error) {
         logError('Something bad happened when trying to fetch your listings', error);
       }
@@ -135,7 +141,7 @@ function HomePage() {
             favoritedListings.length > 0 &&
             (
               <div id='listings-container'>
-                <label className='listings-label pointer'>Your Favorites</label>
+                <label className='listings-label'>Your Favorites</label>
                 <div className='listings-cars'>
                   {
                     favoritesPage > 1 && (<img src={arrow} height='50px' className='flipped-arrow pointer' onClick={handleFavoritePageChange}/>) 
@@ -156,7 +162,7 @@ function HomePage() {
             popularListings.length > 0 &&
             (
               <div className='listings-container'>
-                <label className='listings-label pointer'>What's Popular</label>
+                <label className='listings-label'>What's Popular</label>
                 <div className='listings-cars'>
                   {
                     popularPage > 1 && (<img src={arrow} height='50px' className='flipped-arrow pointer' onClick={handlePopularPageChange}/>) 
@@ -176,8 +182,8 @@ function HomePage() {
           {
             recentlyVisitedListings.length > 0 &&
             (
-              <div id='favorites-container'>
-                <label className='listings-label pointer'>Most Recently Visited</label>
+              <div id='listings-container'>
+                <label className='listings-label'>Most Recently Visited</label>
                 <div className='listings-cars'>
                   {
                     recentlyVisitedPage > 1 && (<img src={arrow} height='50px' className='flipped-arrow pointer' onClick={handleRecentlyVisitedPageChange}/>) 

@@ -53,12 +53,9 @@ async function fetchListingsFromSearchHistory(userId) {
   let searchedListings = []
 
   const promises = pastSearches.map(search => fetchListingsFromDB(search, PAGE_SIZE, userId));
-  const results = await Promise.all(promises);
-  results.forEach(result => {
-    if (result.status === 200) {
-      searchedListings.push(...result.listings);
-    }
-  })
+  const results = (await Promise.all(promises)).filter(result => result.status === 200 && result.listings);
+
+  searchedListings.push(...results.flatMap(result => result.listings))
 
   return searchedListings;
 }
@@ -148,15 +145,15 @@ async function fetchListingsFromDB(filters, count = 0, userId = -1) {
 function calculateBounds(latitude, longitude, radius) {
   const milesPerDegreeLatitude = 69;
 
-  const changeInLatitude = radius / milesPerDegreeLatitude;
+  const deltaLatitde = radius / milesPerDegreeLatitude;
 
   const milesPerDegreeLongitude = milesPerDegreeLatitude * Math.cos(latitude * (Math.PI / 180))
-  const changeInLongitude = radius / milesPerDegreeLongitude;
+  const deltaLongitude = radius / milesPerDegreeLongitude;
 
-  const minLatitude = latitude - changeInLatitude;
-  const maxLatitude = latitude + changeInLatitude;
-  const minLongitude = longitude - changeInLongitude;
-  const maxLongitude = longitude + changeInLongitude;
+  const minLatitude = latitude - deltaLatitde;
+  const maxLatitude = latitude + deltaLatitde;
+  const minLongitude = longitude - deltaLongitude;
+  const maxLongitude = longitude + deltaLongitude;
 
   return {
     minLatitude,

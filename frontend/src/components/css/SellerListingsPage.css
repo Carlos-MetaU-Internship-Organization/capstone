@@ -21,6 +21,12 @@
   justify-content: center;
   gap: 50px;
   padding: 20px;
+  max-height: 200vh;
+  overflow-y: scroll;
+}
+
+#seller-listings::-webkit-scrollbar {
+  display: none;
 }
 
 #load-more-seller-listings-button {

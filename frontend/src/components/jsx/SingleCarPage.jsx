@@ -196,7 +196,17 @@ function SingleCarPage() {
   }
   
   if (!listing) {
-    return <div>Loading...</div>
+    return (
+      <>
+        <Header />
+        <div className='loader-container'>
+          <div className='loading-text'>
+            Loading<span className='dots'></span>
+          </div>
+        </div>
+      </>
+    )
+    
   }
   const formattedCondition = listing.condition.charAt(0).toUpperCase() + listing.condition.slice(1);
   const formattedMiles = parseInt(listing.mileage).toLocaleString('en-US');
@@ -207,7 +217,7 @@ function SingleCarPage() {
   return (
     <div id='single-car-page'>
       <Header />
-      <div id='single-car-page-content'>
+      <div id='single-car-page-content' className='fade'>
         <div id='main-content'>
           <div id='listing-container'>
             <div id='listing-info'>

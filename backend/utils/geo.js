@@ -9,11 +9,13 @@ function getProximity(latA, lonA, latB, lonB) {
   const latARadians = degreesToRadians(latA);
   const latBRadians = degreesToRadians(latB);
 
+  // calculates the square of half the chord length between the two points
   const halfChordSq = Math.sin(deltaLatitudeRadians / 2) ** 2 +
                       Math.cos(latARadians) * 
                       Math.cos(latBRadians) *
                       Math.sin(deletaLongitudeRadians / 2) ** 2;
 
+  // calculates the angular distance in radians between the two points
   const centralAngle = 2 * Math.atan2(Math.sqrt(halfChordSq), Math.sqrt(1 - halfChordSq));
 
   const distanceInMiles = EARTH_RADIUS_MILES * centralAngle;
@@ -24,15 +26,15 @@ function getProximity(latA, lonA, latB, lonB) {
 function calculateBounds(latitude, longitude, radius) {
   const milesPerDegreeLatitude = 69;
 
-  const changeInLatitude = radius / milesPerDegreeLatitude;
+  const deltaLatitude = radius / milesPerDegreeLatitude;
 
   const milesPerDegreeLongitude = milesPerDegreeLatitude * Math.cos(latitude * (Math.PI / 180))
-  const changeInLongitude = radius / milesPerDegreeLongitude;
+  const deltaLongitude = radius / milesPerDegreeLongitude;
 
-  const minLatitude = latitude - changeInLatitude;
-  const maxLatitude = latitude + changeInLatitude;
-  const minLongitude = longitude - changeInLongitude;
-  const maxLongitude = longitude + changeInLongitude;
+  const minLatitude = latitude - deltaLatitude;
+  const maxLatitude = latitude + deltaLatitude;
+  const minLongitude = longitude - deltaLongitude;
+  const maxLongitude = longitude + deltaLongitude;
 
   return {
     minLatitude,

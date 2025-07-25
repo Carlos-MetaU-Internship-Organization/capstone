@@ -13,3 +13,5 @@ export const RADIANS_PER_DEGREE = Math.PI / 180;
 
 export const PAGE_SIZE = 20;
 export const LISTINGS_PER_CYCLE = 4;
+
+export const ALLOWED_PAUSE_DELAY = 6000;
