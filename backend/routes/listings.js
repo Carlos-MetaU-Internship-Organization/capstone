@@ -1,14 +1,12 @@
-const axios = require('axios')
 const express = require('express')
 const { PrismaClient } = require('@prisma/client')
 const zipcodes = require('zipcodes')
 const getRecommendations = require('./../services/recommendationService');
 const getPriceRecommendationInfo = require('./../services/priceEstimatorService');
-const { fetchListingsFromDB } = require('../services/fetchRelevantListingsService');
 const { getGlobalViewCount } = require('../services/listingDataService');
 const { getFavoritedListings, getPopularListings, getRecentlyVisitedListings, getMostDwelledListings, getOwnedListings, getListingFromVIN, deleteListing, updateFavoriteCount, updateUserFavoritedList, sellListing, createListing, getListings } = require('../services/listingService')
 const { requireAuth } = require('../middleware/authMiddleware');
-const { logInfo, logWarning, logError } = require('../services/loggingService');
+const { logInfo, logError } = require('../services/loggingService');
 const { validateRequest } = require('../middleware/validateMiddleware')
 const { searchFilterSchema } = require('../schemas/searchFilterSchema')
 const { listingInfoSchema, vinSchema, listingIdSchema, newStatusSchema, priceEstimateSchema, countSchema } = require('../schemas/listingSchema');
@@ -16,13 +14,6 @@ const { listingInfoSchema, vinSchema, listingIdSchema, newStatusSchema, priceEst
 const prisma = new PrismaClient()
 const listings = express.Router()
 listings.use(requireAuth);
-
-/**
- * TODO: make sure the user marking a listing as sold, 
- * deleted, or edited is the owner of the listing
- * 
- * FINAL TODO: hide encrypted password on a get request for a listing?
- */
 
 listings.get('/popular', async (req, res) => {
   logInfo(`Request to get the 20 most popular local listings received`);

@@ -1,0 +1,16 @@
+.saved-search-selection-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.saved-search-label {
+  font-size: x-large;
+}
+
+.saved-search-select-elem {
+  border: none;
+  border-radius: 25px;
+  height: 40px;
+}

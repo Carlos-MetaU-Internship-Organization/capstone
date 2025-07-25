@@ -5,22 +5,25 @@ function log(level, message, data = null) {
     timestamp: new Date().toISOString(),
     level,
     message,
-    data
+    data,
   };
   logs.push(entry);
-  console[level](`[${level.toUpperCase()}] ${entry.timestamp} - ${message}`, data || '');
+  console[level](
+    `[${level.toUpperCase()}] ${entry.timestamp} - ${message}`,
+    data || "",
+  );
 }
 
 export function logInfo(message, data = null) {
-  log('info', message, data);
+  log("info", message, data);
 }
 
 export function logWarning(message, data = null) {
-  log('warn', message, data);
+  log("warn", message, data);
 }
 
 export function logError(message, data = null) {
-  log('error', message, data);
+  log("error", message, data);
 }
 
 export function getLogs() {

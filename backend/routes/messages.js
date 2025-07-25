@@ -1,7 +1,7 @@
 const express = require('express')
 const { requireAuth } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validateMiddleware')
-const { logInfo, logWarning, logError } = require('../services/loggingService');
+const { logInfo, logError } = require('../services/loggingService');
 const { createMessageSchema, getMessagesSchema } = require('../schemas/messageSchema');
 const { createMessage, getConversationHistory, getBuyersAndInfo } = require('../services/messageService');
 const { listingIdSchema } = require('../schemas/listingSchema');

@@ -3,7 +3,6 @@ const { PrismaClient } = require('@prisma/client')
 const zipcodes = require('zipcodes')
 const gps = require('gps2zip')
 const levenshtein = require('js-levenshtein');
-const { PrismaClientKnownRequestError } = require('@prisma/client/runtime/library');
 const { logInfo, logError, logWarning } = require('../services/loggingService');
 const { calculateBounds } = require('../utils/geo')
 const { PAGE_SIZE, MIN_LISTINGS_TO_FETCH, RATIO_OF_TOTAL_LISTINGS_TO_FETCH } = require('../utils/constants')

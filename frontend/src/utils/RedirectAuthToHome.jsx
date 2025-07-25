@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from 'react-router-dom'
-import { checkAuth } from './api'
+import { useNavigate } from "react-router-dom";
+import { checkAuth } from "./api";
 
 function RedirectAuthToHome({ children }) {
-
   const [authChecked, setAuthChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
 
   const navigate = useNavigate();
 
@@ -18,13 +17,13 @@ function RedirectAuthToHome({ children }) {
       setAuthChecked(true);
     }
     verify();
-  }, [])
+  }, []);
 
   if (!authChecked) return null;
   if (isAuthenticated) {
-    return navigate('/home', { state: { message }})
+    return navigate("/home", { state: { message } });
   }
   return children;
 }
 
-export default RedirectAuthToHome
+export default RedirectAuthToHome;

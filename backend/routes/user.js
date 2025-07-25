@@ -1,7 +1,6 @@
 const express = require('express')
 const { getUserLocation } = require('../services/userService');
 const { requireAuth } = require('../middleware/authMiddleware');
-const { logWarning } = require('../services/loggingService')
 
 const user = express.Router()
 user.use(requireAuth)
