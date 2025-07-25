@@ -30,8 +30,20 @@ const DEPTH_WEIGHT_BY_LEVEL = {
   2: 1.5,
   3: 0.375,
   4: 0.125,
-  5: 0.025
+  5: 0.025,
+  6: 0.0125,
+  7: 0.008
 };
+const DEPTH_CONFIDENCE_PENALTIES = {
+  1: 1.00,
+  2: 0.90,
+  3: 0.80,
+  4: 0.70,
+  5: 0.60,
+  6: 0.30, // harsh drop (cars within same make)
+  7: 0.20, // continued drop (competitor cars)
+}
+const MAX_COMPETITORS = 3;
 const SOLD_LISTING_WEIGHT = .7;
 const UNSOLD_LISTING_WEIGHT = .3;
 const PROXIMITY_MIN_WEIGHT = .25;
@@ -82,6 +94,8 @@ module.exports = {
   SELLER_FACTOR_MAX,
   MILEAGE_SCALE_FACTOR,
   DEPTH_WEIGHT_BY_LEVEL,
+  DEPTH_CONFIDENCE_PENALTIES,
+  MAX_COMPETITORS,
   SOLD_LISTING_WEIGHT,
   UNSOLD_LISTING_WEIGHT,
   PROXIMITY_MIN_WEIGHT,
