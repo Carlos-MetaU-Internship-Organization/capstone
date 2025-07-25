@@ -4,6 +4,7 @@ const listingDataService = require('./listingDataService')
 const normalizeValue = require('../utils/normalizationUtils')
 const calculateRecommendationScore = require('../utils/scoringUtils')
 const { getProximity } = require('../utils/geo')
+const { NUM_RECENTLY_CLICKED_LISTINGS, DAY_IN_MS, NUM_RECOMMENDED_LISTINGS } = require('../utils/constants')
 
 async function getRecommendations(userId, userLatitude, userLongitude) {
 
@@ -11,7 +12,7 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
   if (Array.isArray(cached) && cached.length > 0) return cached;
   
   const allListings = []
-  const recentlyClickedListings = await fetchRecentlyClickedListings(userId, 50);
+  const recentlyClickedListings = await fetchRecentlyClickedListings(userId, NUM_RECENTLY_CLICKED_LISTINGS);
   if (recentlyClickedListings.status === 200) {
     allListings.push(...recentlyClickedListings.listings)
   }
@@ -24,7 +25,7 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
   const uniqueListings = Array.from(new Map(allListings.map(listing => [listing.vin, listing])).values());
 
   const uniqueListingsInfo = await Promise.all(uniqueListings.map(async (listing) => {
-    const daysOnMarket = Math.round((new Date() - listing.createdAt) / 1000 / 60 / 60 / 24);
+    const daysOnMarket = Math.round((new Date() - listing.createdAt) / DAY_IN_MS);
 
     const [
       globalMessageCount,
@@ -111,7 +112,7 @@ async function getRecommendations(userId, userLatitude, userLongitude) {
     return map;
   }, new Map())
 
-  const finalListings = scoredListingsInfo.map(({ listingId }) => listingsById.get(listingId)).slice(0, 20);
+  const finalListings = scoredListingsInfo.map(({ listingId }) => listingsById.get(listingId)).slice(0, NUM_RECOMMENDED_LISTINGS);
 
   setCachedRecommendations(userId, finalListings);
   

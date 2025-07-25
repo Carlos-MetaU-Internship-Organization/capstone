@@ -3,7 +3,7 @@ const { logInfo, logWarning } = require('./loggingService')
 const computeSellerDelta = require('../utils/sellerHistory')
 const { calculateMarketPrice, harmonicMean } = require('../utils/statistics')
 const buildElasticityCurve = require('../utils/elasticity')
-const { ROUND_TO_NEAREST_HUNDRED, FORMAT_TO_PRICE, MINIMUM_COMPS_REQUIRED, DEPTH_CONFIDENCE_PENALTIES } = require('../utils/constants')
+const { ROUND_TO_NEAREST_HUNDRED, FORMAT_TO_PRICE, MINIMUM_COMPS_REQUIRED, DEPTH_CONFIDENCE_PENALTIES, SPREAD_EXP_FACTOR } = require('../utils/constants')
 
 async function getPriceRecommendationInfo(userAndListingInfo) {
 
@@ -42,7 +42,7 @@ function getConfidence(comps) {
   const stdDeviation = Math.sqrt(variance)
 
   const priceSpread = stdDeviation / averagePrice;
-  const scatteredWeight = 1 / (10 ** priceSpread)
+  const scatteredWeight = 1 / (SPREAD_EXP_FACTOR ** priceSpread)
 
   const depthQualityWeight = harmonicMean(comps.map(comp => DEPTH_CONFIDENCE_PENALTIES[comp.depth])) ** 2
 

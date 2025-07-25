@@ -73,6 +73,15 @@ const MAX_PASSWORD_LENGTH = 64;
 
 const MAX_VIEWED_FILTERS = 5;
 
+const COLORS = ['beige', 'black', 'blue', 'brown', 'gold', 'gray', 'green', 'orange', 'purple', 'red', 'silver', 'white', 'yellow'];
+const NUM_POPULAR_LISTINGS = 20;
+
+const SPREAD_EXP_FACTOR = 10;
+
+const NUM_RECENTLY_CLICKED_LISTINGS = 50;
+const DAY_IN_MS = 1000 * 60 * 60 * 24;
+const NUM_RECOMMENDED_LISTINGS = 20;
+
 const ROUND_TO_NEAREST_HUNDRED = (number) => Math.round(number / 100) * 100;
 const FORMAT_TO_PRICE = (price) => price.toLocaleString('en-US');
 
@@ -118,6 +127,12 @@ module.exports = {
   MIN_PASSWORD_LENGTH,
   MAX_PASSWORD_LENGTH,
   MAX_VIEWED_FILTERS,
+  COLORS,
+  NUM_POPULAR_LISTINGS,
+  SPREAD_EXP_FACTOR,
+  NUM_RECENTLY_CLICKED_LISTINGS,
+  DAY_IN_MS,
+  NUM_RECOMMENDED_LISTINGS,
   ROUND_TO_NEAREST_HUNDRED,
   FORMAT_TO_PRICE
 }

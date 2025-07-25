@@ -5,7 +5,7 @@ const gps = require('gps2zip')
 const levenshtein = require('js-levenshtein');
 const { logInfo, logError, logWarning } = require('../services/loggingService');
 const { calculateBounds } = require('../utils/geo')
-const { PAGE_SIZE, MIN_LISTINGS_TO_FETCH, RATIO_OF_TOTAL_LISTINGS_TO_FETCH } = require('../utils/constants')
+const { PAGE_SIZE, MIN_LISTINGS_TO_FETCH, RATIO_OF_TOTAL_LISTINGS_TO_FETCH, COLORS, NUM_POPULAR_LISTINGS } = require('../utils/constants')
 
 const prisma = new PrismaClient()
 
@@ -71,12 +71,10 @@ function cleanResultsFromAPI(listings) {
 
 function getClosestColor(inputColor) {
   if (!inputColor) return "";
-
-  const colors = ['beige', 'black', 'blue', 'brown', 'gold', 'gray', 'green', 'orange', 'purple', 'red', 'silver', 'white', 'yellow'];
   
   let closestColor = null;
   let minDistance = Infinity;
-  colors.forEach(color => {
+  COLORS.forEach(color => {
     const distance = levenshtein(inputColor.toLowerCase(), color);
     if (distance < minDistance) {
       minDistance = distance;
@@ -136,7 +134,7 @@ async function getPopularListings() {
         _count: 'desc'
       }
     },
-    take: 20
+    take: NUM_POPULAR_LISTINGS
   });
 }
 

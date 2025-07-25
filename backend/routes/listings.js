@@ -16,7 +16,7 @@ const listings = express.Router()
 listings.use(requireAuth);
 
 listings.get('/popular', async (req, res) => {
-  logInfo(`Request to get the 20 most popular local listings received`);
+  logInfo(`Request to get the most popular local listings received`);
 
   try {
     const popularListings = await getPopularListings();
