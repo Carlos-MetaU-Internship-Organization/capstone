@@ -8,7 +8,7 @@ import {
   getPopularListings,
   getRecentlyVisitedListings,
 } from "../../utils/api";
-import { PAGE_SIZE } from "../../utils/constants";
+import { PAGE_SIZE, MAX_LISTING_COUNT_TO_DISPLAY } from "../../utils/constants";
 import ListingCarousel from "./ui/ListingCarousel";
 import RecommendedListingCarousel from "./ui/RecommendedListingCarousel";
 
@@ -30,25 +30,30 @@ function HomePage() {
     const fetchAllListings = async () => {
       try {
         const [
-          favoritedListingsResponse,
-          recentlyVisitedListingsResponse,
-          popularListingsResponse,
+          { favoritedListings },
+          { recentlyVisitedListings },
+          { popularListings },
         ] = await Promise.all([
           getFavoritedListings(),
           getRecentlyVisitedListings(PAGE_SIZE),
           getPopularListings(),
         ]);
 
-        setFavoritedListings(favoritedListingsResponse.favoritedListings);
-        setRecentlyVisitedListings(
-          recentlyVisitedListingsResponse.recentlyVisitedListings,
-        );
-        setPopularListings(popularListingsResponse.popularListings);
+        setFavoritedListings(favoritedListings);
+        setRecentlyVisitedListings(recentlyVisitedListings)
+        setPopularListings(popularListings);
 
         setLoaded(true);
 
-        const recommendedListingsResponse = await getRecommendedListings();
-        setRecommendedListings(recommendedListingsResponse.recommendedListings);
+        const { recommendedListings } = await getRecommendedListings();
+        const fallbackCount = Math.max(0, MAX_LISTING_COUNT_TO_DISPLAY - recommendedListings.length)
+        const recommendedListingsWithFallback = recommendedListings.concat(popularListings.slice(0, fallbackCount))
+        setRecommendedListings(recommendedListingsWithFallback);
+
+        // New User (hasn't clicked on or searched for any listings)
+        if (fallbackCount === MAX_LISTING_COUNT_TO_DISPLAY) {
+          setPopularListings([])
+        }
       } catch (error) {
         logError(
           "Something bad happened when trying to fetch your listings",
@@ -64,7 +69,11 @@ function HomePage() {
       <Header />
       {loaded ? (
         <div id="home-content" className="fade">
-          <RecommendedListingCarousel listings={recommendedListings} />
+          {
+            recommendedListings.length > 0 && (
+              <RecommendedListingCarousel listings={recommendedListings} />
+            )
+          }
           <ListingCarousel
             listings={favoritedListings}
             currentPage={favoritesPage}

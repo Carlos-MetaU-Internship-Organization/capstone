@@ -86,8 +86,8 @@ listings.put('/id/:listingId', validateRequest({ body: listingInfoSchema, params
     logInfo(`Local listing with listingId: ${listingId} updated successfully`)
     res.json(listing)
   } catch (error) {
-    logError('An error occured', error);
-    res.status(500).json({ message: error.message });
+    logError('Error updating listing:', error);
+    res.status(500).json({ message: 'Error updating listing' });
   }
 })
 

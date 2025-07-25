@@ -489,6 +489,25 @@ export async function createListing(listingInfo) {
   }
 }
 
+export async function editListing(listingId, listingInfo) {
+  try {
+    const { data } = await axios.put(`${baseURL}/api/listings/id/${listingId}`, listingInfo, {
+      withCredentials: true,
+    });
+    return {
+      success: true,
+      listing: data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      listing: null,
+      message:
+        error.response?.data?.message || error.message || "An error occured",
+    };
+  }
+}
+
 export async function checkListingFavoriteStatus(vin) {
   try {
     const { data } = await axios.get(
