@@ -15,3 +15,7 @@ export const PAGE_SIZE = 20;
 export const LISTINGS_PER_CYCLE = 4;
 
 export const ALLOWED_PAUSE_DELAY = 6000;
+
+export const LISTING_COUNT_PER_PAGE_CAROUSEL = 4;
+
+export const COLORS = ['beige', 'black', 'blue', 'brown', 'gold', 'gray', 'green', 'orange', 'purple', 'red', 'silver', 'white', 'yellow'];

@@ -6,7 +6,7 @@
   padding: .5vh .5vw .5vh 1vw;
   min-width: 99vw;
   border-bottom: 3px solid black;
-  background-image: url('./../../assets/gradient.jpeg');
+  background-image: url('./../../../assets/gradient.jpeg');
 }
 
 .header-image {
@@ -24,10 +24,6 @@
   text-decoration: underline;
 }
 
-#title {
-  cursor: default;
-}
-
 #logout {
   margin-left: auto;
   margin-right: 2vw;
@@ -36,5 +32,3 @@
 #sidebar-opener {
   margin-right: 1vw;
 }
-
-/* TODO: Adjust font sizes for text to enhance readability */

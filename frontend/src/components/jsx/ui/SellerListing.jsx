@@ -1,14 +1,15 @@
-import './../css/SellerListing.css'
-import soldOverlay from './../../assets/soldOverlay.png'
-import eye from './../../assets/eye.png'
-import blackHeart from './../../assets/blackHeart.png'
-import edit from './../../assets/edit.png'
-import money from './../../assets/money.png'
-import trash from './../../assets/trash.png'
+import './../../css/ui/SellerListing.css'
+import soldOverlay from './../../../assets/soldOverlay.png'
+import eye from './../../../assets/eye.png'
+import blackHeart from './../../../assets/blackHeart.png'
+import edit from './../../../assets/edit.png'
+import money from './../../../assets/money.png'
+import trash from './../../../assets/trash.png'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { logError, logInfo } from '../../services/loggingService'
-import { deleteListing, getListingViewCount, sellListing } from '../../utils/api'
+import { logError, logInfo } from './../../../services/loggingService'
+import { deleteListing, getListingViewCount, sellListing } from './../../../utils/api'
 
 function SellerListing({ listingData, onDelete }) {
 
@@ -74,28 +75,28 @@ function SellerListing({ listingData, onDelete }) {
     <div className='seller-listing translucent grow'>
       <div className='seller-listing-content'>
         <div className='seller-listing-image-wrapper'>
-          <img src={listingData.images[0]} className='seller-listing-image translucent'/>
+          <img loading='lazy' src={listingData.images[0]} className='seller-listing-image translucent'/>
           {
-          sold && <img src={soldOverlay} className='seller-listing-sold-overlay-img' />
+          sold && <img loading='lazy' src={soldOverlay} className='seller-listing-sold-overlay-img' />
           }
         </div>
         <div className='seller-listing-info-container'>
           <div className='seller-listing-info translucent'>
-            <img src={eye} />
+            <img loading='lazy' src={eye} />
             <p>{viewCount}</p>
           </div>
           <div className='seller-listing-info translucent'>
-            <img src={blackHeart} />
+            <img loading='lazy' src={blackHeart} />
             <p>{listingData.favorites}</p>
           </div>
           <div className='edit-sold-container'>
             <div className='seller-listing-info translucent pointer' onClick={handleListingEdit}>
               <p>Edit</p>
-              <img src={edit} />
+              <img loading='lazy' src={edit} />
             </div>
             <div className='seller-listing-info translucent pointer' onClick={handleListingMarkedAsSold}>
               <p>{sold ? 'Mark Unsold' : 'Mark Sold'}</p>
-              <img src={money} />
+              <img loading='lazy' src={money} />
             </div>
           </div>
           <div className='seller-listing-info translucent pointer' onClick={handleListingClick}>
@@ -103,7 +104,7 @@ function SellerListing({ listingData, onDelete }) {
           </div>
           <div className='seller-listing-info translucent pointer' onClick={handleListingDeletion}>
             <p>Delete</p>
-            <img src={trash} />
+            <img loading='lazy' src={trash} />
           </div>
         </div>
       </div>
@@ -111,4 +112,4 @@ function SellerListing({ listingData, onDelete }) {
   )
 }
 
-export default SellerListing
+export default React.memo(SellerListing)

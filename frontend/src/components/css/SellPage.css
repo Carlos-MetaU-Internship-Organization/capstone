@@ -50,30 +50,6 @@
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
-#listings-container {
-  display: flex;
-  flex-direction: column;
-  padding: 20px 100px;
-  align-items: center;
-}
-
-
-#listings-label {
-  font-size: xx-large;
-}
-
-#listings-label:hover {
-  color: #42b6ff;
-  text-decoration: underline;
-}
-
-#listings-cars {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex-grow: 0;
-}
-
 #create-listing-button:hover {
   border: 1px solid;
 }
@@ -128,14 +104,13 @@ input::file-selector-button {
   width: 50%;
 }
 
-.listing-image {
-  width: 15vw;
-  border-radius: 25px;
-  margin: 10px 40px 0px;
+#listings-label {
+  font-size: xx-large;
 }
 
-#flipped-arrow {
-  transform: scaleX(-1);
+#listings-label:hover {
+  color: #42b6ff;
+  text-decoration: underline;
 }
 
 #price-estimation {

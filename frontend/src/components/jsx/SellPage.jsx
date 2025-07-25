@@ -2,12 +2,13 @@ import './../css/SellPage.css'
 import arrow from './../../assets/arrow.png'
 import soldOverlay from './../../assets/soldOverlay.png'
 import loadingGif from './../../assets/loading.gif'
-import Header from './Header'
+import Header from './ui/Header'
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
 import { ELASTICITY_KEYS, CAPITALIZE, LISTINGS_PER_CYCLE } from './../../utils/constants'
 import { getOwnedListings, getMakes, getModels, createListing, estimatePrice } from '../../utils/api'
+import ColorSelector from './ui/ColorSelector'
 
 function SellPage() {
 
@@ -153,7 +154,6 @@ function SellPage() {
     setSliderIndex(Number(event.target.value));
   }
 
-  const colors = ['beige', 'black', 'blue', 'brown', 'gold', 'gray', 'green', 'orange', 'purple', 'red', 'silver', 'white', 'yellow'];
   const currentSliderKey = ELASTICITY_KEYS[sliderIndex];
 
   return (
@@ -201,15 +201,7 @@ function SellPage() {
                         <input type='number' className='new-listing-input translucent' value={listingInfo.year} name='year' onChange={updateForm} required/>
                       </div>
                       <div id='listing-option'>
-                        <label>Color</label>
-                        <select className='new-listing-input translucent pointer' value={listingInfo.color} name='color' onChange={updateForm} required>
-                          <option disabled selected></option>
-                          {
-                            colors.map(color => {
-                              return <option value={color}>{(color.charAt(0).toUpperCase()).concat(color.slice(1))}</ option>
-                            })
-                          }
-                        </select>
+                        <ColorSelector className='new-listing-input' value={listingInfo.color} updateColor={updateForm} disableDefaultOption={true}/>
                       </div>
                       <div id='listing-option'>
                         <label>Mileage</label>
@@ -243,7 +235,7 @@ function SellPage() {
                     !loadPriceEstimation ? (
                       <button id='price-helper-button' className='translucent' onClick={handlePriceEstimation}>Click Me</button>
                     ) : (
-                      <img src={loadingGif} id='price-loading-gif'/>
+                      <img loading='lazy' src={loadingGif} id='price-loading-gif'/>
                     )
                   }
                   {
@@ -269,24 +261,24 @@ function SellPage() {
               </div>
             </div>
             { ownedListings?.length > 0 && (
-              <div id='listings-container' className='fade'>
+              <div className='listings-container fade'>
                 <label id='listings-label' className='pointer' onClick={redirectToListingsPage}>Your Listings</label>
-                <div id='listings-cars'>
+                <div className='listings-cars'>
                   {
-                    page > 1 && (<img src={arrow} height='50px' id='flipped-arrow' className='pointer' onClick={handlePageChange}/>) 
+                    page > 1 && (<img loading='lazy' src={arrow} height='50px' className='flipped-arrow pointer' onClick={handlePageChange}/>) 
                   }
                   {
                     ownedListings.slice((LISTINGS_PER_CYCLE * (page - 1)), (LISTINGS_PER_CYCLE * page)).map(listing => (
                       <div key={listing.id} className='listing-wrapper' onClick={() => navigate(`/listing/${listing.vin}`)}>
-                        <img src={listing.images[0]} className='listing-image pointer grow'/>
+                        <img loading='lazy' src={listing.images[0]} className='listing-image pointer grow'/>
                         {
-                          listing.sold && <img src={soldOverlay} className='sold-overlay-img' />
+                          listing.sold && <img loading='lazy' src={soldOverlay} className='sold-overlay-img' />
                         }
                       </div>
                     ))
                   }
                   {
-                    ownedListings.length > page * LISTINGS_PER_CYCLE && (<img src={arrow} height='50px' className='pointer' onClick={handlePageChange}/>)
+                    ownedListings.length > page * LISTINGS_PER_CYCLE && (<img loading='lazy' src={arrow} height='50px' className='pointer' onClick={handlePageChange}/>)
                   }
                 </div>
               </div>

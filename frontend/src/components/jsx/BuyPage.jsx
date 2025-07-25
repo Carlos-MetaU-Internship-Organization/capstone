@@ -1,11 +1,14 @@
 import './../css/BuyPage.css'
 import arrow from './../../assets/arrow.png'
-import Header from './Header'
+import Header from './ui/Header'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
 import { getFavoritedListings, getMostDwelledListings, getModels, getUserZIP, getSavedSearchFilters, getMakes } from '../../utils/api'
 import { PAGE_SIZE } from '../../utils/constants'
+import SavedSearchFilters from './ui/SavedSearchFilters'
+import ListingCarousel from './ui/ListingCarousel'
+import RequiredFilters from './ui/RequiredFilters'
 
 function BuyPage() {
 
@@ -104,14 +107,6 @@ function BuyPage() {
     navigate('/results');
   }
 
-  const handlePageChange = (event) => {
-    if (event.target.id === 'flipped-arrow') {
-      setPage(prev => prev - 1);
-    } else {
-      setPage(prev => prev + 1);
-    }
-  }
-
   const handleSavedSearchFilterLoad = async (event) => {
     const savedSearchFilterId = event.target.value;
     const savedSearchFilter = savedSearchFilters.find(searchFilter => searchFilter.id == savedSearchFilterId)
@@ -146,71 +141,17 @@ function BuyPage() {
           <div id='buy-content' className='fade'>
             <div id='buy-search' className='translucent'>
               <form id='filter-search' onSubmit={handleSearch}>
-                <div id='filters'>
-                  <label>Condition</label>
-                  <select className='translucent buy-page-user-selection pointer' id="condition-selector" name="condition" onChange={updateFilters} required>
-                    <option value="new&used">New & Used</option>
-                    <option value="new">New</option>
-                    <option value="used">Used</option>
-                  </select>
-                  <label>Make</label>
-                  <select className='translucent buy-page-user-selection pointer' id="make-selector" name="make" onChange={updateFilters} required>
-                    <option disabled selected></option>
-                    {
-                      makes.map(make => {
-                        return <option value={make.name}>{make.name}</option>
-                      })
-                    }
-                  </select>
-                  <label>Model</label>
-                  <select className='translucent buy-page-user-selection pointer' id="model-selector" name="model" onChange={updateFilters} required>
-                    {
-                      models.length > 0 && models.map(model => {
-                        return <option value={model.name}>{model.name}</option>
-                      })
-                    }
-                  </select>
-                  <div id='location-details'>
-                    <label>Distance</label>
-                    <select className='translucent buy-page-user-selection pointer' name="distance" onChange={updateFilters} required>
-                      <option value="50">50 miles</option>
-                      <option value="250">250 miles</option>
-                      <option value="500">500 miles</option>
-                      <option value="3000">Nationwide</option>
-                    </select>
-                    <label>ZIP</label>
-                    <input className='translucent buy-page-user-selection' type="text" name="zip" defaultValue={filters.zip} onChange={updateFilters} required/>
-                  </div>
-                </div>
+                <RequiredFilters makes={makes} models={models} filters={filters} setForm={updateFilters} />
                 <button className='translucent' id='search-button' type='submit'>Search</button>
               </form>
-              {
-                savedSearchFilters.length > 0 && (
-                  <>
-                    <h3>OR</h3>
-                    <div id='buy-page-saved-search-selection-box'>
-                      <label id='buy-page-saved-search-label'>Load a Saved Search</label>
-                      <select id="buy-page-saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedSearchFilterLoad}>
-                        <option value="" disabled></option>
-                        {
-                          savedSearchFilters.map(searchFilter => (
-                            <option key={searchFilter.id} value={searchFilter.id}>
-                              {`${searchFilter.make} ${searchFilter.model}, ${searchFilter.distance}mi from ${searchFilter.zip}, Color: ${searchFilter.color ? searchFilter.color.charAt(0).toUpperCase() + searchFilter.color.slice(1) : 'Any'}`}
-                            </option>
-                          ))
-                        }
-                      </select>
-                    </div>
-                  </>
-                )
-              }
+              <SavedSearchFilters searchFilters={savedSearchFilters} onLoad={handleSavedSearchFilterLoad}/>
             </div>
             {
               mostDwelledListing &&
               <div id='most-viewed-container' className='translucent grow'>
                 <h2>Still Interested?</h2>
                 <div className='most-viewed-listing pointer'>
-                  <img src={mostDwelledListing.images[0]} id='most-viewed-car-img' className='car-image' onClick={() => navigate(`/listing/${mostDwelledListing.vin}`)}/>
+                  <img loading='lazy' src={mostDwelledListing.images[0]} id='most-viewed-car-img' className='car-image' onClick={() => navigate(`/listing/${mostDwelledListing.vin}`)}/>
                   <div id='most-viewed-car-info'>
                     <p>Make: {mostDwelledListing.make}</p>
                     <p>Model: {mostDwelledListing.model}</p>
@@ -222,27 +163,7 @@ function BuyPage() {
               </div>
             }
           </div>
-          {
-            favoritedListings.length > 0 &&
-            (
-              <div id='favorites-container' className='fade'>
-                <label id='favorites-label'>Your Favorites</label>
-                <div id='favorite-cars'>
-                  {
-                    page > 1 && (<img src={arrow} height='50px' id='flipped-arrow' className='pointer' onClick={handlePageChange}/>) 
-                  }
-                  {
-                    favoritedListings.slice((4 * (page - 1)), (4 * page)).map(listing => {
-                      return <img key={listing.id} src={listing.images[0]} className='listing-image pointer grow' onClick={() => navigate(`/listing/${listing.vin}`)}/>
-                    })
-                  }
-                  {
-                    favoritedListings.length > page * 4 && (<img src={arrow} height='50px' className='pointer' onClick={handlePageChange}/>)
-                  }
-                </div>
-              </div>
-            )
-          }
+          <ListingCarousel listings={favoritedListings} currentPage={page} title='Your Favorites' pageSetter={setPage}/>
         </>
       ) : (
         <div className='loader-container'>
