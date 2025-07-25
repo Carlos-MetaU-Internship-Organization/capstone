@@ -21,13 +21,15 @@
   flex: 3;
   gap: 50px;
   margin: 100px;
-  max-width: 60vw;
+  max-width: 35vw;
+  flex-grow: 2;
 }
 
 #listing-info {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  flex-grow: 1;
 }
 
 #image-cycler {
@@ -39,6 +41,7 @@
 #single-car-image {
   width: 100%;
   border-radius: 25px;
+  min-width: 400px;
 }
 
 #previous-image {
@@ -62,6 +65,26 @@
   height: 72px;
 }
 
+<<<<<<< Updated upstream
+=======
+#contact-seller-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  height: fit-content;
+  min-width: 20vw;
+  margin: 100px;
+  padding: 25px;
+  border-radius: 25px;
+}
+
+#messages {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+>>>>>>> Stashed changes
 #reply-box {
   display: flex;
   flex-direction: column;
