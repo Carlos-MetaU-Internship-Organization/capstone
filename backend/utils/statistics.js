@@ -31,7 +31,7 @@ function calculateMarketPrice(listings, userInfo) {
     const depthWeight = (DEPTH_WEIGHT_BY_LEVEL[listing.depth] / listingCountPerDepth[listing.depth]);
     listing.depthWeight = depthWeight;
   
-    const soldWeight = listing.sold ? SOLD_LISTING_WEIGHT / listingsSoldStatus.numSold : UNSOLD_LISTING_WEIGHT / listingsSoldStatus.numUnsold;
+    const soldStatusWeight = listing.sold ? SOLD_LISTING_WEIGHT / listingsSoldStatus.numSold : UNSOLD_LISTING_WEIGHT / listingsSoldStatus.numUnsold;
     
     const proximityWeight = Math.max(PROXIMITY_MIN_WEIGHT, 1 - (listing.proximity / PROXIMITY_DISTANCE_FADE));
   
@@ -39,7 +39,7 @@ function calculateMarketPrice(listings, userInfo) {
 
     const similarSpecificationWeight = 1 / (1 + yearGap + mileageGap);
   
-    const totalWeight = similarSpecificationWeight * depthWeight * soldWeight * proximityWeight * daysOnMarketWeight;
+    const totalWeight = similarSpecificationWeight * depthWeight * soldStatusWeight * proximityWeight * daysOnMarketWeight;
 
     acc.sum += parseInt(listing.price) * totalWeight;
     acc.weightSum += totalWeight;
@@ -57,13 +57,9 @@ function harmonicMean(arr) {
     return 0;
   }
 
-  const sumOfReciprocals = { sum: 0 }
+  const sumOfReciprocals = arr.reduce((sum, num) => sum + 1 / num, 0);
 
-  for (const num of arr) {
-    sumOfReciprocals.sum += 1 / num;
-  }
-
-  return arr.length / sumOfReciprocals.sum;
+  return arr.length / sumOfReciprocals;
 }
 
 module.exports = { calculateMarketPrice, harmonicMean }

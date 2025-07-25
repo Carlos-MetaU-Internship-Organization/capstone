@@ -1,5 +1,5 @@
 const { fetchSimilarListings } = require('./fetchRelevantListingsService')
-const { logInfo } = require('../../frontend/src/services/loggingService')
+const { logInfo, logWarning } = require('./loggingService')
 const computeSellerDelta = require('../utils/sellerHistory')
 const { calculateMarketPrice, harmonicMean } = require('../utils/statistics')
 const buildElasticityCurve = require('../utils/elasticity')
@@ -10,15 +10,13 @@ async function getPriceRecommendationInfo(userAndListingInfo) {
   userAndListingInfo.year = parseInt(userAndListingInfo.year);
   userAndListingInfo.mileage = parseInt(userAndListingInfo.mileage);
 
-  const similarListings = await fetchSimilarListings(userAndListingInfo);
+  const [similarListings, sellerDelta] = await Promise.all([fetchSimilarListings(userAndListingInfo), computeSellerDelta(userAndListingInfo.sellerId)])
 
   if (similarListings.length === 0) {
     return { estimatedPrice: 0, message: 'Could not find similar listings' }
   }
 
   const { confidenceLevel, confidenceScore } = getConfidence(similarListings);
-
-  const sellerDelta = await computeSellerDelta(userAndListingInfo.sellerId);
 
   const { marketPrice, enrichedListings } = calculateMarketPrice(similarListings, userAndListingInfo)
 
@@ -31,6 +29,10 @@ async function getPriceRecommendationInfo(userAndListingInfo) {
 }
 
 function getConfidence(comps) {
+  if (comps.length === 0) {
+    logWarning("No comps available to calculate confidence.");
+    return { confidenceLevel: "very low", confidenceScore: 0 };
+  }
   const quantityWeight = Math.min(1, comps.length / MINIMUM_COMPS_REQUIRED)
 
   const prices = comps.map(comp => comp.price)
