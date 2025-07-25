@@ -1,4 +1,4 @@
-import './../css/SortMenu.css'
+import './../../css/ui/SortMenu.css'
 
 function SortMenu({ sortOption, onChange }) {
   

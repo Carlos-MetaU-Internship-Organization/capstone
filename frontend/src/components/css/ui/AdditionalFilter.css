@@ -1,0 +1,10 @@
+.filter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filter-input {
+  border: none;
+  border-radius: 10px;
+}

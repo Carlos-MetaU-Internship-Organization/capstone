@@ -2,8 +2,8 @@ import './../css/SingleCarPage.css'
 import arrow from './../../assets/arrow.png'
 import heart from './../../assets/heart.png'
 import pinkHeart from './../../assets/pinkHeart.png'
-import Header from './Header'
-import SellerInbox from './SellerInbox'
+import Header from './ui/Header'
+import SellerInbox from './ui/SellerInbox'
 import { baseURL } from '../../globals'
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
@@ -222,10 +222,10 @@ function SingleCarPage() {
           <div id='listing-container'>
             <div id='listing-info'>
               {listing.sold && <p id='sold-warning'>THIS LISTING HAS BEEN SOLD</p>}
-              <img src={listing.images[imageIndex]} id='single-car-image'/>
+              <img loading='lazy' src={listing.images[imageIndex]} id='single-car-image'/>
               <div id='image-cycler'>
-                <img src={arrow} id='previous-image' className='pointer' onClick={handlePreviousImage}/>
-                <img src={arrow} id='next-image' className='pointer' onClick={handleNextImage}/>
+                <img loading='lazy' src={arrow} id='previous-image' className='pointer' onClick={handlePreviousImage}/>
+                <img loading='lazy' src={arrow} id='next-image' className='pointer' onClick={handleNextImage}/>
               </div>
               <p id='single-car-title'><strong>{listing.year} {listing.make} {listing.model}</strong></p>
               <p className='single-car-info'><strong>Condition: </strong>{formattedCondition}</p>
@@ -239,7 +239,7 @@ function SingleCarPage() {
               <p className='single-car-info'><strong>Owner Name: </strong>{listing.ownerName}</p>
               <p className='single-car-info'><strong>Owner Phone Number: </strong>{formattedPhoneNumber}</p>
             </div>
-            <img src={isFavorited ? pinkHeart : heart} id='favorite-listing-img' onClick={handleFavoriteClick}/>
+            <img loading='lazy' src={isFavorited ? pinkHeart : heart} id='favorite-listing-img' onClick={handleFavoriteClick}/>
           </div>
           {
             listing.owner && listing.owner.id !== activeUserIdRef.current && (

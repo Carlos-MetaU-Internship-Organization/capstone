@@ -1,0 +1,32 @@
+.listings-container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 100px;
+  align-items: center;
+}
+
+.listings-label {
+  font-size: xx-large;
+}
+
+.listings-cars {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 0;
+}
+ 
+.listing-image {
+  min-height: 100px;
+  min-width: 175px;
+  width: 15vw;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 25px;
+  flex-shrink: 0;
+  margin: 10px 40px 0px;
+}
+
+.flipped-arrow {
+  transform: scaleX(-1);
+}

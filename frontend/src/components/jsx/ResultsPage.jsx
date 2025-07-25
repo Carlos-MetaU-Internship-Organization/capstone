@@ -1,14 +1,18 @@
 import './../css/ResultsPage.css'
 import heart from './../../assets/heart.png'
 import pinkHeart from './../../assets/pinkHeart.png'
-import Header from './Header'
-import Listing from './Listing'
-import SortMenu from './SortMenu'
+import Header from './ui/Header'
+import Listing from './ui/Listing'
+import SortMenu from './ui/SortMenu'
 import { useState, useEffect } from 'react'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
 import { getFavoritedListings, getModels, getSavedSearchFilters, saveSearchFilter, viewSearchFilter, getListings } from '../../utils/api'
 import { sortListings } from './../../utils/listings'
 import { PAGE_SIZE } from '../../utils/constants'
+import SavedSearchFilters from './ui/SavedSearchFilters'
+import AdditionalFilter from './ui/AdditionalFilter'
+import RequiredFilters from './ui/RequiredFilters'
+import ColorSelector from './ui/ColorSelector'
 
 function ResultsPage() {
   
@@ -228,99 +232,21 @@ function ResultsPage() {
         <div id='result-page-content' className='fade'>
           <div id='result-page-form-content' className='translucent'>
             <form id='advanced-filters' onSubmit={handleSearch}>
-              <img id='favorite-search-button' className='pointer' height={25} src={isSearchFavorited ? pinkHeart : heart} onClick={handleSearchFavoriteClick}/>
+              <img loading='lazy' id='favorite-search-button' className='pointer' height={25} src={isSearchFavorited ? pinkHeart : heart} onClick={handleSearchFavoriteClick}/>  
+              <RequiredFilters makes={makes} models={models} filters={onScreenFilters} setForm={updateForm} />
               <div className='filter'>
-                <label>Condition</label>
-                <select className='translucent buy-page-user-selection pointer' id="condition-selector" value={onScreenFilters.condition} name="condition" onChange={updateForm} required>
-                  <option value="new&used">New & Used</option>
-                  <option value="new">New</option>
-                  <option value="used">Used</option>
-                </select>
+                <ColorSelector className='filter-input' activeColor={onScreenFilters.color} updateColor={updateForm} disableDefaultOption={false}/>
               </div>
-              <div className='filter'>
-                <label>Make</label>
-                <select className='filter-input translucent pointer' value={onScreenFilters.make} name='make' onChange={updateForm}>
-                  {
-                    makes.map(make => {
-                      return <option key={make.name} value={make.name}>{make.name}</option>
-                    })
-                  }
-                </select>
-              </div>
-              <div className='filter'>
-                <label>Model</label>
-                <select className='filter-input translucent pointer' value={onScreenFilters.model} name='model' onChange={updateForm}>
-                  {
-                    models.map(model => {
-                      return <option key={model.name} value={model.name}>{model.name}</option>
-                    })
-                  }
-                </select>
-              </div>
-                <div id='result-page-location-details'>
-                  <label>Distance</label>
-                  <select className='translucent pointer' value={onScreenFilters.distance} name="distance" onChange={updateForm} required>
-                    <option value="50">50 miles</option>
-                    <option value="250">250 miles</option>
-                    <option value="500">500 miles</option>
-                    <option value="3000">Nationwide</option>
-                  </select>
-                  <label>ZIP</label>
-                  <input className='translucent' type="text" name="zip" value={onScreenFilters.zip} onChange={updateForm} required/>
-                </div>
-              <div className='filter'>
-                <label>Color</label>
-                <select className='filter-input translucent pointer' name='color' value={onScreenFilters.color} onChange={updateForm}>
-                  <option value="">Any</option>
-                  {
-                    colors.map(color => {
-                      return <option key={color} value={color}>{(color.charAt(0).toUpperCase()).concat(color.slice(1))}</ option>
-                    })
-                  }
-                </select>
-              </div>
-              <div className='filter'>
-                <label>Min Year</label>
-                <input type='text' className='filter-input translucent' value={onScreenFilters.minYear} name='minYear' onChange={updateForm}/>
-              </div>
-              <div className='filter'>
-                <label>Max Year</label>
-                <input type='text' className='filter-input translucent' value={onScreenFilters.maxYear} name='maxYear' onChange={updateForm}/>
-              </div>
-              <div className='filter'>
-                <label>Max # of Miles</label>
-                <input type='text' className='filter-input translucent' value={onScreenFilters.maxMileage} name='maxMileage' onChange={updateForm}/>
-              </div>
-              <div className='filter'>
-                <label>Min Price</label>
-                <input type='text' className='filter-input translucent' value={onScreenFilters.minPrice} name='minPrice' onChange={updateForm}/>
-              </div>
-              <div className='filter'>
-                <label>Max Price</label>
-                <input type='text' className='filter-input translucent' value={onScreenFilters.maxPrice} name='maxPrice' onChange={updateForm}/>
-              </div>
+              <AdditionalFilter label='Min Year' name='minYear' activeValue={onScreenFilters.minYear} updateValue={updateForm} />
+              <AdditionalFilter label='Max Year' name='maxYear' activeValue={onScreenFilters.maxYear} updateValue={updateForm} />
+              <AdditionalFilter label='Max Mileage' name='maxMileage' activeValue={onScreenFilters.maxMileage} updateValue={updateForm} />
+              <AdditionalFilter label='Min Price' name='minPrice' activeValue={onScreenFilters.minPrice} updateValue={updateForm} />
+              <AdditionalFilter label='Max Price' name='maxPrice' activeValue={onScreenFilters.maxPrice} updateValue={updateForm} />
               {
                 searchChange && (<button id='result-page-search-button' type='submit'>Search</button>)
               }
             </form>
-            <h3>OR</h3>
-            {
-              savedSearchFilters.length > 0 && (
-                <div id='saved-search-selection-box'>
-                  <label id='saved-search-label'>Load a Saved Search</label>
-                  <select name="" id="saved-search-select-elem" className='translucent' defaultValue="" onChange={handleSavedSearchFilterLoad}>
-                    <option value="" disabled selected></option>
-                    {
-                      savedSearchFilters.map(searchFilter => (
-                        <option key={searchFilter.id} value={searchFilter.id}>
-                          {`${searchFilter.make} ${searchFilter.model}, ${searchFilter.distance}mi from ${searchFilter.zip}, Color: ${searchFilter.color ? searchFilter.color.charAt(0).toUpperCase() + searchFilter.color.slice(1) : 'Any'}`}
-                        </option>
-                      ))
-                    }
-                  </select>
-                </div>
-              )
-            }
+            <SavedSearchFilters searchFilters={savedSearchFilters} onLoad={handleSavedSearchFilterLoad}/>
           </div>
           <div id='result-page-listings-content'>
             <SortMenu sortOption={sortOption} onChange={setSortOption} />

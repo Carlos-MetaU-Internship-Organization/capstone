@@ -38,7 +38,7 @@
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  gap: .5vh;
+  gap: calc(min(20px, 2vh));
 }
 
 #location-details {

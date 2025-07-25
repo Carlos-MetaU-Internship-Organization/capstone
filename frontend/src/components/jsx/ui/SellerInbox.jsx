@@ -1,7 +1,7 @@
-import './../css/SellerInbox.css'
-import close from './../../assets/close.png'
+import './../../css/ui/SellerInbox.css'
+import close from './../../../assets/close.png'
 import { useState, useEffect } from 'react'
-import { getBuyersAndInfo, getConversationHistory, sendMessage } from '../../utils/api'
+import { getBuyersAndInfo, getConversationHistory, sendMessage } from './../../../utils/api'
 
 function SellerInbox({ listingId }) {
   
@@ -99,7 +99,7 @@ function SellerInbox({ listingId }) {
         showModal && (
           <div id='modal-overlay' onClick={handleClickOutside}>
             <div id='modal-content'>
-              <img src={close} alt="Close Button" height='15px' id='close-button' className='pointer' onClick={handleClickClose}/>
+              <img loading='lazy' src={close} alt="Close Button" height='15px' id='close-button' className='pointer' onClick={handleClickClose}/>
               <h3 id='conversation-label'>Conversation with {selectedBuyer.name}</h3>
               <div className='messages'>
                 {

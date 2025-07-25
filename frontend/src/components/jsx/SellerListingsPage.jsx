@@ -1,6 +1,6 @@
 import './../css/SellerListingsPage.css'
-import Header from './Header'
-import SellerListing from './SellerListing'
+import Header from './ui/Header'
+import SellerListing from './ui/SellerListing'
 import { useState, useEffect } from 'react'
 import { PAGE_SIZE } from '../../utils/constants'
 import { getOwnedListings } from '../../utils/api'

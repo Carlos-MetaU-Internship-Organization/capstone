@@ -35,10 +35,17 @@ function SignupPage() {
     setMessage(result.message);
   }
 
+  const handleZipChange = (event) => {
+    const value = event.target.value;
+    if (/^\d*$/.test(value)) {
+      setZip(value)
+    }
+  }
+
   return (
     <div id='signup-page'>
       <header id='signup-page-header'>
-        <img src={tire} id='signup-page-header-image'/>
+        <img loading='lazy' src={tire} id='signup-page-header-image'/>
         <h2>CarPortal</h2>
       </header>
       <div id='signup-page-overlay'>
@@ -51,23 +58,23 @@ function SignupPage() {
             <input type="text" className='signup-info-textbox' name='last-name' value={lastName} placeholder='Last Name' onChange={(e) => setLastName(e.target.value)} required />
           </div>
           <div className='signup-info'>
-            <img src={mail} height='16px' width='16px'/>
+            <img loading='lazy' src={mail} height='16px' width='16px'/>
             <input type="text" className='signup-info-textbox' name='email' value={email} placeholder='Email' onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div className='signup-info'>
-            <img src={phone} height='16px' width='16px'/>
+            <img loading='lazy' src={phone} height='16px' width='16px'/>
             <input type="text" className='signup-info-textbox' name='phone-number' value={phoneNumber} placeholder='Phone Number' onChange={(e) => setPhoneNumber(e.target.value)} required />
           </div>
           <div className='signup-info'>
-            <img src={pin} height='16px' width='16px'/>
-            <input type="number" className='signup-info-textbox' name='zip' value={zip} placeholder='ZIP' onChange={(e) => setZip(e.target.value)} required />
+            <img loading='lazy' src={pin} height='16px' width='16px'/>
+            <input type="text" className='signup-info-textbox' name='zip' value={zip} placeholder='ZIP' onChange={handleZipChange} required />
           </div>
           <div className='signup-info'>
-            <img src={profile} height='16px' width='16px'/>
+            <img loading='lazy' src={profile} height='16px' width='16px'/>
             <input type="text" className='signup-info-textbox' name='username' value={username} placeholder='Username' onChange={(e) => setUsername(e.target.value)} required />
           </div>
           <div className='signup-info'>
-            <img src={lock} height='16px' width='16px'/>
+            <img loading='lazy' src={lock} height='16px' width='16px'/>
             <input type="password" className='signup-info-textbox' name='password' value={password} placeholder='Password' onChange={(e) => setPassword(e.target.value)} required />
           </div>
           <button type='submit' className='signup-auth-button' id='signup-button'>Sign up</button>

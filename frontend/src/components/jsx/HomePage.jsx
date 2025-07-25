@@ -1,12 +1,11 @@
 import './../css/HomePage.css'
-import loadingGIF from './../../assets/loading.gif'
-import arrow from './../../assets/arrow.png'
-import Header from './Header'
+import Header from './ui/Header'
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { logInfo, logWarning, logError } from '../../services/loggingService';
 import { getRecommendedListings, getFavoritedListings, getPopularListings, getRecentlyVisitedListings } from '../../utils/api'
 import { PAGE_SIZE, ALLOWED_PAUSE_DELAY } from '../../utils/constants'
+import ListingCarousel from './ui/ListingCarousel'
+import RecommendedListingCarousel from './ui/RecommendedListingCarousel';
 
 function HomePage() {
 
@@ -25,7 +24,7 @@ function HomePage() {
 
   const [loaded, setLoaded] = useState(false)
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   // ON BOOT
   useEffect(() => {
@@ -66,140 +65,15 @@ function HomePage() {
 
   }, []);
 
-  useEffect(() => {
-    if (recommendedListings.length === 0) {
-      return;
-    }
-    const interval = setInterval(() => {
-      setListingIndex(prev => (prev + 1) % recommendedListings.length)
-    }, 7500)
-
-    return () => clearInterval(interval);
-  }, [recommendedListings])
-
-  const handleRecommendedPageChange = (event) => {
-    if (event.target.classList[0] === 'flipped-arrow') {
-      setListingIndex(prev => (prev - 1 + recommendedListings.length) % recommendedListings.length);
-    } else {
-      setListingIndex(prev => (prev + 1) % recommendedListings.length );
-    }
-  }
-  
-  const handleFavoritePageChange = (event) => {
-    if (event.target.classList[0] === 'flipped-arrow') {
-      setFavoritesPage(prev => prev - 1);
-    } else {
-      setFavoritesPage(prev => prev + 1);
-    }
-  }
-
-  const handlePopularPageChange = (event) => {
-    if (event.target.classList[0] === 'flipped-arrow') {
-      setPopularPage(prev => prev - 1);
-    } else {
-      setPopularPage(prev => prev + 1);
-    }
-  }
-
-  const handleRecentlyVisitedPageChange = (event) => {
-    if (event.target.classList[0] === 'flipped-arrow') {
-      setRecentlyVisitedPage(prev => prev - 1);
-    } else {
-      setRecentlyVisitedPage(prev => prev + 1);
-    }
-  }
-
   return (
     <div id='home-page'>
       <Header />
       {loaded ? (
         <div id='home-content' className='fade'>
-          {
-            <div id='recommended-container'>
-              <h2 id='recommended-label'>Recommended For You</h2>
-              {recommendedListings.length > 0 ? (
-                <div className='slider' style={{ '--count': recommendedListings.length }}>
-                  <div className='recommended-listings'>
-                    {
-                      recommendedListings.map((listing, index) => {
-                        return (
-                          <div className='recommended-listing' key={index} style={{ '--index': index }}>
-                            <img src={listing.images[0]} id='recommended-car-image' className='pointer grow' onClick={() => navigate(`/listing/${recommendedListings[index].vin}`)}/>
-                            <h3 id='recommended-info'>{listing.year} {listing.make} {listing.model}</h3>
-                          </div>
-                        )
-                      })
-                    }
-                  </div>
-                </div>
-              ) : (
-                <img src={loadingGIF}/>
-              )}
-            </div>
-          }
-          {
-            favoritedListings.length > 0 &&
-            (
-              <div id='listings-container'>
-                <label className='listings-label'>Your Favorites</label>
-                <div className='listings-cars'>
-                  {
-                    favoritesPage > 1 && (<img src={arrow} height='50px' className='flipped-arrow pointer' onClick={handleFavoritePageChange}/>) 
-                  }
-                  {
-                    favoritedListings.slice((4 * (favoritesPage - 1)), (4 * favoritesPage)).map(listing => {
-                      return <img key={listing.id} src={listing.images[0]} className='listing-image pointer grow' onClick={() => navigate(`/listing/${listing.vin}`)}/>
-                    })
-                  }
-                  {
-                    favoritedListings.length > favoritesPage * 4 && (<img src={arrow} height='50px' className='pointer' onClick={handleFavoritePageChange}/>)
-                  }
-                </div>
-              </div>
-            )
-          }
-          {
-            popularListings.length > 0 &&
-            (
-              <div className='listings-container'>
-                <label className='listings-label'>What's Popular</label>
-                <div className='listings-cars'>
-                  {
-                    popularPage > 1 && (<img src={arrow} height='50px' className='flipped-arrow pointer' onClick={handlePopularPageChange}/>) 
-                  }
-                  {
-                    popularListings.slice((4 * (popularPage - 1)), (4 * popularPage)).map(listing => {
-                      return <img key={listing.id} src={listing.images[0]} className='listing-image pointer grow' onClick={() => navigate(`/listing/${listing.vin}`)}/>
-                    })
-                  }
-                  {
-                    popularListings.length > popularPage * 4 && (<img src={arrow} height='50px' className='pointer' onClick={handlePopularPageChange}/>)
-                  }
-                </div>
-              </div>
-            )
-          }
-          {
-            recentlyVisitedListings.length > 0 &&
-            (
-              <div id='listings-container'>
-                <label className='listings-label'>Most Recently Visited</label>
-                <div className='listings-cars'>
-                  {
-                    recentlyVisitedPage > 1 && (<img src={arrow} height='50px' className='flipped-arrow pointer' onClick={handleRecentlyVisitedPageChange}/>) 
-                  }
-                  {
-                    recentlyVisitedListings.slice((4 * (recentlyVisitedPage - 1)), (4 * recentlyVisitedPage)).map(listing => {
-                      return <img key={listing.id} src={listing.images[0]} className='listing-image pointer grow' onClick={() => navigate(`/listing/${listing.vin}`)}/>
-                    })
-                  }
-                  {
-                    recentlyVisitedListings.length > recentlyVisitedPage * 4 && (<img src={arrow} height='50px' className='pointer' onClick={handleRecentlyVisitedPageChange}/>)
-                  }
-                </div>
-              </div>
-            )
-          }
+          <RecommendedListingCarousel listings={recommendedListings} />
+          <ListingCarousel listings={favoritedListings} currentPage={favoritesPage} title="Your Favorites" pageSetter={setFavoritesPage} />
+          <ListingCarousel listings={popularListings} currentPage={popularPage} title="What's popular" pageSetter={setPopularPage} />
+          <ListingCarousel listings={recentlyVisitedListings} currentPage={recentlyVisitedPage} title="Recently Visited" pageSetter={setRecentlyVisitedPage} />
         </div>
       ) : (
         <div id='home-loading-screen'>

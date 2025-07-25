@@ -27,15 +27,15 @@ function LoginPage() {
   return (
     <div id='login-page-overlay'>
       <form id='login-page-content' onSubmit={handleLogin} autoComplete='off'>
-        <img src={tire} id='login-image'/>
+        <img loading='lazy' src={tire} id='login-image'/>
         <h2>CarPortal Login</h2>
         <h3 style={{ color: 'red' }}>{message}</h3>
         <div className='login-info'>
-          <img src={profile} height='16px' width='16px'/>
+          <img loading='lazy' src={profile} height='16px' width='16px'/>
           <input type="text" className='login-info-textbox' name='login' value={login} placeholder='Username or email' onChange={(e) => setLogin(e.target.value)} required />
         </div>
         <div className='login-info'>
-          <img src={lock} height='16px' width='16px'/>
+          <img loading='lazy' src={lock} height='16px' width='16px'/>
           <input type="password" className='login-info-textbox' name='password' value={password} placeholder='Password' onChange={(e) => setPassword(e.target.value)} required />
         </div>
         <button type='submit' className='login-auth-button' id='login-button'>Login</button>

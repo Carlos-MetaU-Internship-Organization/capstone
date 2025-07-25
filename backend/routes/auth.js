@@ -8,6 +8,8 @@ const { findUserByCredentials, createUser } = require('../services/userService')
 
 const auth = express.Router()
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 // Signup
 auth.post('/signup', validateRequest({ body: signupSchema }), async (req, res) => {
   const { name, email, zip, username, password: plainPassword } = req.body;
@@ -54,9 +56,15 @@ auth.post('/login', validateRequest({ body: loginSchema }), async (req, res) => 
 auth.post('/logout', (req, res) => {
   req.session.destroy(error => {
     if (!error) {
+      res.clearCookie('sessionId', {
+        path: '/',
+        httpOnly: true,
+        secure: isProduction ? true : false,
+        sameSite: isProduction ? 'none' : 'lax',
+        domain: isProduction ? process.env.BACKEND_DOMAIN : undefined
+      })
       return res.json({ message: 'Goodbye.' })
-    }
-    
+    }    
     res.status(500).json({ message: 'Logout failed.' })
   });
 })
