@@ -3,6 +3,7 @@ import { useState } from "react";
 import tire from "./../../assets/tire.png";
 import profile from "./../../assets/profile.png";
 import lock from "./../../assets/lock.png";
+import eye from "./../../assets/eye.png"
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../../utils/api";
 
@@ -10,6 +11,7 @@ function LoginPage() {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false)
 
   const navigate = useNavigate();
 
@@ -44,7 +46,7 @@ function LoginPage() {
         <div className="login-info">
           <img loading="lazy" src={lock} height="16px" width="16px" />
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             className="login-info-textbox"
             name="password"
             value={password}
@@ -52,6 +54,7 @@ function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <img loading="lazy" src={eye} height="16px" width="16px" className='pointer' style={{ marginRight: '10px' }} onClick={() => setShowPassword(prev => !prev)}/>
         </div>
         <button type="submit" className="login-auth-button" id="login-button">
           Login

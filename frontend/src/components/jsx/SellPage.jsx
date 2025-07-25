@@ -16,6 +16,7 @@ import {
   getMakes,
   getModels,
   createListing,
+  editListing,
   estimatePrice,
 } from "../../utils/api";
 import ColorSelector from "./ui/ColorSelector";
@@ -48,6 +49,8 @@ function SellPage() {
   );
   const [loaded, setLoaded] = useState(false);
   const [loadPriceEstimation, setLoadPriceEstimation] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('')
+  const [isEdit, setIsEdit] = useState(false)
 
   const navigate = useNavigate();
 
@@ -63,9 +66,9 @@ function SellPage() {
         setOwnedListings(ownedListingsResponse.ownedListings);
 
         if (info.state) {
-          initialListingInfo = info.state.data;
-          updateModels(initialListingInfo.make);
-          setListingInfo(initialListingInfo);
+          setListingInfo(info.state.data);
+          updateModels(info.state.data.make);
+          setIsEdit(true);
         }
 
         setLoaded(true);
@@ -116,6 +119,23 @@ function SellPage() {
     }
   };
 
+  const handleListingEdit = async (event) => {
+    event.preventDefault();
+
+    try {
+      const { listing } = await editListing(listingInfo.id, listingInfo);
+      logInfo("Listing edited successfully");
+      setOwnedListings((prev) => [listing, ...(prev.filter(listing => listing.id !== listingInfo.id))]);
+      setListingInfo(initialListingInfo);
+      info.state = null;
+    } catch (error) {
+      logError(
+        "Something went wrong when trying to create a new listing",
+        error,
+      );
+    }
+  }
+
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files);
     let images = [];
@@ -143,6 +163,15 @@ function SellPage() {
   };
 
   const handlePriceEstimation = async () => {
+    const requiredFields = ["condition", "make", "model", "year", "mileage"]
+    const missingFields = requiredFields.filter((field) => listingInfo[field] === '')
+    if (missingFields.length > 0) {
+      setErrorMessage(`Please fill out the following fields: ${missingFields.join(', ')}`)
+      return;
+    }
+
+    setErrorMessage('')
+
     try {
       setLoadPriceEstimation(true);
       const { priceEstimationInfo } = await estimatePrice(listingInfo);
@@ -176,7 +205,7 @@ function SellPage() {
                 <form
                   className="translucent"
                   id="new-listing-form"
-                  onSubmit={handleListingCreation}
+                  onSubmit={!isEdit ? handleListingCreation : handleListingEdit}
                   autoComplete="off"
                 >
                   <div id="listing-options">
@@ -312,20 +341,27 @@ function SellPage() {
                       id="create-listing-button"
                       type="submit"
                     >
-                      Create Listing
+                      {!isEdit ? 'Create Listing' : 'Edit Listing'}
                     </button>
                   </div>
                 </form>
                 <div id="price-helper-container" className="translucent">
                   <p>Don't know what to price your car?</p>
                   {!loadPriceEstimation ? (
-                    <button
-                      id="price-helper-button"
-                      className="translucent"
-                      onClick={handlePriceEstimation}
-                    >
-                      Click Me
-                    </button>
+                    <>
+                      {
+                        errorMessage && (
+                          <div className="error-message"><strong>{errorMessage}</strong></div>
+                        )
+                      }
+                      <button
+                        id="price-helper-button"
+                        className="translucent"
+                        onClick={handlePriceEstimation}
+                      >
+                        Click Me
+                      </button>
+                    </>
                   ) : (
                     <img
                       loading="lazy"

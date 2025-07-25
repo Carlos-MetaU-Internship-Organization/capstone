@@ -6,6 +6,7 @@ import lock from "./../../assets/lock.png";
 import phone from "./../../assets/phone.png";
 import mail from "./../../assets/mail.png";
 import pin from "./../../assets/pin.png";
+import eye from "./../../assets/eye.png"
 import { Link, useNavigate } from "react-router-dom";
 import { signupUser } from "../../utils/api";
 
@@ -18,6 +19,7 @@ function SignupPage() {
   const [password, setPassword] = useState("");
   const [zip, setZip] = useState("");
   const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false)
 
   const navigate = useNavigate();
 
@@ -134,7 +136,7 @@ function SignupPage() {
           <div className="signup-info">
             <img loading="lazy" src={lock} height="16px" width="16px" />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               className="signup-info-textbox"
               name="password"
               value={password}
@@ -142,6 +144,7 @@ function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <img loading="lazy" src={eye} height="16px" width="16px" className='pointer' style={{ marginRight: '10px' }} onClick={() => setShowPassword(prev => !prev)}/>
           </div>
           <button
             type="submit"

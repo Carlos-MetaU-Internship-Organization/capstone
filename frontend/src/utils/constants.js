@@ -1,6 +1,7 @@
 export const ELASTICITY_KEYS = [-10, -5, 0, 5, 10];
 
 export const CAPITALIZE = (sentence) => {
+  if (!sentence) return '';
   const splitSentence = sentence.split(" ");
   for (let i = 0; i < splitSentence.length; i++) {
     splitSentence[i] =
@@ -34,3 +35,5 @@ export const COLORS = [
   "white",
   "yellow",
 ];
+
+export const MAX_LISTING_COUNT_TO_DISPLAY = 20;
