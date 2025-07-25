@@ -14,7 +14,6 @@ function ColorSelector({
         value={activeColor}
         name="color"
         onChange={updateColor}
-        required
       >
         <option
           id="blank-color"
