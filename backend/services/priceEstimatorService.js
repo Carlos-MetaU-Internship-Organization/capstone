@@ -13,7 +13,7 @@ async function getPriceRecommendationInfo(userAndListingInfo) {
   const [similarListings, sellerDelta] = await Promise.all([fetchSimilarListings(userAndListingInfo), computeSellerDelta(userAndListingInfo.sellerId)])
 
   if (similarListings.length === 0) {
-    return { estimatedPrice: 0, message: 'Could not find similar listings' }
+    return { success: false, message: 'Could not compute a recommended price. No similar listings were found.' }
   }
 
   const { confidenceLevel, confidenceScore } = getConfidence(similarListings);
@@ -25,7 +25,7 @@ async function getPriceRecommendationInfo(userAndListingInfo) {
 
   const elasticity = buildElasticityCurve(enrichedListings, recommendedPrice);
 
-  return { marketPrice: FORMAT_TO_PRICE(marketPrice), recommendedPrice: FORMAT_TO_PRICE(recommendedPrice), confidenceLevel, elasticity }
+  return { success: true, marketPrice: FORMAT_TO_PRICE(marketPrice), recommendedPrice: FORMAT_TO_PRICE(recommendedPrice), confidenceLevel, elasticity }
 }
 
 function getConfidence(comps) {

@@ -175,11 +175,9 @@ function SellPage() {
     try {
       setLoadPriceEstimation(true);
       const { priceEstimationInfo } = await estimatePrice(listingInfo);
-      if (priceEstimationInfo) {
-        setPriceEstimation(priceEstimationInfo);
-        setLoadPriceEstimation(false);
-        setShowPriceEstimation(true);
-      }
+      setPriceEstimation(priceEstimationInfo);
+      setLoadPriceEstimation(false);
+      setShowPriceEstimation(true);
     } catch (error) {
       logError(
         "Something went wrong when trying to generate a price for your listing",
@@ -371,43 +369,51 @@ function SellPage() {
                   )}
                   {showPriceEstimation && (
                     <div id="price-estimation">
-                      <p>
-                        Recommended Price:{" "}
-                        <strong>{priceEstimation.recommendedPrice}</strong>
-                      </p>
-                      <p>
-                        Confidence Level:{" "}
-                        <strong>
-                          {CAPITALIZE(priceEstimation.confidenceLevel)}
-                        </strong>
-                      </p>
-                      {priceEstimation.recommendedPrice !==
-                        priceEstimation.marketPrice && (
+                      {!priceEstimation.success ? (
                         <p>
-                          Market Price:{" "}
-                          <strong>{priceEstimation.marketPrice}</strong>
+                          {priceEstimation.message}
                         </p>
-                      )}
-                      {Object.keys(priceEstimation.elasticity).length !== 0 && (
+                      ) : (
                         <>
                           <p>
-                            Expected Time to Sell:{" "}
+                            Recommended Price:{" "}
+                            <strong>{priceEstimation.recommendedPrice}</strong>
+                          </p>
+                          <p>
+                            Confidence Level:{" "}
                             <strong>
-                              {priceEstimation.elasticity[currentSliderKey]}{" "}
-                              days{" "}
-                              {currentSliderKey != "0"
-                                ? `at ${currentSliderKey}% price change`
-                                : ""}
+                              {CAPITALIZE(priceEstimation.confidenceLevel)}
                             </strong>
                           </p>
-                          <input
-                            type="range"
-                            min="0"
-                            max={ELASTICITY_KEYS.length - 1}
-                            value={sliderIndex}
-                            id="slider"
-                            onInput={handleSliderInput}
-                          />
+                          {priceEstimation.recommendedPrice !==
+                            priceEstimation.marketPrice && (
+                            <p>
+                              Market Price:{" "}
+                              <strong>{priceEstimation.marketPrice}</strong>
+                            </p>
+                          )}
+                          {Object.keys(priceEstimation.elasticity).length !== 0 && (
+                            <>
+                              <p>
+                                Expected Time to Sell:{" "}
+                                <strong>
+                                  {priceEstimation.elasticity[currentSliderKey]}{" "}
+                                  days{" "}
+                                  {currentSliderKey != "0"
+                                    ? `at ${currentSliderKey}% price change`
+                                    : ""}
+                                </strong>
+                              </p>
+                              <input
+                                type="range"
+                                min="0"
+                                max={ELASTICITY_KEYS.length - 1}
+                                value={sliderIndex}
+                                id="slider"
+                                onInput={handleSliderInput}
+                              />
+                            </>
+                          )}
                         </>
                       )}
                     </div>
