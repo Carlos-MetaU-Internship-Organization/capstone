@@ -27,10 +27,19 @@ const priceEstimateSchema = Joi.object({
   mileage: Joi.number().integer().default(0).min(0).required(),
 })
 
+const generateDescriptionSchema = Joi.object({
+  condition: Joi.string().required(),
+  make: Joi.string().required(),
+  model: Joi.string().required(),
+  year: Joi.number().integer().min(MIN_YEAR).max(new Date().getFullYear()).required(),
+  color: Joi.string().required(),
+  mileage: Joi.number().integer().default(0).min(0).required(),
+  price: Joi.number().min(0).required()
+});
+
 const newStatusSchema = Joi.object({
   newStatus: Joi.boolean().required()
 })
-
 
 const vinSchema = Joi.object({
   vin: Joi.string().alphanum().min(MIN_VIN_LENGTH).max(MAX_VIN_LENGTH).required()
@@ -50,5 +59,6 @@ module.exports = {
   vinSchema,
   listingIdSchema,
   priceEstimateSchema,
-  countSchema
+  countSchema,
+  generateDescriptionSchema
 }

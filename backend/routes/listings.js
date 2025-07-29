@@ -4,12 +4,12 @@ const zipcodes = require('zipcodes')
 const getRecommendations = require('./../services/recommendationService');
 const getPriceRecommendationInfo = require('./../services/priceEstimatorService');
 const { getGlobalViewCount } = require('../services/listingDataService');
-const { getFavoritedListings, getPopularListings, getRecentlyVisitedListings, getMostDwelledListings, getOwnedListings, getListingFromVIN, deleteListing, updateFavoriteCount, updateUserFavoritedList, sellListing, createListing, getListings } = require('../services/listingService')
+const { getFavoritedListings, getPopularListings, getRecentlyVisitedListings, getMostDwelledListings, getOwnedListings, getListingFromVIN, deleteListing, updateFavoriteCount, updateUserFavoritedList, sellListing, createListing, getListings, generateDescription } = require('../services/listingService')
 const { requireAuth } = require('../middleware/authMiddleware');
 const { logInfo, logError } = require('../services/loggingService');
 const { validateRequest } = require('../middleware/validateMiddleware')
 const { searchFilterSchema } = require('../schemas/searchFilterSchema')
-const { listingInfoSchema, vinSchema, listingIdSchema, newStatusSchema, priceEstimateSchema, countSchema } = require('../schemas/listingSchema');
+const { listingInfoSchema, vinSchema, listingIdSchema, newStatusSchema, priceEstimateSchema, countSchema, generateDescriptionSchema } = require('../schemas/listingSchema');
 
 const prisma = new PrismaClient()
 const listings = express.Router()
@@ -261,6 +261,16 @@ listings.get('/vin/:vin/isFavorited', validateRequest({ params: vinSchema }), as
   } catch (error) {
     logError('Error checking favorite status:', error);
     res.status(500).json({ message: 'Error checking favorite status' });
+  }
+})
+
+listings.post('/create-description', validateRequest({ body: generateDescriptionSchema }), async (req, res) => {
+  try {
+    const description = await generateDescription(req.body);
+    res.json(description);
+  } catch (error) {
+    logError('Error creating description:', error);
+    res.status(500).json({ message: 'Error creating description' });
   }
 })
 
