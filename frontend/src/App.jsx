@@ -7,6 +7,7 @@ import SellPage from "./components/jsx/SellPage";
 import ResultsPage from "./components/jsx/ResultsPage";
 import SellerListingsPage from "./components/jsx/SellerListingsPage";
 import SingleCarPage from "./components/jsx/SingleCarPage";
+import InvalidPage from "./components/jsx/InvalidPage"
 import HomePage from "./components/jsx/HomePage";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import RedirectAuthToHome from "./utils/RedirectAuthToHome";
@@ -78,6 +79,12 @@ function App() {
               <ProtectedRoute>
                 <SingleCarPage />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/*"
+            element={
+              <InvalidPage />
             }
           />
         </Routes>

@@ -35,6 +35,8 @@ function SingleCarPage() {
   const [conversationHistory, setConversationHistory] = useState([]);
   const [messageToSend, setMessageToSend] = useState("");
 
+  const [listingNotFound, setListingNotFound] = useState(false);
+
   const numClicks = useRef(0);
 
   useEffect(() => {
@@ -51,6 +53,8 @@ function SingleCarPage() {
             setListing(listing);
             listingIdRef.current = listing.id;
             listingOwnerIdRef.current = listing.owner.id;
+          } else {
+            setListingNotFound(true);
           }
 
           if (favoriteStatus !== null) {
@@ -210,11 +214,13 @@ function SingleCarPage() {
         <Header />
         <div className="loader-container">
           <div className="loading-text">
-            Loading<span className="dots"></span>
+            {
+              listingNotFound ? ("Listing Not Found") : (<>Loading<span className="dots"></span></>)
+            }
           </div>
         </div>
       </>
-    );
+    )
   }
   const formattedCondition =
     listing.condition.charAt(0).toUpperCase() + listing.condition.slice(1);
