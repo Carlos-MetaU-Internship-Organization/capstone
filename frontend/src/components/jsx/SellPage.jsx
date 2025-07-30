@@ -5,6 +5,7 @@ import loadingGif from "./../../assets/loading.gif";
 import Header from "./ui/Header";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
 import { logInfo, logError } from "../../services/loggingService";
 import {
   ELASTICITY_KEYS,
@@ -190,6 +191,15 @@ function SellPage() {
     setSliderIndex(Number(event.target.value));
   };
 
+  const handleGenerateDescriptionClick = async () => {
+    const requiredFields = ["condition", "make", "model", "year", "color", "mileage", "price"]
+    const missingFields = requiredFields.filter((field) => listingInfo[field] === '')
+    if (missingFields.length > 0) {
+      toast.error(`Please fill out the following fields: ${missingFields.join(', ')}`)
+      return;
+    }
+  }
+
   const currentSliderKey = ELASTICITY_KEYS[sliderIndex];
 
   return (
@@ -302,14 +312,28 @@ function SellPage() {
                   <div id="finalize-listing">
                     <div id="listing-option">
                       <label>Description</label>
-                      <textarea
-                        id="description-input"
-                        className="new-listing-input translucent"
-                        value={listingInfo.description}
-                        name="description"
-                        onChange={updateForm}
-                        required
-                      />
+                      <div id="description-box">
+                        <textarea
+                          id="description-input"
+                          className="new-listing-input translucent"
+                          placeholder='Type here...'
+                          value={listingInfo.description}
+                          name="description"
+                          onChange={updateForm}
+                          required
+                        />
+                        {
+                          !listingInfo.description && (
+                            <button 
+                              id="generate-description-button"
+                              className="translucent"
+                              type="button"
+                              onClick={handleGenerateDescriptionClick}>
+                              Generate One For Me
+                            </button>
+                          )
+                        }
+                      </div>
                     </div>
                     <div id="listing-option">
                       <label>Upload Images</label>
