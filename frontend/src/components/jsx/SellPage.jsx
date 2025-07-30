@@ -203,7 +203,7 @@ function SellPage() {
     const { description, message } = await generateDescription(listingInfo)
 
     if (description === null) {
-      toast.error(`${message}. Please try again later.`)
+      toast.error(message)
       return;
     }
 

@@ -270,7 +270,7 @@ listings.post('/generate-description', validateRequest({ body: generateDescripti
     res.json(description);
   } catch (error) {
     logError('Error creating description:', error);
-    res.status(500).json({ message: 'Error creating description' });
+    res.status(500).json({ message: 'Error creating description. Please try again later.' });
   }
 })
 
