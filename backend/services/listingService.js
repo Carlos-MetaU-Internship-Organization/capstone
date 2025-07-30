@@ -317,11 +317,23 @@ function createSearchWhereClause(searchFilter, userId) {
 
 async function generateDescription(listingInfo) {
   const prompt = createLLMPromptForDescription(listingInfo);
-  return (await (geminiModel.generateContent(prompt))).response.text();
+
+  const maxRetries = 5;
+  const delay = 5000;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await geminiModel.generateContent(prompt)
+      return response.response.text()
+    } catch (error) {
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+  throw new Error()
 }
 
 function createLLMPromptForDescription(listingInfo) {
-  const { condition, make, model, year, color, mileage, vin, price } = listingInfo;
+  const { condition, make, model, year, color, mileage, price } = listingInfo;
   const description = `
   Generate a car description using the following details:
   *   **Condition:** ${condition}
@@ -330,12 +342,12 @@ function createLLMPromptForDescription(listingInfo) {
   *   **Year:** ${year}
   *   **Color:** ${color}
   *   **Mileage:** ${mileage}
-  *   **VIN:** ${vin}
   *   **Price:** ${price}
   
   Give me only one car description.
   The car description should be very informative and unique.
   The car description should be in plaintext.
+  Write in paragraphs.
   `;
   return description;
 }

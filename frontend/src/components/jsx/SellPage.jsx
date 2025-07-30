@@ -19,6 +19,7 @@ import {
   createListing,
   editListing,
   estimatePrice,
+  generateDescription,
 } from "../../utils/api";
 import ColorSelector from "./ui/ColorSelector";
 
@@ -198,6 +199,15 @@ function SellPage() {
       toast.error(`Please fill out the following fields: ${missingFields.join(', ')}`)
       return;
     }
+
+    const { description, message } = await generateDescription(listingInfo)
+
+    if (description === null) {
+      toast.error(`${message}. Please try again later.`)
+      return;
+    }
+
+    setListingInfo(prev => ({...prev, description: description }))
   }
 
   const currentSliderKey = ELASTICITY_KEYS[sliderIndex];
@@ -329,7 +339,7 @@ function SellPage() {
                               className="translucent"
                               type="button"
                               onClick={handleGenerateDescriptionClick}>
-                              Generate One For Me
+                              Click Here to Generate
                             </button>
                           )
                         }

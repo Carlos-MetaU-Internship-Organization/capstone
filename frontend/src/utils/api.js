@@ -566,3 +566,22 @@ export async function estimatePrice(listingInfo) {
     };
   }
 }
+
+export async function generateDescription(listingInfo) {
+  try {
+    const { data } = await axios.post(
+      `${baseURL}/api/listings/generate-description`,
+      listingInfo,
+      { withCredentials: true },
+    );
+    return {
+      description: data,
+    };
+  } catch (error) {
+    return {
+      description: null,
+      message:
+        error.response?.data?.message || error.message || "An error occured",
+    };
+  }
+}

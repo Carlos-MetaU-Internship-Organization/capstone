@@ -264,7 +264,7 @@ listings.get('/vin/:vin/isFavorited', validateRequest({ params: vinSchema }), as
   }
 })
 
-listings.post('/create-description', validateRequest({ body: generateDescriptionSchema }), async (req, res) => {
+listings.post('/generate-description', validateRequest({ body: generateDescriptionSchema }), async (req, res) => {
   try {
     const description = await generateDescription(req.body);
     res.json(description);
