@@ -82,13 +82,28 @@
   align-items: center;
 }
 
+#description-box {
+  position: relative;
+}
+
 #description-input {
   height: 200px;
   width: 400px;
 }
 
+#description-input::placeholder {
+  color: black;
+}
+
 #description-input:focus {
   outline: none;
+}
+
+#generate-description-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .new-listing-input {

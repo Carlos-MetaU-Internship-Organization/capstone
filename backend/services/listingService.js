@@ -3,6 +3,7 @@ const { PrismaClient } = require('@prisma/client')
 const zipcodes = require('zipcodes')
 const gps = require('gps2zip')
 const levenshtein = require('js-levenshtein');
+const geminiModel = require('../llm/llmClient')
 const { logInfo, logError, logWarning } = require('../services/loggingService');
 const { calculateBounds } = require('../utils/geo')
 const { PAGE_SIZE, MIN_LISTINGS_TO_FETCH, RATIO_OF_TOTAL_LISTINGS_TO_FETCH, COLORS, NUM_POPULAR_LISTINGS } = require('../utils/constants')
@@ -314,6 +315,43 @@ function createSearchWhereClause(searchFilter, userId) {
   return searchWhereClause
 }
 
+async function generateDescription(listingInfo) {
+  const prompt = createLLMPromptForDescription(listingInfo);
+
+  const maxRetries = 5;
+  const delay = 5000;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await geminiModel.generateContent(prompt)
+      return response.response.text()
+    } catch (error) {
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+  throw new Error()
+}
+
+function createLLMPromptForDescription(listingInfo) {
+  const { condition, make, model, year, color, mileage, price } = listingInfo;
+  const description = `
+  Generate a car description using the following details:
+  *   **Condition:** ${condition}
+  *   **Make:** ${make}
+  *   **Model:** ${model}
+  *   **Year:** ${year}
+  *   **Color:** ${color}
+  *   **Mileage:** ${mileage}
+  *   **Price:** ${price}
+  
+  Give me only one car description.
+  The car description should be very informative and unique.
+  The car description should be in plaintext.
+  Write in paragraphs.
+  `;
+  return description;
+}
+
 module.exports = {
   fetchListingsForMigration,
   fetchMakeModelCombinations,
@@ -329,5 +367,6 @@ module.exports = {
   deleteListing,
   sellListing,
   createListing,
-  getListings
+  getListings,
+  generateDescription
 }
