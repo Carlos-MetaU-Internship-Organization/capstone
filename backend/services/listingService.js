@@ -352,6 +352,15 @@ function createLLMPromptForDescription(listingInfo) {
   return description;
 }
 
+function getListingIdsAndDescriptions() {
+  return prisma.listing.findMany({
+    select: {
+      id: true,
+      description: true
+    }
+  })
+}
+
 module.exports = {
   fetchListingsForMigration,
   fetchMakeModelCombinations,
@@ -368,5 +377,6 @@ module.exports = {
   sellListing,
   createListing,
   getListings,
-  generateDescription
+  generateDescription,
+  getListingIdsAndDescriptions
 }
